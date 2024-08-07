@@ -219,6 +219,73 @@ Evaluates the model on the validation dataset.
 - `avg_loss` (float): The average validation loss.
 - `accuracy` (float): The validation accuracy.
 
+
+
+
+## Configuration File
+
+The configuration file is used to specify the parameters for training a model with the `PipeLine` class. Below is an example of a configuration file in JSON format:
+
+### Example: `mymodel_config.json`
+
+```json
+{
+  "piLn_name": "MyModel",
+  "model_loc": "Libs.models.MyModel",
+  "DataSet_loc": "Libs.datasets.MyDataset",
+  "accuracy_loc": "Libs.accuracies.accuracy",
+  "loss_loc": "Libs.losses.CrossEntropyLoss",
+  "optimizer_loc": "Libs.optimizers.Adam",
+  "train_folder": "data/train",
+  "valid_folder": "data/valid",
+  "train_batch_size": 32,
+  "valid_batch_size": 16,
+  "weights_path": "Weights/mymodel_weights.pth",
+  "history_path": "History/mymodel_history.csv",
+  "config_path": "Configs/mymodel_config.json",
+  "last": {
+    "epoch": 0,
+    "train_accuracy": 0,
+    "train_loss": "inf"
+  },
+  "best": {
+    "epoch": 0,
+    "val_accuracy": 0,
+    "val_loss": "inf"
+  }
+}
+```
+
+### Description of Configuration Fields:
+
+- **piLn_name**: The name of the pipeline.
+- **model_loc**: The module location of the model class (e.g., `Libs.models.MyModel`).
+- **DataSet_loc**: The module location of the dataset class (e.g., `Libs.datasets.MyDataset`).
+- **accuracy_loc**: The module location of the accuracy metric (e.g., `Libs.accuracies.accuracy`).
+- **loss_loc**: The module location of the loss function class (e.g., `Libs.losses.CrossEntropyLoss`).
+- **optimizer_loc**: The module location of the optimizer class (e.g., `Libs.optimizers.Adam`).
+- **train_folder**: The directory path containing the training data.
+- **valid_folder**: The directory path containing the validation data.
+- **train_batch_size**: The batch size to use for training.
+- **valid_batch_size**: The batch size to use for validation.
+- **weights_path**: The file path where model weights will be saved.
+- **history_path**: The file path for saving the training history as a CSV file.
+- **config_path**: The file path for saving the configuration file.
+- **last**: An object that stores the last epoch's information, including the epoch number, training accuracy, and training loss.
+- **best**: An object that stores the best epoch's information, including the epoch number, validation accuracy, and validation loss.
+
+### Usage
+
+To load this configuration file in the `PipeLine` class, specify the `config_path` parameter when setting up the pipeline:
+
+```python
+pipeline = PipeLine(config_path="Configs/mymodel_config.json")
+pipeline.setup(use_config=True)
+```
+
+This allows you to reuse the same settings for training your model without needing to redefine the parameters each time.
+
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request if you have any improvements or bug fixes.
@@ -229,3 +296,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ```
 
 Feel free to adjust the content as necessary to fit your specific implementation and usage details.
+
+
+
