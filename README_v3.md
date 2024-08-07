@@ -183,10 +183,48 @@ Configures the pipeline with the specified parameters or loads the configuration
 - `make_config` (bool): Whether to create a new configuration file.
 - `prepare` (bool): Whether to prepare the data loaders.
 
-
-
-
 ---
+
+##### Example Uses
+----
+###### case1
+```python
+pipeline.setup(
+    config_path="Configs/mymodel_config.json",
+    use_config=False,
+    make_config=True,
+    prepare=True
+)
+```
+###### Summary
+
+- **`config_path="Configs/mymodel_config.json"`**: Specifies the path for the configuration file.
+- **`use_config=False`**: Indicates that the pipeline should not load an existing configuration file from the specified path.
+- **`make_config=True`**: Signals the pipeline to create a new configuration file at the specified path with default or provided settings.
+- **`prepare=True`**: Directs the pipeline to prepare the training and validation data loaders immediately after setup.
+
+###### Overall Outcome
+This code initializes the pipeline without loading previous settings, creates a new configuration file, and prepares the data loaders for training.
+---
+###### case2
+```python
+pipeline.setup(
+    config_path="Configs/mymodel_config.json",
+    use_config=False,
+    make_config=True
+)
+```
+
+###### Summary
+
+- **`config_path="Configs/mymodel_config.json"`**: Specifies the path for the configuration file.
+- **`use_config=False`**: Indicates that the pipeline should not load an existing configuration file from the specified path.
+- **`make_config=True`**: Signals the pipeline to create a new configuration file at the specified path with default or provided settings.
+- **`prepare=True`**: Directs the pipeline to prepare the training and validation data loaders immediately after setup.
+
+###### Overall Outcome
+
+This code initializes the pipeline without loading previous settings, creates a new configuration file, and prepares the data loaders for training.
 
 #### Configuration File Path Handling
 
@@ -212,6 +250,10 @@ The pipeline will create a directory named `MyModelPipeline` in the current work
 This automatic organization helps keep your project structured and ensures that all related files are easily accessible.
 
 ---
+
+
+
+
 
 
 
@@ -473,31 +515,4 @@ Contributions are welcome! Please open an issue or submit a pull request if you 
 
 
 
-
----
-
-### Configuration File Path Handling
-
-When initializing the `PipeLine` class, if the user does not specify a path for the configuration file, the pipeline will automatically create a new directory in the current working directory. This directory will be named after the pipeline name provided during initialization.
-
-- **Automatic Directory Creation**: If the `config_path` is not given, the pipeline will create a folder with the same name as the pipeline in the current working directory. Inside this folder, it will save the configuration file, weights, and history files.
-
-#### Example Behavior
-
-If you initialize the `PipeLine` like this:
-
-```python
-pipeline = PipeLine(name="MyModelPipeline")
-pipeline.setup(make_config=True)
-```
-
-The pipeline will create a directory named `MyModelPipeline` in the current working directory, and store the following files within it:
-
-- Configuration file: `MyModelPipeline/MyModelPipeline.json`
-- Weights file: `MyModelPipeline/MyModelPipeline_weights.pth`
-- History file: `MyModelPipeline/MyModelPipeline_history.csv`
-
-This automatic organization helps keep your project structured and ensures that all related files are easily accessible.
-
----
 
