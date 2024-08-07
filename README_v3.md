@@ -183,6 +183,42 @@ Configures the pipeline with the specified parameters or loads the configuration
 - `make_config` (bool): Whether to create a new configuration file.
 - `prepare` (bool): Whether to prepare the data loaders.
 
+
+
+
+---
+
+#### Configuration File Path Handling
+
+When initializing the `PipeLine` class, if the user does not specify a path for the configuration file, the pipeline will automatically create a new directory in the current working directory. This directory will be named after the pipeline name provided during initialization.
+
+- **Automatic Directory Creation**: If the `config_path` is not given, the pipeline will create a folder with the same name as the pipeline in the current working directory. Inside this folder, it will save the configuration file, weights, and history files.
+
+##### Example Behavior
+
+If you initialize the `PipeLine` like this:
+
+```python
+pipeline = PipeLine(name="MyModelPipeline")
+pipeline.setup(make_config=True)
+```
+
+The pipeline will create a directory named `MyModelPipeline` in the current working directory, and store the following files within it:
+
+- Configuration file: `MyModelPipeline/MyModelPipeline.json`
+- Weights file: `MyModelPipeline/MyModelPipeline_weights.pth`
+- History file: `MyModelPipeline/MyModelPipeline_history.csv`
+
+This automatic organization helps keep your project structured and ensures that all related files are easily accessible.
+
+---
+
+
+
+
+
+
+
 ### prepare_data
 
 Sets up the data loaders for training and validation datasets.
@@ -429,3 +465,39 @@ By following this structure, you can keep your project organized and make it eas
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request if you have any improvements or bug fixes.
+
+
+
+
+
+
+
+
+
+---
+
+### Configuration File Path Handling
+
+When initializing the `PipeLine` class, if the user does not specify a path for the configuration file, the pipeline will automatically create a new directory in the current working directory. This directory will be named after the pipeline name provided during initialization.
+
+- **Automatic Directory Creation**: If the `config_path` is not given, the pipeline will create a folder with the same name as the pipeline in the current working directory. Inside this folder, it will save the configuration file, weights, and history files.
+
+#### Example Behavior
+
+If you initialize the `PipeLine` like this:
+
+```python
+pipeline = PipeLine(name="MyModelPipeline")
+pipeline.setup(make_config=True)
+```
+
+The pipeline will create a directory named `MyModelPipeline` in the current working directory, and store the following files within it:
+
+- Configuration file: `MyModelPipeline/MyModelPipeline.json`
+- Weights file: `MyModelPipeline/MyModelPipeline_weights.pth`
+- History file: `MyModelPipeline/MyModelPipeline_history.csv`
+
+This automatic organization helps keep your project structured and ensures that all related files are easily accessible.
+
+---
+
