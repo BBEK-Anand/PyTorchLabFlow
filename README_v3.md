@@ -1,165 +1,4 @@
-# PyTorch Training Pipeline
-
-This project provides a modular and configurable training pipeline for PyTorch models. It allows you to define and manage your experiments through a JSON configuration file, enabling seamless model training, validation, checkpointing, and history tracking.
-
-## Features
-
-- **Modular Design**: Easily load different models, datasets, optimizers, and loss functions.
-- **Configuration File**: Define experiments in a JSON file for easy setup and reproducibility.
-- **Training and Validation**: Separate training and validation loops to evaluate model performance.
-- **Checkpointing**: Save and load model states to resume training from the last checkpoint.
-- **History Tracking**: Track and save training and validation loss for each epoch.
-
-## File Structure
-
-```
-Your_directory
-  └── Libs
-    ├── __init__.py
-    ├── accuracies.py
-    ├── datasets.py
-    ├── losses.py
-    ├── models.py
-    └── optimizers.py
-  ├── History
-  ├── Configs
-  └── Weights
-├── config.json
-└── README.md
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Python 3.x
-- PyTorch
-- Ensure all required packages are installed. You can use `requirements.txt` if provided.
-
-### Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/BBEK-Anand/Torch-Pipeline.git
-cd Torch-Pipeline
-```
-
-2. Install required packages (if `requirements.txt` is available):
-
-```bash
-pip install -r requirements.txt
-```
-
-### Configuration
-
-Define your experiment configuration in `config.json`. Below is an example:
-
-```json
-{
-  "model_loc": "Libs.models.model1",
-  "DataSet_loc": None,
-  "accuracy_loc": "Libs.accuracies.Accu1",
-  "loss_loc": "Libs.losses.loss1",
-  "optimizer_loc": "Libs.optimizers.opt1",
-  "piLn_name": "1st_try",
-  "last": {
-           "epoch": 0,
-           "train_accuracy": 0,
-           "train_loss": inf
-         },
-  "best": {
-           "epoch": 0,
-           "val_accuracy": 0,
-           "val_loss": inf
-           },
-  "valid_folder": "data/valid",
-  "train_folder": "../DataSets/PREPARED_2/train-Copy/",
-  "valid_batch_size": 4,
-  "train_batch_size": 4,
-  "weights_path": "1st_try/1st_try_w.pth",
-  "config_path": "1st_try/1st_try.json",
-  "history_path": "1st_try/1st_try_h.csv"
-}
-```
-### Custom Components
-
-#### Model
-
-Define your model in `Libs/models.py`:
-
-```python
-import torch.nn as nn
-
-class Model1(nn.Module):
-    def __init__(self):
-        super(Model1, self).__init__()
-        # Define model layers
-
-    def forward(self, x):
-        # Define forward pass
-        return x
-```
-
-#### Dataset
-
-Define your dataset in `Libs/datasets.py`:
-
-```python
-import torch
-from torch.utils.data import Dataset
-
-class CustomDataset1(Dataset):
-    def __init__(self, data_path):
-        # Load and preprocess data
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        # Return data and label
-        return data, label
-```
-
-#### Optimizer
-
-Define your optimizer in `Libs/optimizers.py`:
-
-```python
-import torch.optim as optim
-
-def get_optimizer(model, lr, momentum):
-    return optim.SGD(model.parameters(), lr=lr, momentum=momentum)
-```
-
-#### Loss Function
-
-Define your loss function in `Libs/losses.py`:
-
-```python
-import torch.nn as nn
-
-def get_loss():
-    return nn.MSELoss()
-```
-
-### Running the Pipeline
-
-Run the pipeline using the following command:
-
-```bash
-python pipeline.py
-```
-
-This script will:
-1. Load the configuration from `config.json`.
-2. Initialize the model, datasets, optimizer, and loss function.
-3. Train the model, validating at each epoch.
-4. Save the best model based on validation loss.
-5. Track and save the training and validation loss history.
-
-
-Sure! Here is a comprehensive README file for your GitHub repository that describes the `PipeLine` class.
+Based on the provided file structure, here is an updated version of the README file:
 
 ```markdown
 # PipeLine: A Flexible and Configurable Training Pipeline for PyTorch
@@ -169,6 +8,7 @@ The `PipeLine` class provides a flexible and configurable framework for training
 ## Table of Contents
 
 - [Installation](#installation)
+- [Directory Structure](#directory-structure)
 - [Usage](#usage)
   - [Setting Up the Pipeline](#setting-up-the-pipeline)
   - [Preparing Data](#preparing-data)
@@ -182,6 +22,7 @@ The `PipeLine` class provides a flexible and configurable framework for training
   - [prepare_data](#prepare_data)
   - [update](#update)
   - [train](#train)
+  - [validate](#validate)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -195,6 +36,33 @@ Clone this repository to your local machine:
 git clone https://github.com/yourusername/pipeline.git
 ```
 
+## Directory Structure
+
+Your project directory should be structured as follows:
+
+```
+Your_directory
+  ├── Libs
+  │   ├── __init__.py
+  │   ├── accuracies.py
+  │   ├── datasets.py
+  │   ├── losses.py
+  │   ├── models.py
+  │   └── optimizers.py
+  ├── History
+  ├── Configs
+  ├── Weights
+  ├── config.json
+  └── README.md
+```
+
+- `Libs`: Contains the Python scripts for models, datasets, losses, optimizers, and accuracy metrics.
+- `History`: Contains CSV files with training history for different pipelines.
+- `Configs`: Contains JSON configuration files for different pipelines.
+- `Weights`: Contains model weights for different pipelines.
+- `config.json`: A sample configuration file.
+- `README.md`: This README file.
+
 ## Usage
 
 ### Setting Up the Pipeline
@@ -206,22 +74,22 @@ You can configure the pipeline either programmatically or by using a configurati
 ```python
 from pipeline import PipeLine
 
-pipeline = PipeLine(name="MyModel", config_path="path/to/config.json")
+pipeline = PipeLine(name="MyModel", config_path="Configs/mymodel_config.json")
 
 pipeline.setup(
     name="MyModel",
-    model_loc="models.MyModel",
-    accuracy_loc="metrics.accuracy",
-    loss_loc="losses.CrossEntropyLoss",
-    optimizer_loc="torch.optim.Adam",
-    dataset_loc="datasets.MyDataset",
+    model_loc="Libs.models.MyModel",
+    accuracy_loc="Libs.accuracies.accuracy",
+    loss_loc="Libs.losses.CrossEntropyLoss",
+    optimizer_loc="Libs.optimizers.Adam",
+    dataset_loc="Libs.datasets.MyDataset",
     train_folder="data/train",
     train_batch_size=32,
     valid_folder="data/valid",
     valid_batch_size=32,
-    history_path="path/to/history.csv",
-    weights_path="path/to/weights.pth",
-    config_path="path/to/config.json",
+    history_path="History/mymodel_history.csv",
+    weights_path="Weights/mymodel_weights.pth",
+    config_path="Configs/mymodel_config.json",
     use_config=False,
     make_config=True,
     prepare=True
@@ -236,7 +104,7 @@ The `prepare_data` method sets up data loaders for training and validation datas
 
 ```python
 pipeline.prepare_data(
-    dataset_loc="datasets.MyDataset",
+    dataset_loc="Libs.datasets.MyDataset",
     train_folder="data/train",
     train_batch_size=32,
     valid_folder="data/valid",
@@ -265,7 +133,7 @@ The `PipeLine` class supports saving the configuration to a JSON file and loadin
 pipeline.save_config()
 
 # Load the configuration from a file
-pipeline.setup(config_path="path/to/config.json", use_config=True)
+pipeline.setup(config_path="Configs/mymodel_config.json", use_config=True)
 ```
 
 ## Methods
@@ -343,8 +211,21 @@ Trains the model for the specified number of epochs.
 #### Parameters
 - `num_epochs` (int): The number of epochs to train the model.
 
+### validate
+
+Evaluates the model on the validation dataset.
+
+#### Returns
+- `avg_loss` (float): The average validation loss.
+- `accuracy` (float): The validation accuracy.
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request for any changes or improvements.
+Contributions are welcome! Please open an issue or submit a pull request if you have any improvements or bug fixes.
 
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+```
+
+Feel free to adjust the content as necessary to fit your specific implementation and usage details.
