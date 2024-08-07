@@ -341,6 +341,73 @@ pipeline.setup(use_config=True)
 This allows you to reuse the same settings for training your model without needing to redefine the parameters each time.
 
 
+### Custom Components
+
+#### Model
+
+Define your model in `Libs/models.py`:
+
+```python
+import torch.nn as nn
+
+class Model1(nn.Module):
+    def __init__(self):
+        super(Model1, self).__init__()
+        # Define model layers
+
+    def forward(self, x):
+        # Define forward pass
+        return x
+```
+
+#### Dataset
+
+Define your dataset in `Libs/datasets.py`:
+
+```python
+import torch
+from torch.utils.data import Dataset
+
+class CustomDataset1(Dataset):
+    def __init__(self, data_path):
+        # Load and preprocess data
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        # Return data and label
+        return data, label
+```
+
+#### Optimizer
+
+Define your optimizer in `Libs/optimizers.py`:
+
+```python
+import torch.optim as optim
+
+def get_optimizer(model, lr, momentum):
+    return optim.SGD(model.parameters(), lr=lr, momentum=momentum)
+```
+
+#### Loss Function
+
+Define your loss function in `Libs/losses.py`:
+
+```python
+import torch.nn as nn
+
+def get_loss():
+    return nn.MSELoss()
+```
+
+
+
+
+
+
+
 ## Customization
 
 To effectively use the `PipeLine` class, users are encouraged to customize the `Libs` folder to suit their specific needs. You can create or modify the following files to define your models, datasets, accuracies, losses, and optimizers:
