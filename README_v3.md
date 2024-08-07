@@ -1,6 +1,3 @@
-Based on the provided file structure, here is an updated version of the README file:
-
-```markdown
 # PipeLine: A Flexible and Configurable Training Pipeline for PyTorch
 
 The `PipeLine` class provides a flexible and configurable framework for training PyTorch models. It allows you to dynamically load models, datasets, loss functions, optimizers, and metrics from specified module locations. Additionally, it supports configuration through JSON files, enabling easy reuse and sharing of training setups.
@@ -197,6 +194,29 @@ Sets up the data loaders for training and validation datasets.
 - `valid_folder` (str): The path to the validation data folder.
 - `valid_batch_size` (int): The batch size for validation.
 
+#### `prepare_data(dataset_loc=None, train_folder=None, train_batch_size=None, valid_folder=None, valid_batch_size=None)`
+
+The `prepare_data` method prepares the training and validation data loaders from the specified dataset class. Key functionalities include:
+
+- **DataLoader Creation**: It instantiates the dataset class from the specified location and creates PyTorch DataLoaders for both training and validation datasets. This allows for efficient data loading and preprocessing during training.
+
+- **Validation of Inputs**: The method checks if the necessary parameters (such as training and validation folders, and batch sizes) are provided. If any parameters are missing, it provides informative error messages to guide the user in correcting the configuration.
+
+- **Random Cropping**: The method supports random cropping of audio files for variability in training, ensuring the model can generalize better by being exposed to different parts of the audio data.
+
+##### Example Usage
+
+```python
+pipeline.prepare_data(dataset_loc="Libs.datasets.MyDataset", train_folder="data/train", valid_folder="data/valid")
+```
+
+This command will set up the DataLoaders for the specified dataset class and training/validation directories.
+
+
+
+
+
+
 ### update
 
 Updates the configuration and saves the training history.
@@ -210,6 +230,41 @@ Trains the model for the specified number of epochs.
 
 #### Parameters
 - `num_epochs` (int): The number of epochs to train the model.
+#### `train(num_epochs=5)`
+
+The `train` method is responsible for training the model over a specified number of epochs. Key functionalities include:
+
+- **Weight Saving**: The method saves the model weights whenever a new best validation loss is achieved. This ensures that you can always revert to the best-performing model during training.
+
+- **History Tracking**: At the end of each epoch, the method logs training and validation metrics, such as accuracy and loss, into a CSV file specified in the configuration. This history can be used to analyze the model's performance over time and visualize training progress.
+
+- **Epoch Management**: The method continues training from the last completed epoch if the pipeline has been configured previously, allowing for seamless continuation of training sessions.
+
+##### Example Usage
+
+```python
+pipeline.train(num_epochs=10)
+```
+
+This command will train the model for 10 epochs, saving weights and logging history after each epoch.
+
+---
+
+
+##### Example Usage
+
+```python
+pipeline.train(num_epochs=10)
+```
+
+This command will train the model for 10 epochs, saving weights and logging history after each epoch.
+
+---
+
+
+
+
+
 
 ### validate
 
@@ -307,4 +362,3 @@ By following this structure, you can keep your project organized and make it eas
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request if you have any improvements or bug fixes.
-
