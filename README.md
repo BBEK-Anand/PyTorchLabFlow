@@ -83,6 +83,7 @@ Define your experiment configuration in `config.json`. Below is an example:
  'config_path': '1st_try/1st_try.json',
  'history_path': '1st_try/1st_try_h.csv'
 }
+```
 ### Custom Components
 
 #### Model
