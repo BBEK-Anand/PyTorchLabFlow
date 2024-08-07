@@ -286,16 +286,25 @@ pipeline.setup(use_config=True)
 This allows you to reuse the same settings for training your model without needing to redefine the parameters each time.
 
 
+## Customization
+
+To effectively use the `PipeLine` class, users are encouraged to customize the `Libs` folder to suit their specific needs. You can create or modify the following files to define your models, datasets, accuracies, losses, and optimizers:
+
+- **`Libs/models.py`**: Define your model classes here. You can create custom neural network architectures or use pre-existing ones.
+  
+- **`Libs/datasets.py`**: Implement your dataset classes to load and preprocess your data.
+  
+- **`Libs/accuracies.py`**: Create custom accuracy metrics for evaluating your models.
+  
+- **`Libs/losses.py`**: Define your loss functions or use existing ones from PyTorch.
+  
+- **`Libs/optimizers.py`**: Implement or import custom optimizers for training your models.
+
+By following this structure, you can keep your project organized and make it easier to manage different models and datasets.
+
+
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request if you have any improvements or bug fixes.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-```
-
-Feel free to adjust the content as necessary to fit your specific implementation and usage details.
-
-
 
