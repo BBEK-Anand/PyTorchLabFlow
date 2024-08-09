@@ -27,10 +27,10 @@ The `PipeLine` class provides a flexible and configurable framework for training
 
 To use the `PipeLine` class, you need to have Python and PyTorch installed. You can install PyTorch from the official [PyTorch website](https://pytorch.org/get-started/locally/).
 
-Clone this repository to your local machine:
+pip install
 
 ```bash
-git clone https://github.com/BBEK-Anand/Torch-PipeLine.git
+pip install PyTorchLabFlow
 ```
 
 ## Directory Structure
@@ -69,7 +69,7 @@ You can configure the pipeline either programmatically or by using a configurati
 #### Example
 
 ```python
-from pipeline import PipeLine
+from PyTorchLabFlow.pipeline import PipeLine
 
 pipeline = PipeLine(name="MyModel", config_path="Configs/mymodel_config.json")
 
