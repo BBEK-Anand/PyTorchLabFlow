@@ -252,15 +252,6 @@ This automatic organization helps keep your project structured and ensures that 
 ---
 
 
-
-
-
-
-
-
-
-
-
 ### prepare_data
 
 Sets up the data loaders for training and validation datasets.
@@ -289,10 +280,6 @@ pipeline.prepare_data(dataset_loc="Libs.datasets.MyDataset", train_folder="data/
 ```
 
 This command will set up the DataLoaders for the specified dataset class and training/validation directories.
-
-
-
-
 
 
 ### update
@@ -327,21 +314,6 @@ pipeline.train(num_epochs=10)
 This command will train the model for 10 epochs, saving weights and logging history after each epoch.
 
 ---
-
-
-##### Example Usage
-
-```python
-pipeline.train(num_epochs=10)
-```
-
-This command will train the model for 10 epochs, saving weights and logging history after each epoch.
-
----
-
-
-
-
 
 
 ### validate
@@ -507,12 +479,4 @@ By following this structure, you can keep your project organized and make it eas
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request if you have any improvements or bug fixes.
-
-
-
-
-
-
-
-
 
