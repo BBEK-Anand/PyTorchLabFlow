@@ -69,7 +69,7 @@ You can configure the pipeline either programmatically or by using a configurati
 #### Example
 
 ```python
-from pipeline import PipeLine
+from Torch-PipeLine import PipeLine
 
 pipeline = PipeLine(name="MyModel", config_path="Configs/mymodel_config.json")
 
