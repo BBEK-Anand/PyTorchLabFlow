@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.env
+.venv
+*.env
+*.venv
+.DS_Store
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Configuration files
+config.json
+
+# Ignore virtual environments
+venv/
+env/
+
+# Ignore compiled files
+*.so
+*.dylib
+*.dll
