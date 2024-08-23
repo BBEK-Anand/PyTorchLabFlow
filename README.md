@@ -1,4 +1,4 @@
-# Torch-PipeLine: A Flexible and Configurable Training Pipeline for PyTorch
+# PyTorchLabFlow: A Flexible and Configurable Training Pipeline for PyTorch
 
 The `PipeLine` class provides a flexible and configurable framework for training PyTorch models. It allows you to dynamically load models, datasets, loss functions, optimizers, and metrics from specified module locations. Additionally, it supports configuration through JSON files, enabling easy reuse and sharing of training setups.
 
