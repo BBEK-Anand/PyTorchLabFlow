@@ -7,7 +7,9 @@ import pandas as pd
 from tqdm import tqdm
 import json
 import importlib
-
+import pandas as pd
+import numpy as np
+from matplotlib import pyplot as plt
 
 class PipeLine:
     def __init__(self, name='Default_name', config_path=None):
@@ -74,8 +76,8 @@ class PipeLine:
             self.name = cnfg1.get('piLn_name')
             self.model_name = cnfg1['model_loc'].split('.')[-1]
             self.__best_val_loss = cnfg1['best']['val_loss']
-            cnfg1["valid_folder"] = valid_folder
-            cnfg1['train_folder'] = train_folder
+            cnfg1["valid_folder"] = valid_folder if valid_folder!=None else cnfg1["valid_folder"]
+            cnfg1['train_folder'] = train_folder if train_folder!=None else cnfg1['train_folder']
             self.cnfg = cnfg1
 
         elif config_path and make_config:
@@ -205,7 +207,7 @@ class PipeLine:
                 loss.backward()
                 self.optimizer.step()
                 running_loss += loss.item()
-                running_accuracy += accuracy_metric(torch.sigmoid(outputs), labels.int()).item()
+                running_accuracy += accuracy_metric(outputs, labels.int()).item()
                 train_loader_tqdm.set_postfix(loss=running_loss/len(train_loader_tqdm), accuracy=running_accuracy/len(train_loader_tqdm))
             
             train_loss = running_loss / len(self.trainDataLoader)
@@ -234,9 +236,173 @@ class PipeLine:
                 outputs = self.model(inputs) # 0 bcz input only has base audio array
                 loss = self.loss(outputs, labels)
                 running_loss += loss.item()
-                predictions = torch.sigmoid(outputs)
-                correct += self.accuracy(predictions, labels.int()).item()
+                correct += self.accuracy(outputs, labels.int()).item()
                 total += labels.size(0)
             accuracy = correct / len(self.validDataLoader)
             avg_loss = running_loss / len(self.validDataLoader)
             return avg_loss, accuracy
+
+
+def update(config_folder='./Configs'):
+    ls = os.listdir(config_folder)
+    plns = []
+    for i in ls:
+        with open(os.path.join(config_folder,i)) as fl:
+            cnf0 = json.load(fl)
+            plns.append([cnf0['piLn_name'],cnf0['last']['epoch'],cnf0['best']['val_accuracy']])
+    with open("./config.json") as fl:
+        cnf = json.load(fl)
+        for i in plns:
+            if(i[0] in cnf.keys()):
+                if(cnf[i[0]]["last_epoch"]<i[1]):
+                    print(f"last epoch updated from {cnf[i[0]]['last_epoch']} to {i[1]} for PipeLine:{i[0]}")
+                    cnf[i[0]]["last_epoch"]=i[1]
+                    
+                if(cnf[i[0]]["best_val_accuracy"]>i[2]):
+                    print(f"Validation accuracy updated from {cnf[i[0]]['best_val_accuracy']} to {i[2]} for PipeLine:{i[2]}")
+                    cnf[i[0]]["best_val_accuracy"]=i[2]
+            else:
+                cnf[i[0]]={
+                            "config":config_folder+"/"+i[0]+".csv",
+                            "last_epoch":i[1],
+                            "best_val_accuracy":i[2]
+                        }
+                print(f"new Pipeline initialized : {i[0]} with last_epoch:{i[1]} and best_val_accuracy:{i[2]}")
+    with open("./config.json","w") as fl:
+            json.dump(cnf, fl, indent=4)
+
+
+def get_pplns(mode='name'): #mode = name|epoch|all
+    update()
+    with open("./config.json") as fl:
+        cnf = json.load(fl)
+        if(mode=='name'):
+            return list(cnf.keys())
+        elif(mode=='epoch'):
+            ls = [cnf[i]["last_epoch"] for i in cnf.keys()]
+            return ls
+        elif(mode=='all'):
+            return cnf
+def verify(cnfg,mode='name',config_folder='./Configs'):   # mode = name|mod_ds|training
+    if(mode=='name'):
+        update(config_folder=config_folder)
+        with open("./config.json") as fl:
+            cnf0 = json.load(fl)
+            if(cnfg['piLn_name'] in cnf0.keys()):
+                print(cnfg['piLn_name'],"is already exists. ","*last pipeLine is",list(cnf0.keys())[-1])
+                return None
+            else:
+                return True
+    elif(mode=='mod_ds'):
+        mods = []
+        ls = os.listdir(config_folder)
+        for i in ls:
+            with open(os.path.join(config_folder,i)) as fl:
+                cnf0 = json.load(fl)
+                mods.append([cnf0['piLn_name'],cnf0['model_loc'],cnf0['DataSet_loc']])
+        for i in mods:
+            if(i[1]==cnfg['model_loc'] and i[2]==cnfg['DataSet_loc']):
+                print('same combination is already used in ',i[0])
+                return None
+        else:
+            return True
+    elif(mode=="training"):
+        mods = []
+        ls = os.listdir(config_folder)
+        for i in ls:
+            with open(os.path.join(config_folder,i)) as fl:
+                cnf0 = json.load(fl)
+                mods.append([cnf0['piLn_name'],cnf0['optimizer_loc'],cnf0['train_batch_size'],cnf0['valid_batch_size']])
+        for i in mods:
+            if(i[1]==cnfg['optimizer_loc'] and i[2]==cnfg['train_batch_size'] and i[3]==cnfg['valid_batch_size']):
+                print('same combination is already used in ',i[0])
+                return None
+        else:
+            return True
+    elif(mode=='all'):
+        a1 = verify(cnfg,mode='name')
+        a2 = verify(cnfg,mode='mod_ds')
+        a3 = verify(cnfg,mode='training')
+        if(a1==a2==a3==True):
+            return True            
+def train_new(
+                    name=None,
+                    model_loc=None,
+                    loss_loc=None,
+                    accuracy_loc=None,
+                    optimizer_loc=None,
+                    dataset_loc=None,
+                    train_folder=None,
+                    valid_folder=None,
+                    train_batch_size=None,
+                    valid_batch_size=None,
+                    prepare=None
+                ):
+    dct={
+         'model_loc': model_loc,
+         'DataSet_loc': dataset_loc,
+         'accuracy_loc': accuracy_loc,
+         'loss_loc': loss_loc,
+         'optimizer_loc': optimizer_loc,
+         'piLn_name': name,
+         'valid_batch_size': valid_batch_size,
+         'train_batch_size': train_batch_size,
+        }
+    if(verify(dct,mode='name')):
+        P =PipeLine()
+
+        P.setup(
+            name=name,
+            model_loc=model_loc,
+            loss_loc=loss_loc,
+            accuracy_loc=accuracy_loc,
+            optimizer_loc=optimizer_loc,
+            dataset_loc=dataset_loc,
+            train_folder=train_folder,
+            valid_folder=valid_folder,
+            weights_path='Weights/'+name+'.pth',
+            history_path='Histories/'+name+'.csv',
+            config_path='Configs/'+name+'.json',
+            train_batch_size=train_batch_size,
+            valid_batch_size=valid_batch_size,
+            make_config=True,
+            prepare=prepare
+               )
+        return P
+        
+def re_train(config_path=None,train_folder=None,valid_folder=None,prepare=None,num_epochs=0):
+    P = PipeLine()
+    if(num_epochs>0):
+        P.setup(config_path=config_path, 
+                train_folder=train_folder, 
+                valid_folder=valid_folder, 
+                use_config=True, prepare=True)
+        P.train(num_epochs=num_epochs)
+    elif(num_epochs==0):
+        P.setup(config_path=config_path, 
+                train_folder=train_folder, 
+                valid_folder=valid_folder, 
+                use_config=True, prepare=prepare)
+    return P
+
+
+
+
+def performance_plot(history=None,df=None):
+    if(df!=None and history==None):
+        pass
+    elif(df==None and history!=None):
+        df = pd.read_csv(history)
+    else:
+        print("It needs one of arguments history and df. df is dtaframe from the csv file and history is path to history.csv")
+        return
+    
+    fig,ax = plt.subplots(1,2)
+    fig.set_size_inches(15,5)
+    df[['train_accuracy','val_accuracy']].plot(ax=ax[0],title="Accuracy trade-off")
+    df[['train_loss','val_loss']].plot(ax=ax[1],title="Loss trade-off")
+    plt.show()
+
+
+
+
