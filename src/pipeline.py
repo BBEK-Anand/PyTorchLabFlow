@@ -250,7 +250,7 @@ def update(config_folder='./Configs'):
         with open(os.path.join(config_folder,i)) as fl:
             cnf0 = json.load(fl)
             plns.append([cnf0['piLn_name'],cnf0['last']['epoch'],cnf0['best']['val_accuracy']])
-    with open("./config.json") as fl:
+    with open("./internal/config.json") as fl:
         cnf = json.load(fl)
         for i in plns:
             if(i[0] in cnf.keys()):
@@ -268,13 +268,13 @@ def update(config_folder='./Configs'):
                             "best_val_accuracy":i[2]
                         }
                 print(f"new Pipeline initialized : {i[0]} with last_epoch:{i[1]} and best_val_accuracy:{i[2]}")
-    with open("./config.json","w") as fl:
+    with open("internal/config.json","w") as fl:
             json.dump(cnf, fl, indent=4)
 
 
 def get_pplns(mode='name'): #mode = name|epoch|all
     update()
-    with open("./config.json") as fl:
+    with open("internal/config.json") as fl:
         cnf = json.load(fl)
         if(mode=='name'):
             return list(cnf.keys())
@@ -283,10 +283,10 @@ def get_pplns(mode='name'): #mode = name|epoch|all
             return ls
         elif(mode=='all'):
             return cnf
-def verify(cnfg,mode='name',config_folder='./Configs'):   # mode = name|mod_ds|training
+def verify(cnfg,mode='name',config_folder='internal/Configs'):   # mode = name|mod_ds|training
     if(mode=='name'):
         update(config_folder=config_folder)
-        with open("./config.json") as fl:
+        with open("internal/config.json") as fl:
             cnf0 = json.load(fl)
             if(cnfg['piLn_name'] in cnf0.keys()):
                 print(cnfg['piLn_name'],"is already exists. ","*last pipeLine is",list(cnf0.keys())[-1])
@@ -360,9 +360,9 @@ def train_new(
             dataset_loc=dataset_loc,
             train_folder=train_folder,
             valid_folder=valid_folder,
-            weights_path='Weights/'+name+'.pth',
-            history_path='Histories/'+name+'.csv',
-            config_path='Configs/'+name+'.json',
+            weights_path='internal/Weights/'+name+'.pth',
+            history_path='internal/Histories/'+name+'.csv',
+            config_path='internal/Configs/'+name+'.json',
             train_batch_size=train_batch_size,
             valid_batch_size=valid_batch_size,
             make_config=True,
