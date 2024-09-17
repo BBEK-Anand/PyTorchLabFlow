@@ -6,13 +6,13 @@ setup(
     packages=find_packages(),
     install_requires=[
         'torch',
-        'librosa',
+        'matplotlib',
         'pandas',
         'tqdm'
     ],
     author='BBEK-Anand',
     author_email='',
-    description='A pipeline for managing PyTorch models, datasets, optimizers, and more.',
+    description='A lightweight module to manage all components during experiments on a AI project',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/BBEK-Anand/PyTorchLabFlow',
@@ -22,5 +22,5 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
     ],
-    python_requires='>=3.11',
+    python_requires='>=3.7',
 )
