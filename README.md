@@ -5,20 +5,21 @@ This repository provides a structured framework for organizing machine learning 
 # Table of Contents
 - [Installation](#installation)
 - [Directory Structure](#directory-structure)
-- [Usage](#usage)
-  - [Setting Up the Pipeline](#setting-up-the-pipeline)
-  - [Preparing Data](#preparing-data)
-  - [Training the Model](#training-the-model)
-  - [Saving and Loading Configurations](#saving-and-loading-configurations)
-- [Methods](#methods)
-  - [load_component](#load_component)
-  - [load_optimizer](#load_optimizer)
-  - [save_config](#save_config)
-  - [setup](#setup)
-  - [prepare_data](#prepare_data)
-  - [update](#update)
-  - [train](#train)
-  - [validate](#validate)
+- [Workflow](#workflow)
+  - [Usage](#usage)
+    - [Setting Up the Pipeline](#setting-up-the-pipeline)
+    - [Preparing Data](#preparing-data)
+    - [Training the Model](#training-the-model)
+    - [Saving and Loading Configurations](#saving-and-loading-configurations)
+  - [Methods](#methods)
+    - [load_component](#load_component)
+    - [load_optimizer](#load_optimizer)
+    - [save_config](#save_config)
+    - [setup](#setup)
+    - [prepare_data](#prepare_data)
+    - [update](#update)
+    - [train](#train)
+    - [validate](#validate)
 - [Contributing](#contributing)
 - [License](#license)
 # installation
@@ -39,24 +40,24 @@ Your_directory
   │   ├── models.py
   │   └── optimizers.py
   ├── internal
-  │   ├── History
+  │   ├── Histories
   │   ├── Configs
   │   ├── Weights
   │   ├── Archived
   │   ├── config.json
   │   ├── Default_Config.json
   │   ├──Archived
-  │   │   ├── History
+  │   │   ├── Histories
   │   │   ├── Configs
   │   │   ├── Weights
   │   │   └── config.json
   │   └──Transfer
-  │       ├── History
+  │       ├── Histories
   │       ├── Configs
   │       ├── Weights
   │       └── config.json
-  ├── Training.ipynb
-  └── Modeling.ipynb
+  ├── Modeling.ipynb
+  └── Training.ipynb
 ```
 
 - `Libs`: Contains the Python scripts for models, datasets, losses, optimizers, and accuracy metrics.
