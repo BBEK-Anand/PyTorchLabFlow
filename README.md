@@ -6,6 +6,15 @@ This repository provides a structured framework for organizing machine learning 
 - [Installation](#installation)
 - [Directory Structure](#directory-structure)
 - [Workflow](#workflow)
+  - [Setup Project](#step-1-setup-project)
+  - [Organize Components](#step-2-organize-components)
+  - [Configure Defaults](#step-3-configure-defaults)
+  - [Model Creation](#step-4-model-creation)
+  - [Training](#step-5-training)
+  - [Evaluate Performance](#step-6-evaluate-performance)
+  - [Other Features](#step-7-other-features)
+- []
+- [PipeLine](#pipeline)
   - [Usage](#usage)
     - [Setting Up the Pipeline](#setting-up-the-pipeline)
     - [Preparing Data](#preparing-data)
@@ -67,6 +76,8 @@ Your_directory
 - `config.json`: A sample configuration file.
 - `README.md`: This README file.
 
+---
+
 # Workflow
 
 ## Step 1: Setup Project
@@ -102,9 +113,9 @@ Set up default configurations by calling the `set_default_config()` function:
 from PyTorchLabFlow import set_default_config
 
 set_default_config({
-    "accuracy_loc": "Libs/accuracies.testAccuracy",
-    "loss_loc": "Libs/losses.testLoss",
-    "optimizer_loc": "Libs/optimizers.testLoss",
+    "accuracy_loc": "Libs.accuracies.testAccuracy",
+    "loss_loc": "Libs.losses.testLoss",
+    "optimizer_loc": "Libs.optimizers.testLoss",
     "train_data_src": "DataSets/train",
     "valid_data_src": "DataSets/valid",
     "train_batch_size": 32,
@@ -228,13 +239,13 @@ performance_plot(ppl="exp01")
 ```
 
 This will plot the accuracy and loss over the training epochs.
-## Step 6: Other Features
+## Step 7: Other Features
 If you want to remove experiment/s then use `archive` function. For unarchiving follow the documentation.
 
 If you want to delete (archive does not delete a pipeline) then use `delete` function after archiving the pipeline.
     
 If you want to transfer experimment/s to a different system, use `transfer` function. 
-
+---
 # setup_project
 Create the directory structure for a new machine learning project.
 
