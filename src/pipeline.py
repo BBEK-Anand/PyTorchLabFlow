@@ -848,7 +848,29 @@ def re_train(ppl=None,config_path=None,train_data_src=None,valid_data_src=None,p
 def test_mods(dataset=None,model=None,model_loc=None, accuracy_loc=None, loss_loc=None, optimizer_loc=None, dataset_loc=None,
               train_data_src=None, train_batch_size=None, valid_data_src=None, valid_batch_size=None,
               prepare=False):
-    
+    """
+    Configures and initializes a testing pipeline for evaluating a machine learning model.
+
+    This function sets up a testing pipeline by configuring the model, dataset, and various paths for saving metrics, 
+    optimizer state, and model weights. It uses default configuration values if some parameters are not provided.
+
+    Parameters:
+    - dataset (Type[Dataset], optional): The dataset class to be used for testing. Must be a subclass of `Dataset`.
+    - model (Type[nn.Module], optional): The model to be tested. Must be a subclass of `nn.Module`.
+    - model_loc (str, optional): The location of the model within the `Libs.models` module. If not fully qualified, it will be prefixed with 'Libs.models.'.
+    - accuracy_loc (str, optional): The location for saving accuracy metrics within the `Libs.accuracies` module. If not provided, uses default from configuration file.
+    - loss_loc (str, optional): The location for saving loss metrics within the `Libs.losses` module. If not provided, uses default from configuration file.
+    - optimizer_loc (str, optional): The location for saving optimizer state within the `Libs.optimizers` module. If not provided, uses default from configuration file.
+    - dataset_loc (str, optional): The location of the dataset class within the `Libs.datasets` module. If not fully qualified, it will be prefixed with 'Libs.datasets.'.
+    - train_data_src (str, optional): Source of training data. If not provided, uses default from configuration file.
+    - train_batch_size (int, optional): Batch size for training data. If not provided, uses default from configuration file.
+    - valid_data_src (str, optional): Source of validation data. If not provided, uses default from configuration file.
+    - valid_batch_size (int, optional): Batch size for validation data. If not provided, uses default from configuration file.
+    - prepare (bool, optional): Whether to prepare the pipeline or not. Default is False.
+
+    Returns:
+    - PipeLine: An instance of the `PipeLine` class configured for testing with the provided or default parameters.
+    """
     if(model_loc!=None and len(model_loc.split('.'))==1):
         model_loc = 'Libs.models.'+model_loc
     if(dataset_loc!=None and len(dataset_loc.split('.'))==1):
