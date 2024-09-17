@@ -8,7 +8,7 @@ This repository provides a structured framework for organizing machine learning 
 - [Workflow](#workflow)
 - [Functions](#functions)
 - [PipeLine](#pipeline)
-  
+- [Credits](#credits)
 - [Contributing](#contributing)
 - [License](#license)
 # installation
@@ -237,7 +237,9 @@ If you want to transfer experimment/s to a different system, use `transfer` func
 
 ---
 
-<h1 style="font-size: 60px;" id="functions">Functions</h1>
+<h1 style="font-size: 100px;" id="functions">Functions</h1>
+Following functions are 
+
   - [setup_project](#setup_project)
   - [get_ppls](#get_ppls)
   - [verify](#verify)
@@ -1178,6 +1180,14 @@ By following this structure, you can keep your project organized and make it eas
 
 ***
 
+# Credits
+- **Author:** [BBEK-Anand](https://github.com/bbek-anand) - For developing this library.
+- **Special Thanks To:** [Soumya](https://github.com/S-aumya) - For Documenting this librery.
+- **Libraries Used:**
+  - [PyTorch](https://pytorch.org) - For Model creation.
+  - [pandas](https://pandas.pydata.org/) - For saving model history and retriving.
+  - [tqdm](https://github.com/tqdm) - For progress bar during traing.
+  - [matplotlib](https://matplotlib.org/) - For plotting.
 
 # Contributing
 Feel free to fork this project, open issues, or create pull requests. Contributions are always welcome!
