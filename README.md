@@ -35,6 +35,9 @@ This repository provides a structured framework for organizing machine learning 
 ```python
 pip install PyTorchLabFlow
 ```
+
+---
+
 # Directory Structure
 
 PyTorchLabFlow works on the following directory sructure, this will be created by using `setup_project`.
@@ -245,7 +248,9 @@ If you want to delete (archive does not delete a pipeline) then use `delete` fun
     
 If you want to transfer experimment/s to a different system, use `transfer` function. 
 
-----
+---
+---
+
 # setup_project
 Create the directory structure for a new machine learning project.
 
@@ -262,12 +267,12 @@ Create the directory structure for a new machine learning project.
         If set to False, the project will be created in the current directory without creating 
         a root folder. Defaults to True.
 ## Returns
-    -------
+    
     None
         The function prints the status of the setup process.
 
     Notes
-    -----
+    
     - This function will create template Python files under the 'Libs' directory for models, datasets, 
       accuracies, losses, and optimizers.
     - It will also generate configuration JSON files in the 'internal' directory.
@@ -295,7 +300,7 @@ Retrieves pipeline information based on the specified mode and configuration.
             - 'transfer': For the experiments which are for/from Transfer to other machine, Uses the configuration file located at "internal/Transfer/config.json".
 
 ## Returns
-    -------
+    
     list or dict
         Depending on the `mode`, the return type will vary:
             - If `mode` is 'name', a list of experiment names is returned.
@@ -303,7 +308,7 @@ Retrieves pipeline information based on the specified mode and configuration.
             - If `mode` is 'all', a dictionary with detailed experiment information is returned.
 
 ## Raises
-    ------
+    
     FileNotFoundError
         If the configuration file specified by the `config` parameter does not exist.
     JSONDecodeError
@@ -344,7 +349,7 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
         If True, logs information about existing pipelines or combinations that match the query. Defaults to True.
 
 ## Returns
-    -------
+    
     bool, list, or str
         - If `mode` is 'name', returns the pipeline name if it exists, otherwise False.
         - If `mode` is 'mod_ds', returns a list of names where the model-dataset combination matches, or False if no matches are found.
@@ -352,7 +357,7 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
         - If `mode` is 'all', returns a list of commonalities between all specified modes or a message indicating common pipelines across all modes.
 
 ## Raises
-    ------
+  
     FileNotFoundError
         If the specified configuration or experiment files are not found.
     JSONDecodeError
@@ -375,12 +380,12 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
             - 'transfer': Updates the `internal/Transfer/config.json` file with data from the `internal/Transfer/Configs/` folder.
 
 ### Returns
-    -------
+    
     None
         This function does not return any value. It updates the specified configuration file directly.
 
 ### Raises
-    ------
+    
     FileNotFoundError
         If the specified configuration or experiment files are not found.
     JSONDecodeError
@@ -402,12 +407,12 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
         'valid_batch_size'.
 
 ## Returns
-    -------
+
     None
         The function writes the configuration to a JSON file.
 
 ## Examples
-    --------
+   
     ```python
     set_default_config({
             "accuracy_loc": "Libs.accuracies.BinAcc",
@@ -443,7 +448,7 @@ Configures and initializes a testing pipeline for evaluating a machine learning 
     - prepare (bool, optional): Whether to prepare the pipeline or not. Default is False.
 
 ## Returns:
-    - PipeLine: An instance of the `PipeLine` class configured for testing with the provided or default parameters.
+    - [PipeLine](#pipeline): An instance of the `PipeLine` class configured for testing with the provided or default parameters.
     
 
 # train_new
@@ -489,12 +494,12 @@ Initializes and sets up a new pipeline for training a machine learning model.
         A function or callable to prepare the pipeline. This function is called during the setup of the pipeline.
 
 ## Returns
-    -------
-    PipeLine
+
+    [PipeLine](#pipeline)
         An instance of the `PipeLine` class configured with the specified parameters, or `None` if the pipeline name is already in use.
 
 ## Notes
-    -----
+
     - If the `name` provided is already used by an existing pipeline, a new pipeline will not be created.
     - Default values are fetched from the "internal/Default_Config.json" configuration file.
     - Paths for weights, history, and configuration files are constructed based on the provided `name`.
@@ -503,27 +508,26 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
     Re-trains an existing pipeline or initializes a new pipeline with the provided configuration.
 
-    This function sets up and optionally trains a `PipeLine` instance based on the specified configuration or pipeline name. 
-    If a pipeline name (`ppl`) is provided, it constructs the configuration path from the pipeline name. If `num_epochs` is 
-    specified and greater than zero, it performs training for the given number of epochs.
+    - This function sets up and optionally trains a `PipeLine` instance based on the specified configuration or pipeline name. 
+    - If a pipeline name (`ppl`) is provided, it constructs the configuration path from the pipeline name. 
+    - If `num_epochs` is specified and greater than zero, it performs training for the given number of epochs.
 
 ## Parameters
   
 ### ppl : str, optional
-        The name of the pipeline for which to re-train or initialize. If provided, the function constructs the configuration 
-        path as "internal/Configs/{ppl}.json". If `ppl` is `None`, the `config_path` must be specified.
+        - The name of the pipeline for which to re-train or initialize. If provided, the function constructs the configuration path as "internal/Configs/{ppl}.json". 
+        - If `ppl` is `None`, the `config_path` must be specified.
     
 ### config_path : str, optional
-        The path to the configuration file. This parameter is ignored if `ppl` is provided, as the configuration path will 
-        be constructed from the `ppl` name.
+        - The path to the configuration file. This parameter is ignored if `ppl` is provided, as the configuration path will be constructed from the `ppl` name.
     
 ### train_data_src : str, optional
-        The source path for training data. This is used only if `num_epochs` is greater than zero and a new training session 
+        - The source path for training data. This is used only if `num_epochs` is greater than zero and a new training session 
         is to be started.
     
 ### valid_data_src : str, optional
-        The source path for validation data. This is used only if `num_epochs` is greater than zero and a new training session 
-        is to be started.
+        - The source path for validation data. 
+        - This is used only if `num_epochs` is greater than zero and a new training session is to be started.
     
 ### prepare : callable, optional
         A function or callable to prepare the pipeline. This function is called during the setup of the pipeline if `num_epochs` 
@@ -535,7 +539,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
 ## Returns
     
-    PipeLine
+    [PipeLine](#pipeline)
         An instance of the `PipeLine` class, set up and optionally trained according to the provided parameters.
 
 ## Notes
@@ -565,7 +569,8 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - prepare (bool, optional): Whether to prepare the pipeline before running. Default is None.
 
 ## Returns:
-    - PipeLine: An instance of the `PipeLine` class, either initialized with the provided or default configuration 
+### [PipeLine](#pipeline): 
+    - An instance of the `PipeLine` class, either initialized with the provided or default configuration 
                 and pre-trained weights, or trained from scratch if no pre-trained pipeline is found.
 
 ## Notes:
@@ -581,25 +586,22 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
     Plots performance metrics (accuracy and loss) over epochs for one or more pipelines.
 
-    This function generates plots for training and validation accuracy, as well as training and validation loss,
-    using data from a CSV file or a DataFrame. It can handle single or multiple pipelines, and plots the performance 
-    metrics for each specified pipeline.
+    - This function generates plots for training and validation accuracy, as well as training and validation loss, using data from a CSV file or a DataFrame. 
+    - It can handle single or multiple pipelines, and plots the performance metrics for each specified pipeline.
 
 ## Parameters
     
 ### ppl : str, list, optional
-        The name(s) of the pipeline(s) for which to plot performance metrics. If `None`, it fetches all pipeline names 
-        using `get_ppls`. If `ppl` is a list, it plots performance metrics for each pipeline in the list. If `ppl` is a 
-        string, it is treated as a single pipeline name.
+        - The name(s) of the pipeline(s) for which to plot performance metrics. 
+        - If `None`, it fetches all pipeline names using `get_ppls`. If `ppl` is a list, it plots performance metrics for each pipeline in the list. If `ppl` is a string, it is treated as a single pipeline name.
 
 ### history : str, optional
-        The path to the CSV file containing performance metrics (e.g., accuracy and loss) over epochs. If `None`, it 
-        defaults to the file located in `internal/Histories/` directory with the name corresponding to the pipeline 
-        name.
+        - The path to the CSV file containing performance metrics (e.g., accuracy and loss) over epochs. 
+        - If `None`, it defaults to the file located in `internal/Histories/` directory with the name corresponding to the pipeline name.
 
 ### df : pandas.DataFrame, optional
-        A DataFrame containing performance metrics (e.g., accuracy and loss) over epochs. If `df` is provided, it is used 
-        directly for plotting. If `None`, it will attempt to read the DataFrame from the CSV file specified in `history`.
+        - A DataFrame containing performance metrics (e.g., accuracy and loss) over epochs. 
+        - If `df` is provided, it is used directly for plotting. If `None`, it will attempt to read the DataFrame from the CSV file specified in `history`.
 
 ### config : str, optional
         The configuration type to use when retrieving the pipeline. Options are:
@@ -608,24 +610,21 @@ Initializes and sets up a new pipeline for training a machine learning model.
         - `transfer`: Uses configurations from the `internal/Transfer/` directory.
 
 ## Returns
-    -------
+    
     None
-        Displays the performance plots using Matplotlib. If there is an error or if the DataFrame is empty, it returns an 
-        error message as a string.
+        - Displays the performance plots using Matplotlib. If there is an error or if the DataFrame is empty, it returns an error message as a string.
 
 ## Notes
-    -----
+
     - The function updates the configuration before attempting to load the performance history.
     - If both `history` and `df` are `None`, an error message is printed.
     - If the DataFrame is empty, an appropriate message is printed.
     
 # multi_train
 
-    Train or re-train multiple pipelines up to the specified number of epochs.
-
-    This function checks the number of epochs each pipeline has already been trained for, and continues training
-    until the specified `last_epoch` is reached. The training configuration for each pipeline is read from 
-    a corresponding JSON file.
+    - Train or re-train multiple pipelines up to the specified number of epochs.
+    - This function checks the number of epochs each pipeline has already been trained for, and continues training until the specified `last_epoch` is reached. 
+    - The training configuration for each pipeline is read from a corresponding JSON file.
 
 ## Parameters
     
@@ -637,7 +636,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
 ## Returns
     
     None
-        The function prints training progress and status messages.
+        - The function prints training progress and status messages.
 
 ## Notes
   
@@ -647,30 +646,29 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
 # get_model
 
-    Retrieves the model class or its name for a given pipeline or a list of pipelines.
-
-    This function fetches the model class or its name based on the specified pipeline(s). It can handle single pipeline names, 
-    lists of pipeline names, or return a list of models corresponding to those pipelines.
+    - Retrieves the model class or its name for a given pipeline or a list of pipelines.
+    - This function fetches the model class or its name based on the specified pipeline(s). 
+    - It can handle single pipeline names, lists of pipeline names, or return a list of models corresponding to those pipelines.
 
 ## Parameters
     
 ### ppl : str, list, optional
-        The name(s) of the pipeline(s) for which to retrieve the model. If `ppl` is `None`, it fetches all pipeline names 
-        using `get_ppls`. If `ppl` is a list, it returns a list of models for each pipeline in the list. If `ppl` is a string, 
-        it is treated as a single pipeline name.
+        - The name(s) of the pipeline(s) for which to retrieve the model. 
+        - If `ppl` is `None`, it fetches all pipeline names using `get_ppls`. 
+        - If `ppl` is a list, it returns a list of models for each pipeline in the list. 
+        - If `ppl` is a string, it is treated as a single pipeline name.
     
 ### name : bool, optional
-        If `True`, returns the name of the model class as a string. If `False`, returns an instance of the model class. 
-        The default is `True`.
+        - If `True`, returns the name of the model class as a string. If `False`, returns an instance of the model class. 
+        - The default is `True`.
     
 ### config : str, optional
-        The configuration type to use when retrieving the pipeline. Options are:
+      The configuration type to use when retrieving the pipeline. Options are:
         - `internal` [default]: Uses configurations from the `internal/` directory.
         - `archive`: Uses configurations from the `internal/Archived/` directory.
         - `transfer`: Uses configurations from the `internal/Transfer/` directory.
 
 ## Returns
-    
     str, object, list of str, list of objects
         - If `ppl` is a single string, returns either the model name (if `name=True`) or an instance of the model (if `name=False`).
         - If `ppl` is a list of strings, returns a list of model names or instances for each pipeline in the list.
@@ -684,23 +682,22 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
 # archive
 
-    Archive or restore a project pipeline's files.
-
-    This function moves the project's configuration, weights, and history files to or from the 'internal/Archived' 
-    directory based on the provided pipeline name(s). Archiving moves files to the archive, while restoring 
-    moves them back.
+    - Archive or restore a project pipeline's files.
+    - This function moves the project's configuration, weights, and history files to or from the 'internal/Archived' directory based on the provided pipeline name(s). 
+    - Archiving moves files to the archive, while restoring moves them back.
 
 ## Parameters
     
 ### ppl : str or list of str
-        The name(s) of the project pipeline to archive or restore.
-    reverse : bool, optional
-        If True, restores the project from the archive to the active directory. Defaults to False.
+        - The name(s) of the project pipeline to archive or restore.
+### reverse : bool, optional
+        - If True, restores the project from the archive to the active directory. 
+        - Defaults to False.
 
 ## Returns
     
     None
-        The function prints the status of the archiving process.
+        - The function prints the status of the archiving process.
 
 ## Notes
     
@@ -709,21 +706,20 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
 # delete
  
-    Delete project files from the archive.
+    - Delete project files from the archive.
 
-    This function deletes project files (configuration, weights, and history) from the 
-    archive directory. It operates on files specified by the `ppl` parameter.
+    - This function deletes project files (configuration, weights, and history) from the archive directory. 
+    - It operates on files specified by the `ppl` parameter.
 
 ## Parameters
    
 ### ppl : str or list of str
-        The name(s) of the project to delete. If a string, it represents a single project; 
-        if a list, it represents multiple projects.
+        - The name(s) of the project to delete. If a string, it represents a single project; if a list, it represents multiple projects.
 
 ## Returns
     
     None
-        The function performs file operations but does not return any value.
+        - The function performs file operations but does not return any value.
 
 ## Notes
     
@@ -731,11 +727,10 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - If the project is not found in the archive, a message will be printed.
 
 # setup_trasfer
-    Setup the directory structure for transferring pipelines.
+    - Setup the directory structure for transferring pipelines.
 
-    This function creates the necessary directories and configuration files for transferring pipelines
-    between environments. It creates a 'Transfer' folder inside 'internal', with subdirectories for 
-    storing histories, weights, and configurations.
+    - This function creates the necessary directories and configuration files for transferring pipelines between environments. 
+    - It creates a 'Transfer' folder inside 'internal', with subdirectories for storing histories, weights, and configurations.
 
 ## Returns
     
@@ -743,33 +738,30 @@ Initializes and sets up a new pipeline for training a machine learning model.
         The function prints a message indicating whether the setup was completed or already exists.
     
 # transfer
-
-    Transfer pipeline files between active and transfer directories.
-
-    This function transfers pipeline files (configurations, weights, and histories) either 
-    from the active directory to the transfer directory or vice versa. The transfer can be 
-    done using either copy or move operations.
+    - Transfer pipeline files between active and transfer directories.
+    - This function transfers pipeline files (configurations, weights, and histories) either from the active directory to the transfer directory or vice versa. The transfer can be done using either copy or move operations.
 
 ## Parameters
     
 ### ppl : str or list of str
         The name(s) of the project pipeline to transfer.
 ### type : str, optional
-        The type of transfer, either 'export' to transfer to the transfer directory or 'import' 
-        to transfer back to the active directory. Defaults to 'export'.
+        - The type of transfer, either 'export' to transfer to the transfer directory or 'import' to transfer back to the active directory. Defaults to 'export'.
 ### mode : str, optional
-        The method of transfer: 'copy' to duplicate files, or 'move' to transfer them. 
-        Defaults to 'copy'.
+        - The method of transfer: 'copy' to duplicate files, or 'move' to transfer them. 
+        - Defaults to 'copy'.
 
 ## Returns
-    
     None
         The function prints the status of the transfer process.
 
 ## Notes
-    
     - If `mode` is 'move', the files are deleted from the source after being transferred.
- 
+
+***
+***
+
+
 # PipeLine
 This is the core class of the library, responsible for managing the entire lifecycle of a deep learning model pipeline: from setup, training, and validation, to saving and restoring model configurations and weights. But it is still lengthy, so we have `train_new` class to initiate a new pipeline and `re_train` to re train a pipeline.
 ## Setting Up the Pipeline
@@ -1175,7 +1167,7 @@ To effectively use the `PipeLine` class, users are encouraged to customize the `
 
 By following this structure, you can keep your project organized and make it easier to manage different models and datasets.
 
-
+***
 
 
 # Contributing
