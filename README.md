@@ -244,7 +244,8 @@ If you want to remove experiment/s then use `archive` function. For unarchiving 
 If you want to delete (archive does not delete a pipeline) then use `delete` function after archiving the pipeline.
     
 If you want to transfer experimment/s to a different system, use `transfer` function. 
----
+
+----
 # setup_project
 Create the directory structure for a new machine learning project.
 
