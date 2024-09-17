@@ -261,11 +261,10 @@ Create the directory structure for a new machine learning project.
 
 ## Parameters
     
-    project_name : str, optional
+### project_name : str, optional
         The name of the project directory to create. Defaults to 'MyProject'.
-    create_root : bool, optional
-        If set to False, the project will be created in the current directory without creating 
-        a root folder. Defaults to True.
+### create_root : bool, optional
+        If set to False, the project will be created in the current directory without creating a root folder. Defaults to True.
 ## Returns
     
     None
@@ -273,8 +272,7 @@ Create the directory structure for a new machine learning project.
 
     Notes
     
-    - This function will create template Python files under the 'Libs' directory for models, datasets, 
-      accuracies, losses, and optimizers.
+    - This function will create template Python files under the 'Libs' directory for models, datasets, accuracies, losses, and optimizers.
     - It will also generate configuration JSON files in the 'internal' directory.
 
 # get_ppls
@@ -364,10 +362,8 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
 # up2date
     Updates the root configuration file with the latest information from individual experiment JSON files.
 
-    This function reads experiment data from JSON files in the `Configs` directory based on the specified `config`
-    parameter and updates the corresponding root configuration file (`config.json`) with the latest epoch and 
-    validation accuracy for each experiment. If an experiment is new or has updated information, it reflects 
-    those changes in the root configuration file.
+    - This function reads experiment data from JSON files in the `Configs` directory based on the specified `config`parameter and updates the corresponding root configuration file (`config.json`) with the latest epoch and validation accuracy for each experiment. 
+    - If an experiment is new or has updated information, it reflects those changes in the root configuration file.
 
 ## Parameters
     
@@ -385,24 +381,21 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
 ### Raises
     
     FileNotFoundError
-        If the specified configuration or experiment files are not found.
+        - If the specified configuration or experiment files are not found.
     JSONDecodeError
-        If there is an error decoding the JSON files.
+        - If there is an error decoding the JSON files.
 
 # set_default_config      
 
     Set the default configuration for the project.
 
-    This function saves the provided configuration data to 'internal/Default_Config.json'. The
-    configuration includes paths to accuracy, loss, optimizer, dataset, and batch sizes for training 
-    and validation.
+    - This function saves the provided configuration data to 'internal/Default_Config.json'. 
+    - The configuration includes paths to accuracy, loss, optimizer, dataset, and batch sizes for training and validation.
 
 ## Parameters
     
 ### data : dict
-        A dictionary containing the configuration settings. Keys should include 'accuracy_loc', 
-        'loss_loc', 'optimizer_loc', 'train_data_src', 'valid_data_src', 'train_batch_size', and 
-        'valid_batch_size'.
+        A dictionary containing the configuration settings. Keys should include 'accuracy_loc', 'loss_loc', 'optimizer_loc', 'train_data_src', 'valid_data_src', 'train_batch_size', and 'valid_batch_size'.
 
 ## Returns
 
@@ -452,9 +445,9 @@ Configures and initializes a testing pipeline for evaluating a machine learning 
 # train_new
 Initializes and sets up a new pipeline for training a machine learning model.
 
-    This function configures a new training pipeline by specifying the model, dataset, loss function, accuracy metric, optimizer,
-    and various training parameters. It uses default values from a configuration file(saved using save_default_config) if certain parameters are not provided. 
-    The function verifies the uniqueness of the pipeline name and initializes a `PipeLine` instance if the name is not already in use.
+    - This function configures a new training pipeline by specifying the model, dataset, loss function, accuracy metric, optimizer, and various training parameters. 
+    - It uses default values from a configuration file(saved using save_default_config) if certain parameters are not provided. 
+    - The function verifies the uniqueness of the pipeline name and initializes a `PipeLine` instance if the name is not already in use.
 
 ## Parameters
     
@@ -537,7 +530,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
 ## Returns
     
-    [PipeLine](#pipeline)
+    PipeLine
         An instance of the `PipeLine` class, set up and optionally trained according to the provided parameters.
 
 ## Notes
@@ -705,7 +698,6 @@ Initializes and sets up a new pipeline for training a machine learning model.
 # delete
  
     - Delete project files from the archive.
-
     - This function deletes project files (configuration, weights, and history) from the archive directory. 
     - It operates on files specified by the `ppl` parameter.
 
@@ -733,7 +725,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
 ## Returns
     
     None
-        The function prints a message indicating whether the setup was completed or already exists.
+        - The function prints a message indicating whether the setup was completed or already exists.
     
 # transfer
     - Transfer pipeline files between active and transfer directories.
@@ -751,12 +743,15 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
 ## Returns
     None
-        The function prints the status of the transfer process.
+        - The function prints the status of the transfer process.
 
 ## Notes
     - If `mode` is 'move', the files are deleted from the source after being transferred.
 
 ***
+
+***The API , backbone***
+
 ***
 
 
