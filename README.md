@@ -25,6 +25,47 @@ This repository provides a structured framework for organizing machine learning 
 ```python
 pip install PyTorchLabFlow
 ```
+# Directory Structure
+
+PyTorchLabFlow works on the following directory sructure, this will be created by using `setup_project`.
+
+```
+Your_directory
+  ├── Libs
+  │   ├── __init__.py
+  │   ├── accuracies.py
+  │   ├── datasets.py
+  │   ├── losses.py
+  │   ├── models.py
+  │   └── optimizers.py
+  ├── internal
+  │   ├── History
+  │   ├── Configs
+  │   ├── Weights
+  │   ├── Archived
+  │   ├── config.json
+  │   ├── Default_Config.json
+  │   ├──Archived
+  │   │   ├── History
+  │   │   ├── Configs
+  │   │   ├── Weights
+  │   │   └── config.json
+  │   └──Transfer
+  │       ├── History
+  │       ├── Configs
+  │       ├── Weights
+  │       └── config.json
+  ├── Training.ipynb
+  └── Modeling.ipynb
+```
+
+- `Libs`: Contains the Python scripts for models, datasets, losses, optimizers, and accuracy metrics.
+- `History`: Contains CSV files with training history for different pipelines.
+- `Configs`: Contains JSON configuration files for different pipelines.
+- `Weights`: Contains model weights for different pipelines.
+- `config.json`: A sample configuration file.
+- `README.md`: This README file.
+
 # Workflow
 
 ## Step 1: Setup Project
