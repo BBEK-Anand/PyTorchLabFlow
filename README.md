@@ -21,7 +21,10 @@ This repository provides a structured framework for organizing machine learning 
   - [validate](#validate)
 - [Contributing](#contributing)
 - [License](#license)
-
+# installation
+```python
+pip install PyTorchLabFlow
+```
 # Workflow
 
 ## Step 1: Setup Project
