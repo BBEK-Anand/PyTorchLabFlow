@@ -569,8 +569,8 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - prepare (bool, optional): Whether to prepare the pipeline before running. Default is None.
 
 ## Returns:
-### PipeLine: 
-    - An instance of the `PipeLine` class, either initialized with the provided or default configuration 
+    PipeLine: 
+      - An instance of the `PipeLine` class, either initialized with the provided or default configuration 
                 and pre-trained weights, or trained from scratch if no pre-trained pipeline is found.
 
 ## Notes:
