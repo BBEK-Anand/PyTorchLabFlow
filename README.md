@@ -6,29 +6,9 @@ This repository provides a structured framework for organizing machine learning 
 - [Installation](#installation)
 - [Directory Structure](#directory-structure)
 - [Workflow](#workflow)
-  - [Setup Project](#step-1-setup-project)
-  - [Organize Components](#step-2-organize-components)
-  - [Configure Defaults](#step-3-configure-defaults)
-  - [Model Creation](#step-4-model-creation)
-  - [Training](#step-5-training)
-  - [Evaluate Performance](#step-6-evaluate-performance)
-  - [Other Features](#step-7-other-features)
-- []
+- [Functions](#functions)
 - [PipeLine](#pipeline)
-  - [Usage](#usage)
-    - [Setting Up the Pipeline](#setting-up-the-pipeline)
-    - [Preparing Data](#preparing-data)
-    - [Training the Model](#training-the-model)
-    - [Saving and Loading Configurations](#saving-and-loading-configurations)
-  - [Methods](#methods)
-    - [load_component](#load_component)
-    - [load_optimizer](#load_optimizer)
-    - [save_config](#save_config)
-    - [setup](#setup)
-    - [prepare_data](#prepare_data)
-    - [update](#update)
-    - [train](#train)
-    - [validate](#validate)
+  
 - [Contributing](#contributing)
 - [License](#license)
 # installation
@@ -81,6 +61,13 @@ Your_directory
 
 
 # Workflow
+  - [Setup Project](#step-1-setup-project)
+  - [Organize Components](#step-2-organize-components)
+  - [Configure Defaults](#step-3-configure-defaults)
+  - [Model Creation](#step-4-model-creation)
+  - [Training](#step-5-training)
+  - [Evaluate Performance](#step-6-evaluate-performance)
+  - [Other Features](#step-7-other-features)
 
 ## Step 1: Setup Project
 To set up your project, run the following in a Python script or Jupyter notebook:
@@ -249,6 +236,25 @@ If you want to delete (archive does not delete a pipeline) then use `delete` fun
 If you want to transfer experimment/s to a different system, use `transfer` function. 
 
 ---
+
+<h1 style="font-size: 60px;" id="functions">Functions</h1>
+  - [setup_project](#setup_project)
+  - [get_ppls](#get_ppls)
+  - [verify](#verify)
+  - [up2date](#up2date)
+  - [set_default_config](#set_default_config)
+  - [test_mods](#test_mods)
+  - [train_new](#train_new)
+  - [re_train](#re_train)
+  - [use_ppl](#use_ppl)
+  - [performance_plot](#performance_plot)
+  - [multi_train](#multi_train)
+  - [get_model](#get_model)
+  - [archive](#archive)
+  - [delete](#delete)
+  - [etup_trasfer](#etup_trasfer)
+  - [transfer](#transfer)
+
 ---
 
 # setup_project
@@ -748,15 +754,25 @@ Initializes and sets up a new pipeline for training a machine learning model.
 ## Notes
     - If `mode` is 'move', the files are deleted from the source after being transferred.
 
-***
 
-**The API , backbone**
-
-***
-
-
-# PipeLine
+<h1 style="font-size: 60px;" id="pipeline">PipeLine</h1>
 This is the core class of the library, responsible for managing the entire lifecycle of a deep learning model pipeline: from setup, training, and validation, to saving and restoring model configurations and weights. But it is still lengthy, so we have `train_new` class to initiate a new pipeline and `re_train` to re train a pipeline.
+
+- [Usage](#usage)
+    - [Setting Up the Pipeline](#setting-up-the-pipeline)
+    - [Preparing Data](#preparing-data)
+    - [Training the Model](#training-the-model)
+    - [Saving and Loading Configurations](#saving-and-loading-configurations)
+- [Methods](#methods)
+    - [load_component](#load_component)
+    - [load_optimizer](#load_optimizer)
+    - [save_config](#save_config)
+    - [setup](#setup)
+    - [prepare_data](#prepare_data)
+    - [update](#update)
+    - [train](#train)
+    - [validate](#validate)
+
 ## Setting Up the Pipeline
 
 You can configure the pipeline either programmatically or by using a configuration file. The setup process involves specifying the locations of the model, loss function, optimizer, and dataset.
