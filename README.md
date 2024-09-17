@@ -238,6 +238,7 @@ If you want to transfer experimment/s to a different system, use `transfer` func
 ---
 
 <h1 style="font-size: 100px;" id="functions">Functions</h1>
+
 Following functions are 
 
   - [setup_project](#setup_project)
@@ -551,8 +552,8 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
     Configures and initializes a pipeline for an existing model or creates a new pipeline if necessary.
 
-    This function either sets up a pipeline based on an existing configuration and trained model weights, 
-    or trains a new model if no trained pipeline is available. It also updates and verifies the configuration before use.
+    - This function either sets up a pipeline based on an existing configuration and trained model weights, or trains a new model if no trained pipeline is available. 
+    - It also updates and verifies the configuration before use.
 
 ## Parameters:
     - ppl (str): The name of the existing pipeline configuration to be used.
@@ -568,7 +569,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - prepare (bool, optional): Whether to prepare the pipeline before running. Default is None.
 
 ## Returns:
-### [PipeLine](#pipeline): 
+### PipeLine: 
     - An instance of the `PipeLine` class, either initialized with the provided or default configuration 
                 and pre-trained weights, or trained from scratch if no pre-trained pipeline is found.
 
