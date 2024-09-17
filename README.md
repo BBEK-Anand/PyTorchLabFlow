@@ -750,7 +750,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
 ***
 
-***The API , backbone***
+**The API , backbone**
 
 ***
 
