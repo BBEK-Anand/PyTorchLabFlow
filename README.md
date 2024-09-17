@@ -76,7 +76,6 @@ Your_directory
 - `config.json`: A sample configuration file.
 - `README.md`: This README file.
 
----
 
 # Workflow
 
@@ -255,7 +254,7 @@ Create the directory structure for a new machine learning project.
     generates some basic template files.
 
 ## Parameters
-    ----------
+    
     project_name : str, optional
         The name of the project directory to create. Defaults to 'MyProject'.
     create_root : bool, optional
@@ -281,7 +280,7 @@ Retrieves pipeline information based on the specified mode and configuration.
     which set of pipelines to retrieve.
 
 ## Parameters
-    ----------
+    
 ### mode : str, optional
         Determines the type of information to return. Options include:
             - 'name' (default): Returns a list of experiment names.
@@ -317,7 +316,7 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
     configurations. Additionally, it can log information about the presence of duplicates.
 
 ## Parameters
-    ----------
+  
 ### ppl : str, list, dict
         - If `mode` is 'name', `ppl` should be a string representing the pipeline name.
         - If `mode` is 'mod_ds', `ppl` should be a dictionary containing 'model_loc' and 'DataSet_loc' keys.
@@ -367,7 +366,7 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
     those changes in the root configuration file.
 
 ## Parameters
-    ----------
+    
 ### config : str, optional
         Specifies which configuration files to update. Options include:
             - 'internal' (default): Updates the `internal/config.json` file with data from the `internal/Configs/` folder.
@@ -395,7 +394,7 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
     and validation.
 
 ## Parameters
-    ----------
+    
 ### data : dict
         A dictionary containing the configuration settings. Keys should include 'accuracy_loc', 
         'loss_loc', 'optimizer_loc', 'train_data_src', 'valid_data_src', 'train_batch_size', and 
@@ -454,7 +453,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
     The function verifies the uniqueness of the pipeline name and initializes a `PipeLine` instance if the name is not already in use.
 
 ## Parameters
-    ----------
+    
 ### name : str, optional
         The name of the pipeline. If not provided, the pipeline will not be created.
     
@@ -508,7 +507,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
     specified and greater than zero, it performs training for the given number of epochs.
 
 ## Parameters
-    ----------
+  
 ### ppl : str, optional
         The name of the pipeline for which to re-train or initialize. If provided, the function constructs the configuration 
         path as "internal/Configs/{ppl}.json". If `ppl` is `None`, the `config_path` must be specified.
@@ -534,12 +533,12 @@ Initializes and sets up a new pipeline for training a machine learning model.
         only the pipeline will be set up without training.
 
 ## Returns
-    -------
+    
     PipeLine
         An instance of the `PipeLine` class, set up and optionally trained according to the provided parameters.
 
 ## Notes
-    -----
+    
     - If both `ppl` and `config_path` are provided, `ppl` takes precedence, and `config_path` will be constructed from `ppl`.
     - The function will initialize a new `PipeLine` instance if the `ppl` parameter is provided or if `config_path` is specified.
     - Training is only performed if `num_epochs` is greater than zero.
@@ -586,7 +585,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
     metrics for each specified pipeline.
 
 ## Parameters
-    ----------
+    
 ### ppl : str, list, optional
         The name(s) of the pipeline(s) for which to plot performance metrics. If `None`, it fetches all pipeline names 
         using `get_ppls`. If `ppl` is a list, it plots performance metrics for each pipeline in the list. If `ppl` is a 
@@ -628,19 +627,19 @@ Initializes and sets up a new pipeline for training a machine learning model.
     a corresponding JSON file.
 
 ## Parameters
-    ----------
+    
 ### ppl : list of str, optional
         A list of pipeline names to train. If not provided, all pipelines will be selected.
 ### last_epoch : int, optional
         The maximum number of epochs to train for. Defaults to 10.
 
 ## Returns
-    -------
+    
     None
         The function prints training progress and status messages.
 
 ## Notes
-    -----
+  
     - If the pipeline has already been trained for the specified `last_epoch`, it will be skipped.
     - Each pipeline's configuration is expected to be located at 'internal/Configs/{pipeline_name}.json'.
 
@@ -653,7 +652,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
     lists of pipeline names, or return a list of models corresponding to those pipelines.
 
 ## Parameters
-    ----------
+    
 ### ppl : str, list, optional
         The name(s) of the pipeline(s) for which to retrieve the model. If `ppl` is `None`, it fetches all pipeline names 
         using `get_ppls`. If `ppl` is a list, it returns a list of models for each pipeline in the list. If `ppl` is a string, 
@@ -670,14 +669,14 @@ Initializes and sets up a new pipeline for training a machine learning model.
         - `transfer`: Uses configurations from the `internal/Transfer/` directory.
 
 ## Returns
-    -------
+    
     str, object, list of str, list of objects
         - If `ppl` is a single string, returns either the model name (if `name=True`) or an instance of the model (if `name=False`).
         - If `ppl` is a list of strings, returns a list of model names or instances for each pipeline in the list.
         - If `ppl` is `None`, retrieves all pipeline names and returns them in the specified format.
     
 ## Notes
-    -----
+    
     - The function updates the configuration before attempting to load the model.
     - Model classes are imported dynamically based on the module location specified in the pipeline configuration.
     - The module location should be a valid Python module path, and the model class should be defined in that module.
@@ -691,19 +690,19 @@ Initializes and sets up a new pipeline for training a machine learning model.
     moves them back.
 
 ## Parameters
-    ----------
+    
 ### ppl : str or list of str
         The name(s) of the project pipeline to archive or restore.
     reverse : bool, optional
         If True, restores the project from the archive to the active directory. Defaults to False.
 
 ## Returns
-    -------
+    
     None
         The function prints the status of the archiving process.
 
 ## Notes
-    -----
+    
     - The function checks whether the project is already archived before proceeding.
     - If a list of projects is provided, the function archives or restores each project in the list.
 
@@ -715,18 +714,18 @@ Initializes and sets up a new pipeline for training a machine learning model.
     archive directory. It operates on files specified by the `ppl` parameter.
 
 ## Parameters
-    ----------
+   
 ### ppl : str or list of str
         The name(s) of the project to delete. If a string, it represents a single project; 
         if a list, it represents multiple projects.
 
 ## Returns
-    -------
+    
     None
         The function performs file operations but does not return any value.
 
 ## Notes
-    -----
+    
     - The function will attempt to remove files from the `internal/Archived` directory.
     - If the project is not found in the archive, a message will be printed.
 
@@ -738,7 +737,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
     storing histories, weights, and configurations.
 
 ## Returns
-    -------
+    
     None
         The function prints a message indicating whether the setup was completed or already exists.
     
@@ -751,7 +750,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
     done using either copy or move operations.
 
 ## Parameters
-    ----------
+    
 ### ppl : str or list of str
         The name(s) of the project pipeline to transfer.
 ### type : str, optional
@@ -762,14 +761,14 @@ Initializes and sets up a new pipeline for training a machine learning model.
         Defaults to 'copy'.
 
 ## Returns
-    -------
+    
     None
         The function prints the status of the transfer process.
 
 ## Notes
-    -----
+    
     - If `mode` is 'move', the files are deleted from the source after being transferred.
-
+ 
 # PipeLine
 This is the core class of the library, responsible for managing the entire lifecycle of a deep learning model pipeline: from setup, training, and validation, to saving and restoring model configurations and weights. But it is still lengthy, so we have `train_new` class to initiate a new pipeline and `re_train` to re train a pipeline.
 ## Setting Up the Pipeline
@@ -893,10 +892,10 @@ Configures the pipeline with the specified parameters or loads the configuration
 - `make_config` (bool): Whether to create a new configuration file.
 - `prepare` (bool): Whether to prepare the data loaders.
 
----
+
 
 ##### Example Uses
-----
+
 ###### case1
 ```python
 pipeline.setup(
@@ -958,8 +957,6 @@ The pipeline will create a directory named `MyModelPipeline` in the current work
 - History file: `MyModelPipeline/MyModelPipeline_history.csv`
 
 This automatic organization helps keep your project structured and ensures that all related files are easily accessible.
-
----
 
 
 ### prepare_data
@@ -1023,7 +1020,6 @@ pipeline.train(num_epochs=10)
 
 This command will train the model for 10 epochs, saving weights and logging history after each epoch.
 
----
 
 
 ### validate
@@ -1161,12 +1157,6 @@ import torch.nn as nn
 def get_loss():
     return nn.MSELoss()
 ```
-
-
-
-
-
-
 
 ## Customization
 
