@@ -327,10 +327,8 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
         - If `mode` is 'name', `ppl` should be a string representing the pipeline name.
         - If `mode` is 'mod_ds', `ppl` should be a dictionary containing 'model_loc' and 'DataSet_loc' keys.
         - If `mode` is 'training', `ppl` should be a dictionary containing training configuration details:
-          'optimizer_loc', 'train_batch_size', 'valid_batch_size', 'accuracy_loc', 'loss_loc', 
-          'train_data_src', and 'valid_data_src'.
-        - If `mode` is 'all', `ppl` should be a dictionary with 'piLn_name', 'model_loc', 'DataSet_loc', 
-          and training configuration details as described above.
+            - 'optimizer_loc', 'train_batch_size', 'valid_batch_size', 'accuracy_loc', 'loss_loc', 'train_data_src', and 'valid_data_src'.
+        - If `mode` is 'all', `ppl` should be a dictionary with 'piLn_name', 'model_loc', 'DataSet_loc', and training configuration details as described above.
 
 ### mode : str, optional
         Specifies the type of verification to perform. Options include:
