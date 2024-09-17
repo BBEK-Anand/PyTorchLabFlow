@@ -448,7 +448,7 @@ Configures and initializes a testing pipeline for evaluating a machine learning 
     - prepare (bool, optional): Whether to prepare the pipeline or not. Default is False.
 
 ## Returns:
-    - [PipeLine](#pipeline): An instance of the `PipeLine` class configured for testing with the provided or default parameters.
+    - PipeLine: An instance of the `PipeLine` class configured for testing with the provided or default parameters.
     
 
 # train_new
@@ -495,7 +495,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
 ## Returns
 
-    [PipeLine](#pipeline)
+    PipeLine
         An instance of the `PipeLine` class configured with the specified parameters, or `None` if the pipeline name is already in use.
 
 ## Notes
@@ -1183,7 +1183,8 @@ By following this structure, you can keep your project organized and make it eas
 
 # Credits
 - **Author:** [BBEK-Anand](https://github.com/bbek-anand) - For developing this library.
-- **Special Thanks To:** [Soumya](https://github.com/S-aumya) - For Documenting this librery.
+- **Documentation:**
+  - [Soumya](https://github.com/S-aumya) - For writing the documentation..
 - **Libraries Used:**
   - [PyTorch](https://pytorch.org) - For Model creation.
   - [pandas](https://pandas.pydata.org/) - For saving model history and retriving.
