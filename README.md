@@ -1,7 +1,5 @@
+**PyTorchLabFlow** is your go-to offline solution for managing PyTorch experiments with ease. Run experiments securely on your local machine, no data sharing with third parties. Need more power? Seamlessly trasfer your setup to a high-end system without any reconfiguration. Wheather you are on a laptop or a workstation, PyTorchLabFlow ensures flexibility and privacy, allowing you to experiment anywhere, anytime, without internet dependency.
 
-Machine Learning Project Template
-
-This repository provides a structured framework for organizing machine learning projects. It includes components such as models, datasets, accuracy metrics, loss functions, and optimizers.
 # Table of Contents
 - [Installation](#installation)
 - [Directory Structure](#directory-structure)
@@ -229,12 +227,19 @@ performance_plot(ppl="exp01")
 
 This will plot the accuracy and loss over the training epochs.
 ## Step 7: Other Features
-If you want to remove experiment/s then use `archive` function. For unarchiving follow the documentation.
+### Archive an experiment
+If you want to remove experiment/s then use `archive` function. this will move all files releted to an experiment to `Archived` folder For unarchiving follow the documentation.
 
+### Delete an experiment
 If you want to delete (archive does not delete a pipeline) then use `delete` function after archiving the pipeline.
-    
-If you want to transfer experimment/s to a different system, use `transfer` function. 
 
+### Transfer an experiment
+If you want to transfer experimment/s to a different system, use `transfer` function. 
+    - By using `transfer(type='export',mode='copy')` copy all the files to `Transfer` folder. (`Transfer` folder is inside `your_project_root/internal`)
+    - setup new project in your other(high-end) system, then this will create the same directory structure.
+    - copy the `Transfer` folder( experiment configurations) and `Libs` folder( experiment components) from your 1st(low-end system/laptop) system and replace these in your 2nd(high-end) system's respectively their places.
+    - create a new jupyter file and use `transfer(type='import',mode='copy')`, it will copy all the files from `Transfer` folder to `internal` folder.
+    - then use `re_train` or `multi_train` for training.
 ---
 
 <h1 style="font-size: 100px;" id="functions">Functions</h1>
@@ -739,6 +744,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
 # transfer
     - Transfer pipeline files between active and transfer directories.
     - This function transfers pipeline files (configurations, weights, and histories) either from the active directory to the transfer directory or vice versa. The transfer can be done using either copy or move operations.
+    - make sure `setup_trasfer` for the first time before using `transfer`.
 
 ## Parameters
     
@@ -1184,7 +1190,8 @@ By following this structure, you can keep your project organized and make it eas
 # Credits
 - **Author:** [BBEK-Anand](https://github.com/bbek-anand) - For developing this library.
 - **Documentation:**
-  - [Soumya](https://github.com/S-aumya) - For writing the documentation..
+  - [Saumya](https://github.com/S-aumya) - For writing the documentation.
+  - [BBEK-Anand](https://github.com/bbek-anand) - For writing the documentation.
 - **Libraries Used:**
   - [PyTorch](https://pytorch.org) - For Model creation.
   - [pandas](https://pandas.pydata.org/) - For saving model history and retriving.

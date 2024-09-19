@@ -2,8 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name='PyTorchLabFlow',
-    version='0.1.5',
-    packages=find_packages(),
+    version='0.1.6.5',
+    package_dir={'': 'src'},
+    packages=find_packages(where='src'),
+    include_package_data=True,
     install_requires=[
         'torch',
         'matplotlib',
@@ -13,7 +15,7 @@ setup(
     author='BBEK-Anand',
     author_email='',
     description='A lightweight module to manage all components during experiments on a AI project',
-    long_description=open('README.md').read(),
+    long_description=open('./README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/BBEK-Anand/PyTorchLabFlow',
     license="MIT",
