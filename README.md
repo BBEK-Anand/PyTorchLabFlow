@@ -240,6 +240,7 @@ If you want to transfer experimment/s to a different system, use `transfer` func
     - copy the `Transfer` folder( experiment configurations) and `Libs` folder( experiment components) from your 1st(low-end system/laptop) system and replace these in your 2nd(high-end) system's respectively their places.
     - create a new jupyter file and use `transfer(type='import',mode='copy')`, it will copy all the files from `Transfer` folder to `internal` folder.
     - then use `re_train` or `multi_train` for training.
+
 ---
 
 <h1 style="font-size: 100px;" id="functions">Functions</h1>
@@ -730,7 +731,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - The function will attempt to remove files from the `internal/Archived` directory.
     - If the project is not found in the archive, a message will be printed.
 
-# setup_trasfer
+# setup_transfer
     - Setup the directory structure for transferring pipelines.
 
     - This function creates the necessary directories and configuration files for transferring pipelines between environments. 
