@@ -36,12 +36,12 @@ Your_directory
   │   ├── Archived
   │   ├── config.json
   │   ├── Default_Config.json
-  │   ├──Archived
+  │   ├── Archived
   │   │   ├── Histories
   │   │   ├── Configs
   │   │   ├── Weights
   │   │   └── config.json
-  │   └──Transfer
+  │   └── Transfer
   │       ├── Histories
   │       ├── Configs
   │       ├── Weights
