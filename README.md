@@ -235,6 +235,7 @@ If you want to delete (archive does not delete a pipeline) then use `delete` fun
 
 ### Transfer an experiment
 If you want to transfer experimment/s to a different system, use `transfer` function. 
+    
     - By using `transfer(type='export',mode='copy')` copy all the files to `Transfer` folder. (`Transfer` folder is inside `your_project_root/internal`)
     - setup new project in your other(high-end) system, then this will create the same directory structure.
     - copy the `Transfer` folder( experiment configurations) and `Libs` folder( experiment components) from your 1st(low-end system/laptop) system and replace these in your 2nd(high-end) system's respectively their places.
