@@ -6,6 +6,7 @@
 - [Workflow](#workflow)
 - [Functions](#functions)
 - [PipeLine](#pipeline)
+- [Tutorial](https://github.com/BBEK-Anand/DeepFake-Detection/blob/main/PyTorchLabFlow.ipynb)
 - [Credits](#credits)
 - [Contributing](#contributing)
 - [License](#license)
