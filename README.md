@@ -56,7 +56,6 @@ Your_directory
 - `Configs`: Contains JSON configuration files for different pipelines.
 - `Weights`: Contains model weights for different pipelines.
 - `config.json`: A sample configuration file.
-- `README.md`: This README file.
 
 
 # Workflow
