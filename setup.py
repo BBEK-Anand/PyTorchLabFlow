@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='PyTorchLabFlow',
-    version='0.1.7',
+    version='0.1.8',
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
     include_package_data=True,
@@ -14,7 +14,7 @@ setup(
     ],
     author='BBEK-Anand',
     author_email='',
-    description='A lightweight module to manage all components during experiments on a AI project',
+    description='PyTorchLabFlow is a lightweight, modular framework that accelerates PyTorch-based deep learning experiments by simplifying model training, logging, checkpointing, and visualization. It significantly reduces setup time by offering reusable components for managing experiments, enhancing workflow efficiency. PyTorchLabFlow promotes component reusability across projects, enabling faster deployment of models and ensuring consistency in experiment management. Ideal for developers and researchers, it integrates seamlessly into PyTorch workflows, focusing on flexibility, scalability, and reduced development overhead.',
     long_description=open('./README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/BBEK-Anand/PyTorchLabFlow',

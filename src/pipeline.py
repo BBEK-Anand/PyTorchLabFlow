@@ -193,7 +193,8 @@ class PipeLine:
             print(f'Weights will be saved at {cnfg["weights_path"]}')
 
         self.model = self.load_component(self.cnfg['model_loc'])() if(self.cnfg['model_loc']!=None) else self.model
-        torch.save(self.model.state_dict(), self.cnfg['weights_path'])
+        if self.cnfg.get('last').get('epoch')==0:
+            torch.save(self.model.state_dict(), self.cnfg['weights_path'])
 #         if not hasattr(self.model, 'parameters'):
 #             raise ValueError(f"The model class loaded from {self.cnfg['model_loc']} does not have a 'parameters' attribute.")
         
