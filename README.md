@@ -2,6 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/pytorchlabflow.svg)](https://badge.fury.io/py/pytorchlabflow)
 [![Downloads](https://static.pepy.tech/badge/Pytorchlabflow)](https://pepy.tech/project/Pytorchlabflow)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
 ---
 
