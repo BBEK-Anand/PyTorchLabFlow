@@ -1,4 +1,10 @@
-# PyTorchLabFlow[![Downloads](https://static.pepy.tech/badge/Pytorchlabflow)](https://pepy.tech/project/Pytorchlabflow)
+# PyTorchLabFlow
+
+[![PyPI version](https://badge.fury.io/py/pytorchlabflow.svg)](https://badge.fury.io/py/pytorchlabflow)
+[![Downloads](https://static.pepy.tech/badge/Pytorchlabflow)](https://pepy.tech/project/Pytorchlabflow)
+
+---
+
 **PyTorchLabFlow** is your go-to offline solution for managing PyTorch experiments with ease. Run experiments securely on your local machine, no data sharing with third parties. Need more power? Seamlessly trasfer your setup to a high-end system without any reconfiguration. Wheather you are on a laptop or a workstation, PyTorchLabFlow ensures flexibility and privacy, allowing you to experiment anywhere, anytime, without internet dependency.
 
 # Table of Contents
