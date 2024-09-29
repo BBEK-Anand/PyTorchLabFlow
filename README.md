@@ -3,7 +3,8 @@
 [![PyPI version](https://badge.fury.io/py/pytorchlabflow.svg)](https://badge.fury.io/py/pytorchlabflow)
 [![Downloads](https://static.pepy.tech/badge/Pytorchlabflow)](https://pepy.tech/project/Pytorchlabflow)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
-[![GitHub Repo](https://img.shields.io/github/stars/BBEK-Anand/PyTorchLabFlow?style=social)](https://github.com/BBEK-Anand/PyTorchLabFlow)
+
+[![GitHub](https://img.shields.io/badge/GitHub-Repo-black?style=flat&logo=github)](https://github.com/BBEK-Anand/PyTorchLabFlow)
 
 ---
 
