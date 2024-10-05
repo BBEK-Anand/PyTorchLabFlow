@@ -11,8 +11,7 @@ import pandas as pd
 from tqdm import tqdm
 import json
 import importlib
-import pandas as pd
-# import numpy as np
+import numpy as np
 from matplotlib import pyplot as plt
 
 class PipeLine:
@@ -195,9 +194,7 @@ class PipeLine:
         self.model = self.load_component(self.cnfg['model_loc'])() if(self.cnfg['model_loc']!=None) else self.model
         if self.cnfg.get('last').get('epoch')==0:
             torch.save(self.model.state_dict(), self.cnfg['weights_path'])
-#         if not hasattr(self.model, 'parameters'):
-#             raise ValueError(f"The model class loaded from {self.cnfg['model_loc']} does not have a 'parameters' attribute.")
-        
+     
         self.loss = self.load_component(self.cnfg['loss_loc'])()
         self.optimizer = self.load_optimizer(self.cnfg['optimizer_loc'])
         self.accuracy = self.load_component(self.cnfg['accuracy_loc'])()
@@ -237,9 +234,9 @@ class PipeLine:
         self.save_config()
 
         self.DataSet = self.load_component(dataset_loc) if (dataset_loc!=None) else self.DataSet
-
-        self.trainDataLoader = DataLoader(self.DataSet(self.cnfg['train_data_src']), batch_size=self.cnfg['train_batch_size'], shuffle=True)
-        self.validDataLoader = DataLoader(self.DataSet(self.cnfg['valid_data_src']), batch_size=self.cnfg['valid_batch_size'], shuffle=False)
+        collate_fn = getattr(self.DataSet,"collate_fn",None)
+        self.trainDataLoader = DataLoader(self.DataSet(self.cnfg['train_data_src']), batch_size=self.cnfg['train_batch_size'], shuffle=True,collate_fn=collate_fn)
+        self.validDataLoader = DataLoader(self.DataSet(self.cnfg['valid_data_src']), batch_size=self.cnfg['valid_batch_size'], shuffle=False,collate_fn=collate_fn)
         print('Data loaders are successfully created')
         
         self.model=self.model.to(self.device)
@@ -1088,8 +1085,8 @@ def re_train(ppl=None,config_path=None,train_data_src=None,valid_data_src=None,p
     P = PipeLine()
     if(ppl and verify(ppl,config='internal',mode='name',log=False)):
         config_path = "internal/Configs/"+ppl+".json"
-    else:
-        print(ppl, "not exists")
+    if(config_path==None):
+        print(config_path, "not exists")
         return None
     if(num_epochs>0):
         P.setup(config_path=config_path, 
@@ -1145,7 +1142,7 @@ def multi_train(ppl = None,last_epoch=10):#
     for i in range(len(ppl)):
         if(epoch[i]<last_epoch):
             print(f"{ppl[i]:=^60}")
-            re_train(config_path='internal/Configs/'+ppl[i]+'.json',prepare=True,num_epochs=last_epoch-epoch[i])
+            re_train(ppl=ppl[i],prepare=True,num_epochs=last_epoch-epoch[i])
     print("All training Done")
 
 def performance_plot(ppl=None,history=None,df=None,config="internal"):
