@@ -7,7 +7,7 @@
 
 ---
 
-**PyTorchLabFlow** is your go-to offline solution for managing PyTorch experiments with ease. Run experiments securely on your local machine, no data sharing with third parties. Need more power? Seamlessly trasfer your setup to a high-end system without any reconfiguration. Wheather you are on a laptop or a workstation, PyTorchLabFlow ensures flexibility and privacy, allowing you to experiment anywhere, anytime, without internet dependency.
+**PyTorchLabFlow** is your go-to offline solution for managing PyTorch experiments with ease. Run experiments securely on your local machine, no data sharing with third parties. Need more power? Seamlessly transfer your setup to a high-end system without any reconfiguration. whether you are on a laptop or a workstation, PyTorchLabFlow ensures flexibility and privacy, allowing you to experiment anywhere, anytime, without internet dependency.
 
 # Table of Contents
 - [Installation](#installation)
