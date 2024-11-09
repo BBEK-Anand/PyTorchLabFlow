@@ -1145,29 +1145,21 @@ def multi_train(ppl = None,last_epoch=10):#
             re_train(ppl=ppl[i],prepare=True,num_epochs=last_epoch-epoch[i])
     print("All training Done")
 
-def performance_plot(ppl=None,history=None,df=None,config="internal"):
+def performance_plot(ppl=None,history=None, matrics=None, config="internal", figsize=(6, 4)):
     """
     Plots performance metrics (accuracy and loss) over epochs for one or more pipelines.
-
-    This function generates plots for training and validation accuracy, as well as training and validation loss,
-    using data from a CSV file or a DataFrame. It can handle single or multiple pipelines, and plots the performance 
-    metrics for each specified pipeline.
 
     Parameters
     ----------
     ppl : str, list, optional
-        The name(s) of the pipeline(s) for which to plot performance metrics. If `None`, it fetches all pipeline names 
-        using `get_ppls`. If `ppl` is a list, it plots performance metrics for each pipeline in the list. If `ppl` is a 
-        string, it is treated as a single pipeline name.
+        The name(s) of the pipeline(s) for which to plot performance metrics. 
+        If `None`, it fetches all pipeline names using `get_ppls`. 
+        If `ppl` is a list, it plots performance metrics for each pipeline. 
+        If `ppl` is a string, it is treated as a single pipeline name.
 
-    history : str, optional
-        The path to the CSV file containing performance metrics (e.g., accuracy and loss) over epochs. If `None`, it 
-        defaults to the file located in `internal/Histories/` directory with the name corresponding to the pipeline 
-        name.
-
-    df : pandas.DataFrame, optional
-        A DataFrame containing performance metrics (e.g., accuracy and loss) over epochs. If `df` is provided, it is used 
-        directly for plotting. If `None`, it will attempt to read the DataFrame from the CSV file specified in `history`.
+    matrics : list of str, optional
+        List of performance data (e.g., ["train_accuracy", "train_loss"]).
+        If `None`, defaults to ["train_accuracy", "train_loss", "val_accuracy", "val_loss"].
 
     config : str, optional
         The configuration type to use when retrieving the pipeline. Options are:
@@ -1175,54 +1167,70 @@ def performance_plot(ppl=None,history=None,df=None,config="internal"):
         - `archive`: Uses configurations from the `internal/Archived/` directory.
         - `transfer`: Uses configurations from the `internal/Transfer/` directory.
 
+    figsize : tuple, optional
+        Size of the plot.
+
     Returns
     -------
-    None
-        Displays the performance plots using Matplotlib. If there is an error or if the DataFrame is empty, it returns an 
-        error message as a string.
-
-    Notes
-    -----
-    - The function updates the configuration before attempting to load the performance history.
-    - If both `history` and `df` are `None`, an error message is printed.
-    - If the DataFrame is empty, an appropriate message is printed.
+    fig, ax : matplotlib.figure.Figure, matplotlib.axes.Axes
+        The figure and axes objects containing the generated plots.
+        These can be used to further customize or save the plots. If no further 
+        customization is needed, the function only displays the plots and returns `None`.
     """
-    if(ppl is None):
-        ppl = get_ppls(mode='name',config=config)
-    if(isinstance(ppl,list)):
-        for i in ppl:
-            performance_plot(ppl=i,config=config)
-        return None
-    elif(isinstance(ppl,str)):
-
-        root = {
+    
+    root = {
         "internal": "internal/",
         "archive": "internal/Archived/",
         "transfer": "internal/Transfer/"
-            }.get(config, "internal/")
-
-        up2date(config=config)
-
-        history = root+"Histories/"+ppl+".csv"
-        if( not os.path.isfile(history)):
-            return f"the file{history}  is not found"
+    }.get(config, "internal/")
     
-    if( history!=None):
-        df = pd.read_csv(f"{history}")
-    if(df is None):
-        print("It needs one of arguments history and df. df is dtaframe from the csv file and history is path to history.csv")
-        return "Error"
-    if(df.empty):
-        print(history.split('/')[-1].split('.')[0],"Empty")
-        return "Empty DataFrame given..!"
+    up2date(config=config)
+    
+    if ppl is None:
+        ppl = get_ppls(mode='name', config=config)
+    
+    if isinstance(ppl, list):
+        record = {i: pd.read_csv(root + "Histories/" + i + ".csv") for i in ppl}
+        df = [record[i] for i in ppl]
         
-    fig,ax = plt.subplots(1,2)
-    fig.set_size_inches(15,5)
-    df.plot(x='epoch',y=['train_accuracy','val_accuracy'],ax=ax[0],title="Accuracy trade-off")
-    df.plot(x='epoch',y=['train_loss','val_loss'],ax=ax[1],title="Loss trade-off")
+        if matrics is None:
+            matrics = ["train_accuracy", "train_loss", "val_accuracy", "val_loss"]
+        
+        if isinstance(matrics, str):
+            matrics = [matrics]  # Ensure `matrics` is a list
+        
+        plots = []
+        for j in range(len(matrics)):
+            fig, ax = plt.subplots(figsize=figsize)
+            for i in range(len(df)):
+                df[i][matrics[j]].plot(ax=ax, label=ppl[i])
+            ax.set_title(matrics[j])
+            ax.legend()
+            plots.append(ax)
+        return plots
+    
+    elif isinstance(ppl, str):
+        history = root + "Histories/" + ppl + ".csv"
+        if not os.path.isfile(history):
+            raise ValueError(f"File {history} not found.")
+    
+    if history is not None:
+        df = pd.read_csv(history)
+    
+    if df is None:
+        raise ValueError("Both 'history' and 'df' cannot be None.")
+    
+    if df.empty:
+        raise ValueError(f"{history.split('/')[-1].split('.')[0]} is an empty DataFrame.")
+    
+    fig, ax = plt.subplots(1, 2, figsize=(15, 5))
+    df.plot(x='epoch', y=['train_accuracy', 'val_accuracy'], ax=ax[0], title="Accuracy Trade-off")
+    df.plot(x='epoch', y=['train_loss', 'val_loss'], ax=ax[1], title="Loss Trade-off")
     fig.suptitle(history.split('/')[-1].split('.')[0], fontsize=16)
-    plt.show()
-
+    # plt.show()
+    
+    return fig, ax
+ 
 def get_model(ppl=None,name=True,config="internal"):
     """
     Retrieves the model class or its name for a given pipeline or a list of pipelines.

@@ -598,6 +598,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
 ## Raises:
     - Any verification issues with the provided pipeline configuration are printed and no pipeline is returned.
 
+
 # performance_plot    
 
     Plots performance metrics (accuracy and loss) over epochs for one or more pipelines.
@@ -615,9 +616,8 @@ Initializes and sets up a new pipeline for training a machine learning model.
         - The path to the CSV file containing performance metrics (e.g., accuracy and loss) over epochs. 
         - If `None`, it defaults to the file located in `internal/Histories/` directory with the name corresponding to the pipeline name.
 
-### df : pandas.DataFrame, optional
-        - A DataFrame containing performance metrics (e.g., accuracy and loss) over epochs. 
-        - If `df` is provided, it is used directly for plotting. If `None`, it will attempt to read the DataFrame from the CSV file specified in `history`.
+### matrics : list of str, optional  
+        - List of performance data to plot (e.g., `["train_accuracy", "train_loss"]`). If `None`, defaults to `["train_accuracy", "train_loss", "val_accuracy", "val_loss"]`.
 
 ### config : str, optional
         The configuration type to use when retrieving the pipeline. Options are:
@@ -625,10 +625,12 @@ Initializes and sets up a new pipeline for training a machine learning model.
         - `archive`: Uses configurations from the `internal/Archived/` directory.
         - `transfer`: Uses configurations from the `internal/Transfer/` directory.
 
+### figsize` : tuple, optional  
+        Size of the plot. Default is `(6, 4)`.
 ## Returns
     
-    None
-        - Displays the performance plots using Matplotlib. If there is an error or if the DataFrame is empty, it returns an error message as a string.
+    fig, ax:  
+        - Matplotlib `Figure` and `Axes` objects containing the generated plots. These can be used to further customize or save the plots. If no further customization is needed, the function only displays the plots and returns `None`.
 
 ## Notes
 
@@ -636,6 +638,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - If both `history` and `df` are `None`, an error message is printed.
     - If the DataFrame is empty, an appropriate message is printed.
     
+
 # multi_train
 
     - Train or re-train multiple pipelines up to the specified number of epochs.
