@@ -16,6 +16,7 @@
 - [Functions](#functions)
 - [PipeLine](#pipeline)
 - [Tutorial](https://github.com/BBEK-Anand/DeepFake-Detection/blob/main/PyTorchLabFlow.ipynb)
+- [Templates](#templates)
 - [Credits](#credits)
 - [Contributing](#contributing)
 - [License](#license)
@@ -1201,11 +1202,404 @@ By following this structure, you can keep your project organized and make it eas
 
 ***
 
+# Templates
+
+Templates for different use cases
+
+  - [CNN_LSTM_Attention_with_Mask](#cnn_lstm_attention_with_mask)
+  - [Audio Spectrogram Transformer](#audio-spectrogram-transformer)
+  - [MesoNet](#mesonet)
+  - [CSV file](#csv-file-data)
+
+## CNN_LSTM_Attention_with_Mask
+    Designed to handle variable length audio file that captures TTS in any portion of the audio
+### dataset
+    The DS01 dataset class loads .wav audio files, transforms them into log-scaled mel-spectrograms using Librosa, and returns them with corresponding binary labels. The mel-spectrograms are converted to tensors and padded to match the maximum length in the batch, with an output shape of (batch_size, 1, n_mels, max_length) for spectrograms and (batch_size, 1) for labels.
+```python
+class DS01(Dataset):
+    def __init__(self, folder, sr=22050, n_mels=128, n_fft=2000, hop_length=512):
+        self.folder = folder
+        self.file_list = [f for f in os.listdir(folder) if f.endswith('.wav')]
+        self.sr = sr
+        self.n_mels = n_mels
+        self.n_fft = n_fft
+        self.hop_length = hop_length
+
+    def __len__(self):
+        return len(self.file_list)
+    
+    def __getitem__(self, idx):
+        file_path = os.path.join(self.folder, self.file_list[idx])
+        waveform, sr = librosa.load(file_path, sr=self.sr)
+
+        # Convert the waveform to a mel-spectrogram
+        mel_spectrogram = librosa.feature.melspectrogram(
+            y=waveform, sr=self.sr, n_fft=self.n_fft, 
+            hop_length=self.hop_length, n_mels=self.n_mels
+        )
+
+        # Convert to log scale
+        log_mel_spectrogram = librosa.power_to_db(mel_spectrogram, ref=np.max)
+
+        # Convert to tensor and add a channel dimension
+        log_mel_spectrogram = torch.tensor(log_mel_spectrogram).float().unsqueeze(0)
+
+        # Extract label from the file name (e.g., last character in filename)
+        label = int(os.path.basename(file_path)[-5])
+
+        # Ensure label is a single scalar (binary label)
+        label = torch.tensor(label, dtype=torch.float32)  # Shape: []
+
+        return log_mel_spectrogram, label
+    
+    @staticmethod
+    def collate_fn(batch):
+        spectrograms, labels = zip(*batch)
+
+        # Get the maximum length for padding
+        max_length = max(s.shape[-1] for s in spectrograms)
+
+        # Pad the spectrograms
+        padded_spectrograms = [torch.nn.functional.pad(s, (0, max_length - s.shape[-1])) for s in spectrograms]
+
+        # Convert labels to a tensor
+        labels = torch.tensor(labels, dtype=torch.float32).view(-1, 1)  # Ensure labels are reshaped to [batch_size, 1]
+
+        return torch.stack(padded_spectrograms), labels
+```
+
+### Model / Architecture
+    This model combines a CNN for feature extraction, a bi-directional LSTM for sequence modeling, an attention mechanism, and fully connected layers for binary classification. It accepts input in the shape (batch_size, 1, H, W) with an optional mask for sequence padding. The output is a binary prediction with shape (batch_size, 1), making it suitable for tasks like sequence classification where spatial and temporal features are both important.
+```python
+class CNN_LSTMAttentionWithMask(nn.Module):
+    def __init__(self):
+        super(CNN_LSTMAttentionWithMask, self).__init__()
+        
+        # CNN layers for feature extraction
+        self.cnn = nn.Sequential(
+            nn.Conv2d(1, 32, kernel_size=3, padding=1),  # (batch_size, 1, H, W) -> (batch_size, 32, H, W)
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),  # (batch_size, 32, H/2, W/2)
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),  # (batch_size, 32, H/2, W/2) -> (batch_size, 64, H/2, W/2)
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2)  # (batch_size, 64, H/4, W/4)
+        )
+        
+        # LSTM layers for sequence modeling
+        self.lstm = nn.LSTM(input_size=64*32, hidden_size=128, num_layers=2, batch_first=True, bidirectional=True)
+
+        # Attention layer
+        self.attention = nn.Sequential(
+            nn.Linear(128 * 2, 128 * 2),  # Input: LSTM output size (bi-directional), Output: attention size
+            nn.Tanh(),
+            nn.Linear(128 * 2, 1)  # Single value for each time step
+        )
+        
+        # Fully connected layers for classification
+        self.fc1 = nn.Linear(128 * 2, 100)  # Output from attention applied on LSTM hidden state
+        self.fc2 = nn.Linear(100, 10)
+        self.fc3 = nn.Linear(10, 1)  # Ensure output is single dimension for binary classification
+        
+        # Batch normalization and dropout
+        self.bn1 = nn.BatchNorm1d(100)
+        self.bn2 = nn.BatchNorm1d(10)
+        self.dropout = nn.Dropout(0.2)
+
+    def forward(self, x, mask=None, *args, **kwargs):  # Accept *args and **kwargs for flexibility
+        x = x.to(next(self.parameters()).device) #!important
+        # CNN feature extraction
+        x = self.cnn(x)  # (batch_size, 64, H/4, W/4)
+
+        # Reshape for LSTM (flatten height and width)
+        batch_size, channels, height, width = x.size()
+
+        # Reshape: (batch_size, channels, height, width) -> (batch_size, width, channels*height)
+        x = x.permute(0, 3, 1, 2).contiguous()  # (batch_size, width, channels, height)
+        x = x.view(batch_size, width, -1)  # (batch_size, width, channels*height), suitable for LSTM input
+
+        # Compact weights for LSTM for contiguous memory access
+        self.lstm.flatten_parameters()
+
+        # LSTM sequence modeling
+        lstm_out, _ = self.lstm(x)  # lstm_out: (batch_size, seq_len=width, lstm_hidden_size*2)
+
+        # Attention mechanism with masking
+        attention_scores = self.attention(lstm_out).squeeze(-1)  # (batch_size, seq_len)
+
+        # Apply masking to attention scores if mask is provided
+        if mask is not None:
+            mask = mask.unsqueeze(-1)  # Adjust shape to match the attention scores
+            attention_scores = attention_scores.masked_fill(~mask, float('-inf'))  # Mask padded areas
+
+        attention_weights = F.softmax(attention_scores, dim=1)  # Normalize attention scores
+
+        # Apply attention weights to LSTM output
+        weighted_lstm_out = attention_weights.unsqueeze(-1) * lstm_out  # (batch_size, seq_len, lstm_hidden_size*2)
+
+        # Sum across the sequence dimension (batch_size, lstm_hidden_size*2)
+        x = torch.sum(weighted_lstm_out, dim=1)
+
+        # Fully connected layers for classification
+        x = F.relu(self.bn1(self.fc1(x)))  # (batch_size, 100)
+        x = F.relu(self.bn2(self.fc2(x)))  # (batch_size, 10)
+        x = self.dropout(x)
+
+        # Ensure final output shape is (batch_size, 1) for binary classification
+        x = torch.sigmoid(self.fc3(x))  # (batch_size, 1)
+        x = x.unsqueeze(-1)  # Reshape from [batch_size, 1] to [batch_size, 1, 1]
+
+        return x
+
+```
+## Audio Spectrogram Transformer
+    Designed for audio classification
+### dataset
+
+    The DSbbek04 dataset class processes audio files and converts them into MFCC spectrograms of size (21, 21) for input to models. It loads audio files from the specified folder, crops them to a fixed duration (based on the sample rate and crop duration), and computes MFCC features. The class includes a method for random cropping of the waveform and returns both the MFCC tensor and the label (extracted from the filename). This is useful for tasks like audio classification, with MFCCs representing the spectral characteristics of the audio.
+
+```python
+class DSbbek04(Dataset):
+    '''mfcc (21,21)'''
+    def __init__(self, folder, sr=22050, crop_duration=0.47):
+        self.folder = folder
+        self.file_list = [f for f in os.listdir(folder)]
+        self.sr = sr
+        self.crop_duration = crop_duration
+        self.crop_size = int(self.crop_duration * self.sr)
+
+    def __len__(self):
+        return len(self.file_list)
+
+    def __getitem__(self, idx):
+        file_path = self.file_list[idx]
+        waveform, sr = librosa.load(os.path.join(self.folder, file_path))
+        waveform = torch.tensor(waveform).unsqueeze(0)
+        cropped_waveform = self.random_crop(waveform, self.crop_size)
+        
+        mfcc = librosa.feature.mfcc(y = cropped_waveform.numpy(), sr = sr, n_mfcc=21)
+        mfcc= torch.tensor(mfcc)#.unsqueeze(0)
+        label = int(os.path.basename(file_path)[-5])
+        return mfcc, label
+
+    def random_crop(self, waveform, crop_size):
+        num_samples = waveform.size(1)
+        if num_samples <= crop_size:
+            padding = crop_size - num_samples
+            cropped_waveform = torch.nn.functional.pad(waveform, (0, padding))
+        else:
+            start = random.randint(0, num_samples - crop_size)
+            cropped_waveform = waveform[:, start:start + crop_size]
+        return cropped_waveform
+
+``` 
+### model / architecture
+
+    The MdLamn01 model is an Audio Spectrogram Transformer (AST) designed for processing MFCC spectrograms with input dimensions of (1, 21, 21). It first applies a patch embedding via a convolution layer, transforming the input into smaller patches. Then, the encoded patches are processed by a custom Transformer Encoder Layer (with multi-head attention and feedforward layers), followed by global average pooling. Finally, the output is passed through a fully connected layer, producing a binary classification result using a sigmoid activation.
+
+```python
+class MdLamn01(nn.Module):
+    '''
+    Audio Spectrogram Transformer(AST)
+    takes (21,21)| mfcc
+    DSbbek04
+    '''
+    def __init__(self, d_model=512, nhead=8, dim_feedforward=2048, dropout=0.1):
+        super(MdLamn01, self).__init__()
+        
+        self.patch_embedding = nn.Conv2d(1, d_model, kernel_size=(4, 4), stride=(4,4))
+        
+        self.transformer_layer = self.TfEL(d_model=d_model,nhead=nhead,dim_feedforward=dim_feedforward, dropout=dropout)
+        self.fc = nn.Linear(d_model, 1)
+        
+    def TfEL(self,d_model,nhead,dim_feedforward,dropout=0.1):
+        class TransformerEncoderLayer(nn.Module):
+            def __init__(self, d_model, nhead, dim_feedforward, dropout):
+                super(TransformerEncoderLayer, self).__init__()
+                self.self_attn = nn.MultiheadAttention(d_model, nhead)
+                self.linear1 = nn.Linear(d_model, dim_feedforward)
+                self.dropout = nn.Dropout(dropout)
+                self.linear2 = nn.Linear(dim_feedforward, d_model)
+                self.norm1 = nn.LayerNorm(d_model)
+                self.norm2 = nn.LayerNorm(d_model)
+
+            def _sa_block(self, x, attn_mask=None, key_padding_mask=None):
+                # Permute the input to (sequence_length, batch_size, embedding_dim)
+                x = x.permute(1, 0, 2)  # Shape: [seq_length, batch_size, d_model]
+                x, _ = self.self_attn(x, x, x, attn_mask=attn_mask, key_padding_mask=key_padding_mask)
+                x = x.permute(1, 0, 2)  # Revert to [batch_size, seq_length, d_model]
+                return x
+
+            def forward(self, src, src_mask=None, src_key_padding_mask=None):
+                x = self.norm1(src + self._sa_block(src, attn_mask=src_mask, key_padding_mask=src_key_padding_mask) )
+                x = self.norm2(x + self.linear2(self.dropout(F.relu(self.linear1(x)))) )
+                return x
+        return TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout)
+    def forward(self, x):
+        x = x.to(next(self.parameters()).device)
+        x = self.patch_embedding(x)
+        x = x.flatten(2).permute(0, 2, 1)  # Shape: [batch_size, seq_length, d_model]
+        x = self.transformer_layer(x)
+        x = x.mean(dim=1)  # Global average pooling
+        x = F.sigmoid(self.fc(x))
+        return x
+```
+## MesoNet
+    MesoNet of 4 layer  for image classification
+### dataset
+    The DS01 dataset class is designed for binary classification of images, where images from directories containing the keywords 'real' or 'fake' are labeled accordingly. The class loads .jpg files from subdirectories, resizes them to (128, 128), and applies transformations to convert them to tensors. Labels are mapped to 1 for 'real' and 0 for 'fake'. The __getitem__ method returns the image and its corresponding label.
+```python
+# Custom Dataset Class for similar 'real' and 'fake' directories
+class DS01(Dataset):
+    def __init__(self, root_dir):
+        self.root_dir = root_dir
+        self.transform = transforms.Compose([
+                            transforms.Resize((128,128)),  # Resize images 
+                            transforms.ToTensor()        # Convert images to tensor
+                        ])
+        self.image_paths = []
+        self.labels = []
+        
+        # Map directories with 'real' or 'fake' in their name to corresponding labels
+        self.class_to_idx = {'real': 1, 'fake': 0}  # 1 for real, 0 for fake
+        
+        # Traverse through subdirectories
+        for subdir in os.listdir(root_dir):
+            class_name = None
+            
+            # Identify if subdir is 'real' or 'fake' by checking the directory name
+            if 'real' in subdir.lower():
+                class_name = 'real'
+            elif 'fake' in subdir.lower():
+                class_name = 'fake'
+            
+            if class_name:
+                class_dir = os.path.join(root_dir, subdir)
+                if os.path.isdir(class_dir):
+                    for img_name in os.listdir(class_dir):
+                        img_path = os.path.join(class_dir, img_name)
+                        # Only load .jpg files
+                        if img_name.lower().endswith('.jpg'):
+                            self.image_paths.append(img_path)
+                            self.labels.append(self.class_to_idx[class_name])
+
+    def __len__(self):
+        return len(self.image_paths)
+
+    def __getitem__(self, idx):
+        img_path = self.image_paths[idx]
+        label = self.labels[idx]
+        
+        # Open image
+        image = Image.open(img_path).convert("RGB")
+        
+        # Apply transforms if provided
+        image = self.transform(image)
+        
+        return image, label
+```
+### model / architecture
+    The Meso4_01 model takes an input size of (3, 128, 128) and passes it through four convolutional layers with batch normalization and max-pooling, followed by two fully connected layers. The output is a binary classification, with a sigmoid activation at the final layer.
+
+```python
+# Meso4 Model
+class Meso4_01(nn.Module):
+    def __init__(self):
+        super(Meso4_01, self).__init__()
+        self.conv1 = nn.Conv2d(3, 8, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(8, 8, kernel_size=5, padding=2)
+        self.conv3 = nn.Conv2d(8, 16, kernel_size=5, padding=2)
+        self.conv4 = nn.Conv2d(16, 16, kernel_size=5, padding=2)  
+
+        self.bn1 = nn.BatchNorm2d(8)
+        self.bn2 = nn.BatchNorm2d(8)
+        self.bn3 = nn.BatchNorm2d(16)
+        self.bn4 = nn.BatchNorm2d(16)
+
+        self.pool = nn.MaxPool2d(kernel_size=2,stride=2,padding=0)
+        self.pool2 = nn.MaxPool2d(kernel_size=4, stride=4)
+        
+        self.fc1 = nn.Linear(16 * 4 * 4, 16)
+        self.fc2 = nn.Linear(16, 1)
+        
+        self.dropout = nn.Dropout(0.5)
+        
+    def forward(self, x):
+        x = self.pool(F.relu(self.bn1(self.conv1(x))))
+        
+        x = self.pool(F.relu(self.bn2(self.conv2(x))))
+        x = self.pool(F.relu(self.bn3(self.conv3(x))))
+        x = self.pool2(F.relu(self.bn4(self.conv4(x))))
+
+        x = x.view(x.size(0), -1)  # Flatten feature maps
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = F.sigmoid(self.fc2(x))
+        return x
+
+```
+## CSV file data
+    For tabular data. 
+### dataset
+    The DS01 dataset class loads data from a CSV file into a Pandas DataFrame, where the __getitem__ method extracts the features (all columns except 'Quality') and the label ('Quality') for each sample. The features are converted into a torch tensor and reshaped to include a channel dimension (features[np.newaxis, :]). The label is also converted into a tensor of type torch.long. The method returns the reshaped features and the label.
+```python
+class DS01(Dataset):
+    def __init__(self, csv_file):
+        # Load the CSV file into a DataFrame
+        self.data_frame = pd.read_csv(csv_file)
+    def __len__(self):
+        # Return the total number of samples in the dataset
+        return len(self.data_frame)
+    
+    def __getitem__(self, idx):
+        # Get a row at the given index (iloc is used to access by index)
+        row = self.data_frame.iloc[idx]
+        
+        features = row.drop('Quality').values.astype(float)  # Assuming 'label' column contains labels
+        label = row['Quality']
+
+        # Optionally convert features to torch tensors
+        features = torch.tensor(features, dtype=torch.float32)
+        label = torch.tensor(label, dtype=torch.long)
+        features = features[np.newaxis,:]
+        # label = label.view(1,1)
+        features.shape, label.shape,label
+        
+        return features, label
+```
+### model / architecture
+    The Mdl01 class is a simple feedforward neural network implemented using PyTorch's nn.Module. It takes a feature vector of length 7 and passes it through a series of linear layers with batch normalization and ReLU activations to produce a binary output.
+```python
+class Mdl01(nn.Module):
+    def __init__(self):
+        super(Mdl01, self).__init__()
+        self.Seq = nn.Sequential(
+            nn.Linear(7,10),
+            nn.BatchNorm1d(10),
+            nn.ReLU(10),
+            nn.Linear(10,20),
+            nn.BatchNorm1d(20),
+            nn.ReLU(20),
+            nn.Linear(20,15),
+            nn.BatchNorm1d(15),
+            nn.ReLU(15),
+            nn.Linear(15,5),
+            nn.BatchNorm1d(5),
+            nn.ReLU(5),
+            nn.Linear(5,1),
+            nn.Sigmoid()
+        )
+    def forward(self,x):
+        x = x.to(next(self.parameters()).device) #!important
+        x = x.view(-1,7)
+        x = self.Seq(x)
+        return x
+```
+
 # Credits
 - **Author:** [BBEK-Anand](https://github.com/bbek-anand) - For developing this library.
 - **Documentation:**
   - [Saumya](https://github.com/S-aumya) - For writing the documentation.
-  - [BBEK-Anand](https://github.com/bbek-anand) - For writing the documentation.
+  - [BBEK-Anand](https://github.com/bbek-anand) - For maintaining the documentation.
 - **Libraries Used:**
   - [PyTorch](https://pytorch.org) - For Model creation.
   - [pandas](https://pandas.pydata.org/) - For saving model history and retriving.
