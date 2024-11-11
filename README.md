@@ -271,7 +271,7 @@ Following functions are
   - [get_model](#get_model)
   - [archive](#archive)
   - [delete](#delete)
-  - [etup_trasfer](#etup_trasfer)
+  - [setup_trasfer](#setup_trasfer)
   - [transfer](#transfer)
 
 ---
