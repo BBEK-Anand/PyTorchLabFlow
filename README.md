@@ -1209,7 +1209,8 @@ Templates for different use cases
   - [Audio Spectrogram Transformer](#audio-spectrogram-transformer)
   - [MesoNet](#mesonet)
   - [CSV file](#csv-file-data)
-  - [Using preTrained Model]
+  - [Using preTrained Model](#using-pretrained-model)
+  - [Dynamic learning rate](#dynamic-learning-rate)
 
 ## CNN_LSTM_Attention_with_Mask
     Designed to handle variable length audio file that captures TTS in any portion of the audio
