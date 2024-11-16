@@ -242,7 +242,7 @@ class PipeLine:
         self.model=self.model.to(self.device)
         self.loss = self.loss.to(self.device)
         if(self.cnfg['last']['epoch']>0):
-                self.model.load_state_dict(torch.load(self.weights_path))
+                self.model.load_state_dict(torch.load(self.weights_path, weights_only=True), strict=False)
         self.__configured =True
 
     def update(self, data):
