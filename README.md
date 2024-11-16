@@ -1209,6 +1209,7 @@ Templates for different use cases
   - [Audio Spectrogram Transformer](#audio-spectrogram-transformer)
   - [MesoNet](#mesonet)
   - [CSV file](#csv-file-data)
+  - [Using preTrained Model]
 
 ## CNN_LSTM_Attention_with_Mask
     Designed to handle variable length audio file that captures TTS in any portion of the audio
@@ -1593,7 +1594,176 @@ class Mdl01(nn.Module):
         x = self.Seq(x)
         return x
 ```
+## Using preTrained Model
+### dataset
+The DS_01 class defines a custom PyTorch Dataset for loading and preprocessing image data from a directory structure where each subfolder corresponds to a class. The images are resized to 224x224, converted to tensors, and normalized using ImageNet statistics. It also provides a custom collate_fn function for batching, which includes one-hot encoding the labels for classification tasks. The dataset supports indexing and returns both the transformed image and its corresponding label.
+```python
+class DS_01(Dataset):
+    def __init__(self, root_dir):
+        self.desc = "resize[224, 224] -> transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])"
+        self.root_dir = root_dir
+        
+        # Define default transformations (resize, to tensor, and normalization)
+        self.transform = transforms.Compose([
+            transforms.Resize((224, 224)),  # Resize to 224x224 pixels
+            transforms.ToTensor(),  # Convert image to tensor
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # ImageNet normalization
+        ])
+        
+        # Get all class names (subfolder names)
+        self.class_names = sorted(os.listdir(root_dir))
+        
+        # Create a mapping from class name to class index
+        self.class_to_idx = {class_name: idx for idx, class_name in enumerate(self.class_names)}
+        
+        # Collect all image paths and their corresponding class labels
+        self.image_paths = []
+        self.labels = []
+        
+        for class_name in self.class_names:
+            class_dir = os.path.join(root_dir, class_name)
+            if os.path.isdir(class_dir):
+                for filename in os.listdir(class_dir):
+                    if filename.endswith(('.png', '.jpg', '.jpeg')):  # You can adjust extensions
+                        self.image_paths.append(os.path.join(class_dir, filename))
+                        self.labels.append(self.class_to_idx[class_name])
+    def collate_fn(batch):
+        inputs, labels = zip(*batch)  # Unzip the batch into inputs and labels
+        inputs = torch.stack(inputs, dim=0)  # Stack inputs to create a tensor
+        labels = torch.tensor(labels, dtype=torch.long)  # Convert labels to tensor of type long (integer)
+        def one_hot_encode(labels, num_classes=74):
+            # Convert integer labels to one-hot encoded labels
+            return torch.eye(num_classes)[labels]
+        # Apply one-hot encoding to the labels
+        labels = one_hot_encode(labels)
+        
+        return inputs, labels
+    def __len__(self):
+        return len(self.image_paths)
 
+    def __getitem__(self, idx):
+        # Load image
+        img_path = self.image_paths[idx]
+        img = Image.open(img_path).convert("RGB")  # Convert to RGB to ensure consistent color channels
+        
+        # Get the label for the image
+        label = self.labels[idx]
+        
+        # Apply transformations if provided
+        img = self.transform(img)
+        
+        return img, label
+
+```
+### model/architecture
+
+The ResN50_40 class defines a custom neural network using a pre-trained ResNet50 model, where the final fully connected layer is removed and replaced with custom layers. It freezes most of the ResNet50 layers and only trains the last 40 parameters, adding fully connected, batch normalization, ReLU, and dropout layers to output predictions for 74 classes.
+
+```python
+class ResN50_40(nn.Module):
+    def __init__(self):
+        super(ResN50_40, self).__init__()
+
+        self.desc = "[3,224,224] -> ResNet50preTrained(-40:)[2048] -> 256 -> 74"
+
+        # Step 1: Load ResNet50 base model (without pre-trained weights) 
+        self.base_model = models.resnet50(weights=None)  # No pretrained weights at first
+        self.base_model.fc = nn.Identity()  # Remove the final fully connected (fc) layer
+
+        # Step 2: Load the pre-trained weights into the base model "pretrained" folder should be inside your project directory
+        state_dict = torch.load("preTrained/resnet50_pretrained.pth", weights_only=True) 
+        self.base_model.load_state_dict(state_dict, strict=False)  # Load the pre-trained weights
+
+        # Custom layers after the base model
+        self.fc1 = nn.Linear(2048, 256)  # Fully connected layer
+        self.batch_norm = nn.BatchNorm1d(256)  # Apply BatchNorm after fc1
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.3)
+        self.fc2 = nn.Linear(256, 74)  # Output layer (num_classes will be 74)
+
+        # Step 3: Create a list of all parameters 
+        self.params = list(self.base_model.named_parameters())
+        # print(f"Total parameters: {len(self.params)}")
+
+        # Identify the last 10 layers
+        self.last_40_params = self.params[-40:]  # Get the last 10 parameters
+
+        # Step 4: Freeze all layers except the last 10 layers
+        for name, param in self.base_model.named_parameters():
+            param.requires_grad = False  # Freeze all layers initially
+
+        # Step 5: Unfreeze the last 10 layers
+        for name, param in self.last_40_params:
+            param.requires_grad = True  # Unfreeze the last 10 layers
+
+    def forward(self, x):
+        # Forward pass through ResNet50 base model
+        x = self.base_model(x)  # Get features from ResNet50
+        x = self.fc1(x)          # Apply fully connected layer 1
+        x = self.batch_norm(x)   # Apply batch normalization after fc1
+        x = self.relu(x)         # ReLU activation
+        x = self.dropout(x)      # Apply dropout
+        x = self.fc2(x)          # Output layer
+        return x
+
+```
+
+## Dynamic Learning rate
+The OptAdamax_sc function creates an Adamax optimizer with a learning rate of 0.001 and weight decay of 1e-5. It wraps the optimizer in the OptimizerWithScheduler class, which provides integration with a learning rate scheduler. By default, it uses the ReduceLROnPlateau scheduler, which adjusts the learning rate based on the validation loss. This setup allows easy management of optimization and dynamic learning rate adjustments during training.
+```python
+## Libs/optimizers.py
+class OptimizerWithScheduler:
+   def __init__(self, optimizer, scheduler_type='StepLR', **kwargs):
+            # Create Adamax optimizer
+            self.optimizer = optimizer
+            
+            # Choose the scheduler
+            if scheduler_type == 'StepLR':
+                self.scheduler = StepLR(self.optimizer, step_size=5, gamma=0.1)
+            elif scheduler_type == 'ReduceLROnPlateau':
+                self.scheduler = ReduceLROnPlateau(self.optimizer, mode='min', factor=0.1, patience=3)
+            else:
+                raise ValueError(f"Unknown scheduler type: {scheduler_type}")
+
+   def step(self, loss=None):
+            """ Perform one step of optimization and adjust the learning rate using the scheduler. """
+            self.optimizer.step()
+
+            # If using ReduceLROnPlateau, pass the loss to adjust the learning rate
+            if isinstance(self.scheduler, ReduceLROnPlateau) and loss is not None:
+                self.scheduler.step(loss)  # This adjusts the LR based on validation loss
+            elif isinstance(self.scheduler, StepLR):
+                self.scheduler.step()  # This just steps based on epochs, so no need for loss
+
+   def zero_grad(self):
+            """ Zero out the gradients in the optimizer """
+            self.optimizer.zero_grad()
+
+   def get_lr(self):
+            """ Get the current learning rate """
+            return self.optimizer.param_groups[0]['lr']  # Assuming a single learning rate for all params
+   def get_last_lr(self):
+            """ Get the last learning rate from the scheduler """
+            return self.scheduler.get_last_lr()[0] 
+    
+
+def OptAdamax_sc(model, **kwargs):
+   optimizer = optim.Adamax(model.parameters(), lr=0.001, weight_decay=1e-5)
+    # Create and return an instance of the OptimizerWithScheduler class
+   return OptimizerWithScheduler(optimizer, "ReduceLROnPlateau", **kwargs)
+```
+
+use case
+
+```python
+P = train_new(name="exp12",
+          dataset_loc="DS_01",
+          model_loc="ResN50_40",
+          optimizer_loc= "Libs.optimizers.OptAdamax_sc", #costumized optimizer 
+          prepare=True
+         )
+P.train(num_epochs=20,patience=6)
+```
 # Credits
 - **Author:** [BBEK-Anand](https://github.com/bbek-anand) - For developing this library.
 - **Documentation:**
