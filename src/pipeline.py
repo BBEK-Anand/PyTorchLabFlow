@@ -13,6 +13,7 @@ import json
 import importlib
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 class PipeLine:
     """
@@ -235,8 +236,8 @@ class PipeLine:
 
         self.DataSet = self.load_component(dataset_loc) if (dataset_loc!=None) else self.DataSet
         collate_fn = getattr(self.DataSet,"collate_fn",None)
-        self.trainDataLoader = DataLoader(self.DataSet(self.cnfg['train_data_src']), batch_size=self.cnfg['train_batch_size'], shuffle=True,collate_fn=collate_fn)
-        self.validDataLoader = DataLoader(self.DataSet(self.cnfg['valid_data_src']), batch_size=self.cnfg['valid_batch_size'], shuffle=False,collate_fn=collate_fn)
+        self.trainDataLoader = DataLoader(self.DataSet(self.cnfg['train_data_src']), batch_size=self.cnfg['train_batch_size'], shuffle=True, collate_fn=collate_fn)
+        self.validDataLoader = DataLoader(self.DataSet(self.cnfg['valid_data_src']), batch_size=self.cnfg['valid_batch_size'], shuffle=False, collate_fn=collate_fn)
         print('Data loaders are successfully created')
         
         self.model=self.model.to(self.device)
@@ -263,53 +264,92 @@ class PipeLine:
                               columns=["epoch", "train_accuracy", "train_loss", "val_accuracy", "val_loss"])
         record.to_csv(self.cnfg['history_path'], mode='a', header=False, index=False)
 
-    def train(self,num_epochs=5):
-        """
-        Trains the model for a specified number of epochs. Computes and prints the loss and accuracy 
-        for both training and validation after each epoch.
-        
-        Args:
-            num_epochs (int): Number of epochs to train the model. Default is 5.
-        """
-        if (not self.__configured):
-            print('Preparation Error. execute prepare_data or set prepare=True in setup before training')
-            return None
-        start_epoch=self.cnfg['last']['epoch']
-        end_epoch = start_epoch+num_epochs
-        self.model.to(self.device)
-        for epoch in range(start_epoch,end_epoch):
-            self.model.train()
-            running_loss = 0.0
-            running_accuracy = 0.0
-            accuracy_metric = self.accuracy.to(self.device)
-            train_loader_tqdm = tqdm(self.trainDataLoader, desc=f'Epoch {epoch+1}/{end_epoch}', leave=True)
-            
-            for data in train_loader_tqdm:
-                inputs = data[0]
-                labels = data[1]
-                inputs = inputs.to(self.device)
-                labels = labels.to(self.device)
-                labels = labels.float().view(-1,1)
-                self.optimizer.zero_grad()
-                outputs = self.model(inputs)
-                if labels.shape != outputs.shape:
-                    labels = labels.view_as(outputs)
-                loss = self.loss(outputs, labels)
-                
-                loss.backward()
-                self.optimizer.step()
-                running_loss += loss.item()
-                running_accuracy += accuracy_metric(outputs, labels.int()).item()
-                train_loader_tqdm.set_postfix(loss=running_loss/len(train_loader_tqdm), accuracy=running_accuracy/len(train_loader_tqdm))
-            
-            train_loss = running_loss / len(self.trainDataLoader)
-            train_accuracy = running_accuracy / len(self.trainDataLoader)
-            val_loss, val_accuracy = self.validate()
-            print(f'Epoch {epoch+1}, Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.2f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.2f}')
-            data = {'epoch':epoch+1,'train_accuracy':train_accuracy,'train_loss':train_loss,'val_accuracy':val_accuracy,'val_loss':val_loss}
-            self.update(data)
-        print('Finished Training')
+    def train(self, num_epochs=5, patience=None):
+            """
+    Trains the model for a specified number of epochs with optional early stopping.
 
+    This method performs the training loop for the model, calculating the loss and accuracy at each 
+    epoch, and prints the results for both training and validation. If early stopping is enabled, 
+    training will stop if no improvement is seen in the validation loss for a specified number of epochs (patience).
+
+    Args:
+        num_epochs (int): The number of epochs to train the model. Default is 5.
+            If early stopping is used, this is the maximum number of epochs before training halts.
+        
+        patience (int, optional): The number of consecutive epochs to wait for an improvement in validation loss 
+            before stopping training early. Default is `None`, which means early stopping is disabled, 
+            and all epochs will run. If specified, training will stop if validation loss does not improve
+            for the given number of epochs.
+
+    Returns:
+        None: This method prints out the training progress and results during execution.
+
+    Notes:
+        - If early stopping is enabled, the patience parameter dictates how many epochs to wait for 
+          an improvement in validation loss. If no improvement is seen within the specified number of epochs, 
+          the training will stop early.
+        - The model's weights are not automatically saved in this method; you can modify this method to save 
+          the model if it achieves the best validation loss.
+        - The method assumes the model, optimizer, loss function, and training/validation data loaders 
+          have been properly configured before calling this function.
+            """
+            if (not self.__configured):
+                print('Preparation Error. execute prepare_data or set prepare=True in setup before training')
+                return None
+            
+            start_epoch = self.cnfg['last']['epoch']
+            end_epoch = start_epoch + num_epochs
+            self.model.to(self.device)
+
+            best_val_loss = float('inf')  # Start with the worst possible value for validation loss
+            epochs_without_improvement = 0  # Track epochs without improvement in validation loss
+            patience = patience or num_epochs  # If patience is None, set it to num_epochs
+            for epoch in range(start_epoch, end_epoch):
+                self.model.train()
+                running_loss = 0.0
+                running_accuracy = 0.0
+                accuracy_metric = self.accuracy.to(self.device)
+                train_loader_tqdm = tqdm(self.trainDataLoader, desc=f'Epoch {epoch+1}/{end_epoch}', leave=True)
+
+                for data in train_loader_tqdm:
+                    inputs = data[0]
+                    labels = data[1]
+                    inputs = inputs.to(self.device)
+                    labels = labels.to(self.device)
+                    labels = labels.float()    # .view(-1,1) updated for multiclass
+                    self.optimizer.zero_grad()
+                    outputs = self.model(inputs)
+                    if labels.shape != outputs.shape:
+                        labels = labels.view_as(outputs)
+                    loss = self.loss(outputs, labels)
+
+                    loss.backward()
+                    self.optimizer.step()
+                    running_loss += loss.item()
+                    running_accuracy += accuracy_metric(outputs, labels.int()).item()
+                    train_loader_tqdm.set_postfix(loss=running_loss/len(train_loader_tqdm), accuracy=running_accuracy/len(train_loader_tqdm))
+
+                train_loss = running_loss / len(self.trainDataLoader)
+                train_accuracy = running_accuracy / len(self.trainDataLoader)
+                val_loss, val_accuracy = self.validate()
+                
+                print(f'Epoch {epoch+1}, Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.2f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.2f}')
+                
+                # Check if the validation loss has improved
+                if (val_loss < best_val_loss):
+                    best_val_loss = val_loss
+                    epochs_without_improvement = 0  # Reset the counter since we've improved
+                else:
+                    epochs_without_improvement += 1  # Increment the counter for no improvement
+
+                data = {'epoch': epoch+1, 'train_accuracy': train_accuracy, 'train_loss': train_loss, 'val_accuracy': val_accuracy, 'val_loss': val_loss}
+                self.update(data)
+                # If we've hit the patience threshold, stop training early
+                if (epochs_without_improvement >= patience):
+                    print(f'Early stopping after {epoch+1} epochs due to no improvement in validation loss.')
+                    break
+            print('Finished Training')
+            
     def validate(self):
         """
         Validates the model on the validation dataset, computing the loss and accuracy.
@@ -328,7 +368,7 @@ class PipeLine:
                 labels = data[-1]
                 inputs = inputs.to(self.device)
                 labels = labels.to(self.device)                
-                labels = labels.float().unsqueeze(1) #only for base audio file
+                labels = labels.float()   #.unsqueeze(1) updated for multyclas #only for base audio file
 
                 outputs = self.model(inputs) # 0 bcz input only has base audio array
                 loss = self.loss(outputs, labels)
@@ -702,6 +742,7 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
         for i in mods:
             if(i[1]==ppl['optimizer_loc'] and i[2]==ppl['train_batch_size'] and i[3]==ppl['valid_batch_size'] and ppl["accuracy_loc"]==i[4] and ppl["loss_loc"]==i[5] and  ppl["train_data_src"]==i[6] and ppl["valid_data_src"]==i[7]):
                 matches.append(i[0])
+                
         if(len(matches)>0):
             if(log==True):
                 print('same combination of accuracy,loss,optimizers,batch_sizes,data_sources is already used in ',matches)
@@ -720,7 +761,8 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
             'training': a3
         }
         
-        valid_sets = {key: set(val) for key, val in match_flags.items() if val}
+        # valid_sets = {key: set(val) for key, val in match_flags.items() if val!=False}
+        valid_sets = {key: set(val) for key, val in match_flags.items() if len(val) > 0 and any(val)}
 
         if valid_sets:
             if len(valid_sets) == 3:
@@ -1036,7 +1078,7 @@ def train_new(
         return P
     return P
         
-def re_train(ppl=None,config_path=None,train_data_src=None,valid_data_src=None,prepare=None,num_epochs=0):
+def re_train(ppl=None,config_path=None,train_data_src=None,valid_data_src=None,prepare=None,num_epochs=0,patience=None):
     """
     Re-trains an existing pipeline or initializes a new pipeline with the provided configuration.
 
@@ -1093,7 +1135,7 @@ def re_train(ppl=None,config_path=None,train_data_src=None,valid_data_src=None,p
                 train_data_src=train_data_src, 
                 valid_data_src=valid_data_src, 
                 use_config=True, prepare=True)
-        P.train(num_epochs=num_epochs)
+        P.train(num_epochs=num_epochs,patience=patience)
     elif(num_epochs==0):
         P.setup(config_path=config_path, 
                 train_data_src=train_data_src, 
@@ -1101,7 +1143,7 @@ def re_train(ppl=None,config_path=None,train_data_src=None,valid_data_src=None,p
                 use_config=True, prepare=prepare)
     return P
 
-def multi_train(ppl = None,last_epoch=10):#
+def multi_train(ppl = None,last_epoch=10,patience=None):#
     """
     Train or re-train multiple pipelines up to the specified number of epochs.
 
@@ -1142,10 +1184,10 @@ def multi_train(ppl = None,last_epoch=10):#
     for i in range(len(ppl)):
         if(epoch[i]<last_epoch):
             print(f"{ppl[i]:=^60}")
-            re_train(ppl=ppl[i],prepare=True,num_epochs=last_epoch-epoch[i])
+            P = re_train(ppl=ppl[i],prepare=True,num_epochs=last_epoch-epoch[i],patience=patience)
     print("All training Done")
 
-def performance_plot(ppl=None,history=None, matrics=None, config="internal", figsize=(6, 4)):
+def performance_plot(ppl=None, history=None, metric=None, config="internal", figsize=(6, 4), label=None):
     """
     Plots performance metrics (accuracy and loss) over epochs for one or more pipelines.
 
@@ -1157,9 +1199,11 @@ def performance_plot(ppl=None,history=None, matrics=None, config="internal", fig
         If `ppl` is a list, it plots performance metrics for each pipeline. 
         If `ppl` is a string, it is treated as a single pipeline name.
 
-    matrics : list of str, optional
-        List of performance data (e.g., ["train_accuracy", "train_loss"]).
-        If `None`, defaults to ["train_accuracy", "train_loss", "val_accuracy", "val_loss"].
+    history : str, optional
+        The path to the CSV file containing performance metrics (e.g., accuracy and loss) over epochs.
+
+    df : pandas.DataFrame, optional
+        A DataFrame containing performance metrics (e.g., accuracy and loss) over epochs.
 
     config : str, optional
         The configuration type to use when retrieving the pipeline. Options are:
@@ -1168,16 +1212,18 @@ def performance_plot(ppl=None,history=None, matrics=None, config="internal", fig
         - `transfer`: Uses configurations from the `internal/Transfer/` directory.
 
     figsize : tuple, optional
-        Size of the plot.
+        Size of the plot. Defaults to (15, 5).
+
+    label : list of str, optional
+        Custom labels for the lines in the plot. If `None`, labels will be taken from the pipeline names.
 
     Returns
     -------
-    fig, ax : matplotlib.figure.Figure, matplotlib.axes.Axes
-        The figure and axes objects containing the generated plots.
-        These can be used to further customize or save the plots. If no further 
-        customization is needed, the function only displays the plots and returns `None`.
+    None
+        Displays the performance plots using Matplotlib.
     """
     
+    # Set the root directory based on the configuration
     root = {
         "internal": "internal/",
         "archive": "internal/Archived/",
@@ -1190,47 +1236,133 @@ def performance_plot(ppl=None,history=None, matrics=None, config="internal", fig
         ppl = get_ppls(mode='name', config=config)
     
     if isinstance(ppl, list):
-        record = {i: pd.read_csv(root + "Histories/" + i + ".csv") for i in ppl}
+        record = {
+            i: pd.read_csv(root + "Histories/" + i + ".csv")
+            for i in ppl
+            if not pd.read_csv(root + "Histories/" + i + ".csv").empty  # Check if file is not empty
+        }
+        ppl = list(record.keys())
+        if len(ppl) == 1:
+            return performance_plot(ppl=ppl[0])
         df = [record[i] for i in ppl]
         
-        if matrics is None:
-            matrics = ["train_accuracy", "train_loss", "val_accuracy", "val_loss"]
+        if metric is None:
+            metric = ["train_accuracy", "train_loss", "val_accuracy", "val_loss"]
         
-        if isinstance(matrics, str):
-            matrics = [matrics]  # Ensure `matrics` is a list
+        if isinstance(metric, str):
+            metric = [metric]  # Ensure `metric` is a list
         
+        # If no custom label is provided, use pipeline names as labels
+        label = ppl if label is None else label
         plots = []
-        for j in range(len(matrics)):
+        
+        for j in range(len(metric)):
             fig, ax = plt.subplots(figsize=figsize)
             for i in range(len(df)):
-                df[i][matrics[j]].plot(ax=ax, label=ppl[i])
-            ax.set_title(matrics[j])
+                ax.set_xticks(df[i]['epoch'].astype(int))  # Set x-ticks to integers
+                # Plot the metric using the epoch and corresponding metric values
+                line, = ax.plot(df[i]['epoch'], df[i][metric[j]], label=label[i])
+                
+                # Annotate the last point of each line with the same color as the line
+                if "accuracy" in metric[j]:
+                    # For accuracy, annotate below the point
+                    ax.annotate(f"{df[i][metric[j]].iloc[-1]:.4f}", 
+                                xy=(df[i]['epoch'].iloc[-1], df[i][metric[j]].iloc[-1]),
+                                xycoords='data',
+                                xytext=(0, -10),  # Offset for the text below the point
+                                textcoords='offset points',
+                                ha='center', va='top', fontsize=10, color=line.get_color())
+                elif "loss" in metric[j]:
+                    # For loss, annotate above the point
+                    ax.annotate(f"{df[i][metric[j]].iloc[-1]:.4f}", 
+                                xy=(df[i]['epoch'].iloc[-1], df[i][metric[j]].iloc[-1]),
+                                xycoords='data',
+                                xytext=(0, 10),  # Offset for the text above the point
+                                textcoords='offset points',
+                                ha='center', va='bottom', fontsize=10, color=line.get_color())
+            
+            # Set x-ticks to integers
+            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+            # Set titles and axis labels
+            ax.set_title(metric[j])
+            ax.set_xlabel("Epoch")  # Set x-axis label
+            ax.set_ylabel(f"{metric[j]}")  # Set y-axis label based on metric
             ax.legend()
-            plots.append(ax)
+            plots.append([fig, ax])
         return plots
     
     elif isinstance(ppl, str):
+        # For single pipeline, fetch the history file
         history = root + "Histories/" + ppl + ".csv"
         if not os.path.isfile(history):
-            raise ValueError(f"File {history} not found.")
-    
+            return f"File {history} not found."
+
     if history is not None:
         df = pd.read_csv(history)
     
     if df is None:
-        raise ValueError("Both 'history' and 'df' cannot be None.")
+        return "Error: Both 'history' and 'df' cannot be None."
     
     if df.empty:
-        raise ValueError(f"{history.split('/')[-1].split('.')[0]} is an empty DataFrame.")
+        return f"{history.split('/')[-1].split('.')[0]} is an empty DataFrame."
+
+    # **Separate plots for Accuracy and Loss**
+    # Plot Accuracy
+    fig1, ax1 = plt.subplots(figsize=figsize)  # Create a separate plot for Accuracy
+    ax1.set_xticks(df['epoch'].astype(int))  # Set x-ticks to integers
+    line1, = ax1.plot(df['epoch'], df['train_accuracy'], label='Train Accuracy')
+    line2, = ax1.plot(df['epoch'], df['val_accuracy'], label='Validation Accuracy')
     
-    fig, ax = plt.subplots(1, 2, figsize=(15, 5))
-    df.plot(x='epoch', y=['train_accuracy', 'val_accuracy'], ax=ax[0], title="Accuracy Trade-off")
-    df.plot(x='epoch', y=['train_loss', 'val_loss'], ax=ax[1], title="Loss Trade-off")
-    fig.suptitle(history.split('/')[-1].split('.')[0], fontsize=16)
-    # plt.show()
+    # Annotate last points for accuracy
+    ax1.annotate(f"{df['train_accuracy'].iloc[-1]:.4f}", 
+                 xy=(df['epoch'].iloc[-1], df['train_accuracy'].iloc[-1]),
+                 xycoords='data',
+                 xytext=(0, -10),  # Offset for the text below the point
+                 textcoords='offset points',
+                 ha='center', va='top', fontsize=10, color=line1.get_color())
+    ax1.annotate(f"{df['val_accuracy'].iloc[-1]:.4f}", 
+                 xy=(df['epoch'].iloc[-1], df['val_accuracy'].iloc[-1]),
+                 xycoords='data',
+                 xytext=(0, -10),  # Offset for the text below the point
+                 textcoords='offset points',
+                 ha='center', va='top', fontsize=10, color=line2.get_color())
     
-    return fig, ax
- 
+    # Set axis labels for accuracy plot
+    ax1.set_xlabel("Epoch")
+    ax1.set_ylabel("Accuracy")
+    ax1.legend()
+    fig1.suptitle(f"Accuracy Plot for {history.split('/')[-1].split('.')[0]}", fontsize=16)
+
+    # Plot Loss
+    fig2, ax2 = plt.subplots(figsize=figsize)  # Create a separate plot for Loss
+    ax2.set_xticks(df['epoch'].astype(int))  # Set x-ticks to integers
+    line3, = ax2.plot(df['epoch'], df['train_loss'], label='Train Loss')
+    line4, = ax2.plot(df['epoch'], df['val_loss'], label='Validation Loss')
+    
+    # Annotate last points for loss
+    ax2.annotate(f"{df['train_loss'].iloc[-1]:.4f}", 
+                 xy=(df['epoch'].iloc[-1], df['train_loss'].iloc[-1]),
+                 xycoords='data',
+                 xytext=(0, 10),  # Offset for the text above the point
+                 textcoords='offset points',
+                 ha='center', va='bottom', fontsize=10, color=line3.get_color())
+    ax2.annotate(f"{df['val_loss'].iloc[-1]:.4f}", 
+                 xy=(df['epoch'].iloc[-1], df['val_loss'].iloc[-1]),
+                 xycoords='data',
+                 xytext=(0, 10),  # Offset for the text above the point
+                 textcoords='offset points',
+                 ha='center', va='bottom', fontsize=10, color=line4.get_color())
+    
+    # Set axis labels for loss plot
+    ax2.set_xlabel("Epoch")
+    ax2.set_ylabel("Loss")
+    ax2.legend()
+    fig2.suptitle(f"Loss Plot for {history.split('/')[-1].split('.')[0]}", fontsize=16)
+
+    plt.show()
+    
+    return [[fig1, ax1], [fig2, ax2]]
+
 def get_model(ppl=None,name=True,config="internal"):
     """
     Retrieves the model class or its name for a given pipeline or a list of pipelines.
@@ -1350,23 +1482,25 @@ def use_ppl(ppl,trained=True,name=None,
             'valid_data_src': valid_data_src or cnfg['valid_data_src'],
             'train_batch_size': train_batch_size or cnfg['train_batch_size'],
             'train_data_src': train_data_src or cnfg['train_data_src'],
-            'optimizer_loc' :optimizer_loc or cnfg['optimizer_loc'],
-            'accuracy_loc' : cnfg['accuracy_loc'],
-            'loss_loc' : cnfg['loss_loc'],
+            'optimizer_loc' : optimizer_loc or cnfg['optimizer_loc'],
+            'accuracy_loc' : accuracy_loc or cnfg['accuracy_loc'],
+            'loss_loc' : loss_loc or cnfg['loss_loc'],
             'history_path': "internal/Histories/"+name+".csv",
             'weights_path': "internal/Weights/"+name+".pth",
             'config_path' : "internal/Configs/"+name+".json"
         })
+    cnfg["last"]["epoch"] = 0
+    cnfg["best"]["epoch"] = -1
     vrf = verify(ppl=cnfg, mode="all")
-    if((not vrf) or ("mod_ds & training" not in vrf.keys())):
+    if( isinstance(vrf,dict) and (len(vrf["mod_ds & training"])==0)):
         if(trained):
             with open("internal/Configs/"+name+".json",'w') as fl:
                 json.dump(cnfg, fl, indent=4)
-            shutil.copy2(src="internal/Configs/"+ppl+".pth",dst=cnfg['weights_path'])
-            shutil.copy2(src="internal/Configs/"+ppl+".csv",dst=cnfg['history_path'])
+            shutil.copy2(src="internal/Weights/"+ppl+".pth",dst=cnfg['weights_path'])
+            
             print("New ppl created ",name)
             P =PipeLine()
-            P.setup(config_path=cnfg['config_path'],prepare=prepare)
+            P.setup(config_path=cnfg['config_path'],use_config=True, prepare=prepare)
             return P
         else:
             P = train_new(
@@ -1512,11 +1646,18 @@ def delete(ppl):
     # Deletes the files for 'project1' and 'project2' if they exist in the archive.
     """
     if(isinstance(ppl,str)):
-        log = verify(config="archive",log=False)
-        if(not log):
+        log = verify(ppl=ppl,config="archive",log=False,mode="name")
+        if(log):
             os.remove("internal/Archived/Configs/"+ppl+".json")
             os.remove("internal/Archived/Weights/"+ppl+".pth")
             os.remove("internal/Archived/Histories/"+ppl+".csv")
+            
+            with open("internal/Archived/config.json") as fl:
+                cnf0 = json.load(fl)
+            del cnf0[ppl]
+            with open("internal/Archived/config.json","w") as fl:
+                json.dump(cnf0, fl, indent=4)
+            print(f"{ppl} is deleted successfully")
         else:
             print(f"{ppl} is not in archive")
     elif(isinstance(ppl,list)):
