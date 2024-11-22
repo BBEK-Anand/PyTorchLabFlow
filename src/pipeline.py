@@ -311,18 +311,15 @@ class PipeLine:
                 accuracy_metric = self.accuracy.to(self.device)
                 train_loader_tqdm = tqdm(self.trainDataLoader, desc=f'Epoch {epoch+1}/{end_epoch}', leave=True)
 
-                for data in train_loader_tqdm:
-                    inputs = data[0]
-                    labels = data[1]
-                    inputs = inputs.to(self.device)
-                    labels = labels.to(self.device)
-                    labels = labels.float()    # .view(-1,1) updated for multiclass
+                for inputs, labels in train_loader_tqdm:
+                    inputs, labels = inputs.to(self.device), labels.to(self.device).float()
                     self.optimizer.zero_grad()
                     outputs = self.model(inputs)
-                    if labels.shape != outputs.shape:
-                        labels = labels.view_as(outputs)
-                    loss = self.loss(outputs, labels)
-
+                    if outputs.shape[1] == 1:  # Binary classification (output is a single neuron)
+                        outputs = outputs.view(-1)  # Flatten to shape [batch_size]
+                    elif outputs.shape[1]==2:
+                        labels = labels.long()
+                    loss = self.loss(outputs, labels)  
                     loss.backward()
                     self.optimizer.step()
                     running_loss += loss.item()
@@ -363,22 +360,22 @@ class PipeLine:
         correct = 0
         total = 0
         with torch.no_grad():
-            for data in tqdm(self.validDataLoader, desc='Validating', leave=False):
-                inputs = data[0]
-                labels = data[-1]
-                inputs = inputs.to(self.device)
-                labels = labels.to(self.device)                
-                labels = labels.float()   #.unsqueeze(1) updated for multyclas #only for base audio file
+            for inputs, labels in tqdm(self.validDataLoader, desc='Validating', leave=False):
+                inputs, labels = inputs.to(self.device), labels.to(self.device).float()
+                outputs = self.model(inputs) 
 
-                outputs = self.model(inputs) # 0 bcz input only has base audio array
-                loss = self.loss(outputs, labels)
+                if outputs.shape[1] == 1:  # Binary classification (output is a single neuron)
+                    outputs = outputs.view(-1)  # Flatten to shape [batch_size]
+                elif outputs.shape[1]==2:
+                    labels = labels.long()
+                loss = self.loss(outputs, labels)  
                 running_loss += loss.item()
                 correct += self.accuracy(outputs, labels.int()).item()
                 total += labels.size(0)
             accuracy = correct / len(self.validDataLoader)
             avg_loss = running_loss / len(self.validDataLoader)
             return avg_loss, accuracy
-
+  
 def setup_project(project_name="MyProject",create_root=True):#
     """
     Create the directory structure for a new machine learning project.
