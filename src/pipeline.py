@@ -7,6 +7,7 @@ from torch import nn
 # import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 import os
+import psutil  # For detecting system memory usage
 import pandas as pd
 from tqdm import tqdm
 import json
@@ -205,6 +206,45 @@ class PipeLine:
             dataset_loc = self.cnfg['DataSet_loc'] if(dataset_loc==None) else dataset_loc
             self.prepare_data(dataset_loc=dataset_loc)
 
+    def adjust_loader_params(self,batch_size):
+        """
+        Adjusts pin_memory and num_workers based on the batch size and system resources
+        without requiring explicit memory and CPU core parameters.
+        
+        Args:
+            batch_size (int): The batch size used for training.
+        
+        Returns:
+            dict: A dictionary containing optimal 'pin_memory' and 'num_workers'.
+        """
+        # Get system memory information
+        system_memory_available = psutil.virtual_memory().available > 8 * 1024**3  # Check if more than 8GB is available
+        
+        # Get number of CPU cores
+        num_cpu_cores = os.cpu_count()
+
+        # Strategy to decide on pin_memory
+        if batch_size >= 32:  # Larger batches benefit more from pin_memory
+            pin_memory = True
+        else:
+            pin_memory = False  # Smaller batches don't need pin_memory as much
+        
+        # Strategy to decide on num_workers
+        if batch_size < 16:
+            num_workers = max(1, num_cpu_cores // 2)  # Fewer workers for small batches
+        elif batch_size < 64:
+            num_workers = num_cpu_cores  # Set workers to the number of CPU cores for moderate batch size
+        else:
+            num_workers = min(num_cpu_cores * 2, 16)  # For large batches, use more workers, but don't overdo it
+        
+        # Adjust based on system memory availability
+        if not system_memory_available:
+            num_workers = min(num_workers, 4)  # Reduce num_workers if system memory is limited
+            pin_memory = False  # Disable pin_memory to save memory
+        
+        return {'pin_memory': pin_memory, 'num_workers': num_workers}
+
+
     def prepare_data(self, dataset_loc=None, train_data_src=None, train_batch_size=None, valid_data_src=None, valid_batch_size=None):
         """
         Prepares the data loaders for training and validation by loading the dataset and setting up batch sizes 
@@ -236,8 +276,8 @@ class PipeLine:
 
         self.DataSet = self.load_component(dataset_loc) if (dataset_loc!=None) else self.DataSet
         collate_fn = getattr(self.DataSet,"collate_fn",None)
-        self.trainDataLoader = DataLoader(self.DataSet(self.cnfg['train_data_src']), batch_size=self.cnfg['train_batch_size'], shuffle=True, collate_fn=collate_fn)
-        self.validDataLoader = DataLoader(self.DataSet(self.cnfg['valid_data_src']), batch_size=self.cnfg['valid_batch_size'], shuffle=False, collate_fn=collate_fn)
+        self.trainDataLoader = DataLoader(self.DataSet(self.cnfg['train_data_src']), batch_size=self.cnfg['train_batch_size'], shuffle=True, collate_fn=collate_fn,**self.adjust_loader_params(self.cnfg['train_batch_size']))
+        self.validDataLoader = DataLoader(self.DataSet(self.cnfg['valid_data_src']), batch_size=self.cnfg['valid_batch_size'], shuffle=False, collate_fn=collate_fn,**self.adjust_loader_params(self.cnfg['valid_batch_size']))
         print('Data loaders are successfully created')
         
         self.model=self.model.to(self.device)
