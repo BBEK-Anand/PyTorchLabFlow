@@ -897,6 +897,98 @@ Loads an optimizer from a specified module location.
 
 Saves the current configuration to a JSON file.
 
+
+### __adjust_loader_params(mode)
+
+This function adjusts the parameters for a data loader based on the mode of operation (either "train" or "valid"), the batch size, dataset size, system resources (memory and CPU), and other configurations.
+
+#### Arguments:
+- **mode** (`str`): The mode of operation. It can be either:
+  - `"train"`: For training purposes.
+  - `"valid"`: For validation purposes.
+
+#### Returns:
+- **dict**: A dictionary containing optimal settings for the data loader:
+  - `'dataset'` (`Dataset` object): The dataset instance to be used.
+  - `'batch_size'` (`int`): The adjusted batch size based on the dataset size.
+  - `'shuffle'` (`bool`): Whether to shuffle the dataset (`True` for training, `False` for validation).
+  - `'num_workers'` (`int`): The number of CPU workers to use for loading data.
+  - `'collate_fn'` (`callable`): A collate function for batching, if available.
+  - `'pin_memory'` (`bool`): Whether to use pinned memory, based on batch size and available system memory.
+
+#### Functionality:
+- Initializes the dataset and batch size based on the given mode.
+- Adjusts the batch size if it exceeds the size of the dataset.
+- Decides whether to use pinned memory (`pin_memory`) based on the batch size.
+- Sets the number of workers (`num_workers`) for data loading based on the batch size and system CPU cores.
+- Considers system memory availability to adjust the number of workers and whether to enable pinned memory.
+- Returns a dictionary with the optimal data loader parameters.
+
+#### Error Handling:
+- Raises a `ValueError` if the mode is neither `"train"` nor `"valid"`.
+
+#### Example:
+```python
+params = self.__adjust_loader_params("train")
+print(params['batch_size'])  # Adjusted batch size
+print(params['num_workers'])  # Optimal number of workers
+```
+
+---
+
+### `get_desc(cnfg=None, mode="all", full=False)`
+
+This function generates a descriptive summary of the configuration parameters based on the specified mode. It provides key information about components of the model, dataset, training, and other configurations, either in a full or abbreviated form.
+
+#### Arguments:
+- **cnfg** (`dict`, optional): A dictionary containing configuration parameters. If not provided, the function will use the instance's default configuration (`self.cnfg`).
+- **mode** (`str`, optional): The mode of operation. It determines what part of the configuration is included in the description:
+  - `"mods"`: Includes information about the model and dataset locations.
+  - `"training"`: Includes training-related information, such as data sources, optimizer, and batch sizes.
+  - `"all"` (default): Includes all available configuration details (model, dataset, training parameters).
+- **full** (`bool`, optional): Whether to return the full path or just the base name of the components:
+  - `True`: Returns the full path or full configuration values.
+  - `False`: Returns only the base names or abbreviated configuration values.
+
+#### Returns:
+- **str**: A string that concatenates the relevant configuration information, separated by `#`. The content varies based on the chosen mode and whether the full information is requested.
+
+#### Functionality:
+- **When `mode == "mods"`**:
+  - Returns the locations of the model and dataset, either in full or abbreviated form, depending on the `full` flag.
+  
+- **When `mode == "training"`**:
+  - Returns training-related configurations, including the optimizer location, data source paths, and batch sizes, either in full or abbreviated form.
+
+- **When `mode == "all"`** (default):
+  - Returns a comprehensive summary, including model location, dataset location, accuracy and loss paths, optimizer location, data sources, and batch sizes, in full or abbreviated form.
+
+- The returned string concatenates all selected components with a `#` separator.
+
+#### Example:
+```python
+desc = self.get_desc(mode="training", full=False)
+print(desc)
+# Output might look like: "optimizer_class#train_data#valid_data#32#64"
+```
+
+#### Example with `full=True`:
+```python
+desc = self.get_desc(mode="all", full=True)
+print(desc)
+# Output might look like: "full/model/path/full/dataset/path/full/accuracy/path/full/loss/path/full/optimizer/path/full/train/data/src/full/valid/data/src/32/64"
+```
+
+#### Notes:
+- The `full` argument allows flexibility in the level of detail returned, which can be useful for logging or debugging.
+- Paths are normalized with `os.path.normpath()` for consistent formatting, and only the base name is shown when `full=False`.
+
+---
+
+This function helps provide a detailed or summarized overview of the configuration based on the mode and level of detail required.
+
+
+
 ### setup
 
 Configures the pipeline with the specified parameters or loads the configuration from a file.
@@ -961,6 +1053,11 @@ pipeline.setup(
 ###### Overall Outcome
 
 This code initializes the pipeline without loading previous settings, creates a new configuration file, and prepares the data loaders for training.
+
+
+
+
+
 
 ## Configuration File Path Handling
 
