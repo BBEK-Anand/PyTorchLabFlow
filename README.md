@@ -792,6 +792,8 @@ This is the core class of the library, responsible for managing the entire lifec
     - [load_component](#load_component)
     - [load_optimizer](#load_optimizer)
     - [save_config](#save_config)
+    - [__adjust_loader_params](#__adjust_loader_paramsmode)
+    - [get_desc](#get_desccnfgnone-modeall-fullfalse)
     - [setup](#setup)
     - [prepare_data](#prepare_data)
     - [update](#update)
@@ -898,7 +900,7 @@ Loads an optimizer from a specified module location.
 Saves the current configuration to a JSON file.
 
 
-### __adjust_loader_params(mode)
+### `__adjust_loader_params(mode)`
 
 This function adjusts the parameters for a data loader based on the mode of operation (either "train" or "valid"), the batch size, dataset size, system resources (memory and CPU), and other configurations.
 
