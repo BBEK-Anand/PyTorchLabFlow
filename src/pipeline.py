@@ -38,7 +38,6 @@ class PipeLine:
         self.name = name
         self.__best_val_loss = float('inf')
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
         self.model_name = None
         self.model = None
         self.loss = None
@@ -53,7 +52,7 @@ class PipeLine:
 
         self.cnfg = None
         self.__configured = False
-        self.DataSet = None
+        self.Dataset = None
 
     def load_component(self, module_loc):
         """
@@ -90,7 +89,29 @@ class PipeLine:
         """
         with open(self.cnfg['config_path'], "w") as out_file:
             json.dump(self.cnfg, out_file, indent=4)
+    
+    def get_desc(self,cnfg=None,mode="all",full=False):
+        cnfg = cnfg or self.cnfg
+        if(mode=="mods"):
+            components = ['model_loc','dataset_loc' ]
+            text = [cnfg[i] for i in components] if full else [cnfg[i].split('.')[-1] for i in components]
+        elif(mode=="training"):
+            data = ['train_data_src',"valid_data_src"]
+            opt_loc = cnfg['optimizer_loc']  if full else cnfg['optimizer_loc'].split('.')[-1]
+            data = [os.path.normpath(cnfg[i]) for i in data]
+            data = [i for i in data] if full else [os.path.basename(i) for i in data]
+            text = [opt_loc]+data+[str(cnfg['train_batch_size']),str(cnfg['valid_batch_size'])]
+        elif(mode=='all'):
+            components = ['model_loc','dataset_loc','accuracy_loc','loss_loc']
+            text = [cnfg[i] for i in components] if full else [cnfg[i].split('.')[-1] for i in components]
+            data = ['train_data_src',"valid_data_src"]
+            data = [os.path.normpath(cnfg[i]) for i in data]
+            opt_loc = cnfg['optimizer_loc']  if full else cnfg['optimizer_loc'].split('.')[-1]
+            data = [i for i in data] if full else [os.path.basename(i) for i in data]
+            text += [opt_loc]+data+[str(cnfg['train_batch_size']), str(cnfg['valid_batch_size'])]
 
+        return "#".join(text)
+    
     def setup(self, name=None, model_loc=None, accuracy_loc=None, loss_loc=None, optimizer_loc=None, dataset_loc=None,
               train_data_src=None, train_batch_size=None, valid_data_src=None, valid_batch_size=None, history_path=None,
               weights_path=None, config_path=None, use_config=False, make_config=True, prepare=False):
@@ -118,7 +139,7 @@ class PipeLine:
         """
         cnfg = {
             'model_loc': model_loc,
-            'DataSet_loc': dataset_loc,
+            'dataset_loc': dataset_loc,
             'accuracy_loc': accuracy_loc,
             'loss_loc': loss_loc,
             'optimizer_loc': optimizer_loc,
@@ -149,7 +170,6 @@ class PipeLine:
             if not (name and accuracy_loc and loss_loc and optimizer_loc):
                 raise ValueError("Required parameters: name, accuracy_loc, loss_loc, optimizer_loc")
             if (not (model_loc or self.model)) :
-                print(self.model)
                 raise ValueError("Required parameter model_loc or PipeLine.model")
             root = os.path.dirname(config_path)
             os.makedirs(root, exist_ok=True)
@@ -200,36 +220,48 @@ class PipeLine:
         self.loss = self.load_component(self.cnfg['loss_loc'])()
         self.optimizer = self.load_optimizer(self.cnfg['optimizer_loc'])
         self.accuracy = self.load_component(self.cnfg['accuracy_loc'])()
-        self.DataSet = self.load_component(self.cnfg['DataSet_loc']) if(self.cnfg['DataSet_loc']!=None) else self.DataSet
+        self.Dataset = self.load_component(self.cnfg['dataset_loc']) if(self.cnfg['dataset_loc']!=None) else self.Dataset
         
         if prepare:
-            dataset_loc = self.cnfg['DataSet_loc'] if(dataset_loc==None) else dataset_loc
+            dataset_loc = self.cnfg['dataset_loc'] if(dataset_loc==None) else dataset_loc
             self.prepare_data(dataset_loc=dataset_loc)
 
-    def adjust_loader_params(self,batch_size):
+    def __adjust_loader_params(self, mode):
         """
-        Adjusts pin_memory and num_workers based on the batch size and system resources
-        without requiring explicit memory and CPU core parameters.
-        
+        Adjusts pin_memory and num_workers based on the batch size, dataset size, and system resources.
+
         Args:
-            batch_size (int): The batch size used for training.
+            mode (str): Mode of operation (either "train" or "valid").
         
         Returns:
-            dict: A dictionary containing optimal 'pin_memory' and 'num_workers'.
+            dict: A dictionary containing optimal 'pin_memory', 'num_workers', and other loader parameters.
         """
+        if mode in {"valid", "train"}:
+            # Initialize the dataset and batch size
+            ds = self.Dataset(self.cnfg[mode + '_data_src'])
+            collate_fn = getattr(self.Dataset, "collate_fn", None) or None  # Default collate_fn if not present
+            batch_size = self.cnfg[mode + "_batch_size"]
+            shuffle = False if mode == "valid" else True
+        else:
+            raise ValueError(mode + '_data_src is not found')
+        
         # Get system memory information
         system_memory_available = psutil.virtual_memory().available > 8 * 1024**3  # Check if more than 8GB is available
         
         # Get number of CPU cores
         num_cpu_cores = os.cpu_count()
 
-        # Strategy to decide on pin_memory
-        if batch_size >= 32:  # Larger batches benefit more from pin_memory
-            pin_memory = True
-        else:
-            pin_memory = False  # Smaller batches don't need pin_memory as much
+        # Adjust batch size if dataset is smaller than batch size
+        if len(ds) < batch_size:
+            batch_size = len(ds)  # If dataset is smaller than batch size, use dataset size as batch size
+            print(f"Warning: Dataset size is smaller than the batch size. Adjusting batch size to {batch_size}.")
+            self.cnfg.update({mode + '_batch_size': batch_size})
+            self.save_config()
+
+        # Decide on pin_memory based on batch size
+        pin_memory = batch_size >= 32  # Larger batches benefit more from pin_memory
         
-        # Strategy to decide on num_workers
+        # Decide on num_workers based on batch size
         if batch_size < 16:
             num_workers = max(1, num_cpu_cores // 2)  # Fewer workers for small batches
         elif batch_size < 64:
@@ -242,8 +274,16 @@ class PipeLine:
             num_workers = min(num_workers, 4)  # Reduce num_workers if system memory is limited
             pin_memory = False  # Disable pin_memory to save memory
         
-        return {'pin_memory': pin_memory, 'num_workers': num_workers}
-
+        num_workers = 0 if self.cnfg["dataset_loc"]==None else num_workers  # If it fails, use single-process loading
+        # Return the optimal settings for DataLoader
+        return {
+            'dataset': ds,
+            'batch_size': batch_size,
+            'shuffle': shuffle,
+            'num_workers': num_workers,
+            'collate_fn': collate_fn,
+            'pin_memory': pin_memory
+        }
 
     def prepare_data(self, dataset_loc=None, train_data_src=None, train_batch_size=None, valid_data_src=None, valid_batch_size=None):
         """
@@ -265,6 +305,8 @@ class PipeLine:
             raise ValueError('train_batch_size is not found')
         if not (valid_batch_size or self.cnfg['valid_batch_size']):
             raise ValueError('valid_batch_size is not found')
+        if not (dataset_loc or self.Dataset):
+            raise ValueError('Dataset is not found')
 
         self.cnfg.update({
             'valid_batch_size': valid_batch_size or self.cnfg['valid_batch_size'],
@@ -274,10 +316,10 @@ class PipeLine:
         })
         self.save_config()
 
-        self.DataSet = self.load_component(dataset_loc) if (dataset_loc!=None) else self.DataSet
-        collate_fn = getattr(self.DataSet,"collate_fn",None)
-        self.trainDataLoader = DataLoader(self.DataSet(self.cnfg['train_data_src']), batch_size=self.cnfg['train_batch_size'], shuffle=True, collate_fn=collate_fn,**self.adjust_loader_params(self.cnfg['train_batch_size']))
-        self.validDataLoader = DataLoader(self.DataSet(self.cnfg['valid_data_src']), batch_size=self.cnfg['valid_batch_size'], shuffle=False, collate_fn=collate_fn,**self.adjust_loader_params(self.cnfg['valid_batch_size']))
+        self.Dataset = self.load_component(dataset_loc) if (dataset_loc!=None) else self.Dataset
+        
+        self.trainDataLoader = DataLoader(**self.__adjust_loader_params(mode='train'))
+        self.validDataLoader = DataLoader(**self.__adjust_loader_params(mode='valid'))
         print('Data loaders are successfully created')
         
         self.model=self.model.to(self.device)
@@ -688,11 +730,11 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
     ----------
     ppl : str, list, dict
         - If `mode` is 'name', `ppl` should be a string representing the pipeline name.
-        - If `mode` is 'mod_ds', `ppl` should be a dictionary containing 'model_loc' and 'DataSet_loc' keys.
+        - If `mode` is 'mod_ds', `ppl` should be a dictionary containing 'model_loc' and 'dataset_loc' keys.
         - If `mode` is 'training', `ppl` should be a dictionary containing training configuration details:
           'optimizer_loc', 'train_batch_size', 'valid_batch_size', 'accuracy_loc', 'loss_loc', 
           'train_data_src', and 'valid_data_src'.
-        - If `mode` is 'all', `ppl` should be a dictionary with 'piLn_name', 'model_loc', 'DataSet_loc', 
+        - If `mode` is 'all', `ppl` should be a dictionary with 'piLn_name', 'model_loc', 'dataset_loc', 
           and training configuration details as described above.
 
     mode : str, optional
@@ -752,10 +794,10 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
         for i in ls:
             with open(os.path.join(root,"Configs",i)) as fl:
                 cnf0 = json.load(fl)
-                mods.append([cnf0['piLn_name'],cnf0['model_loc'],cnf0['DataSet_loc']])
+                mods.append([cnf0['piLn_name'],cnf0['model_loc'],cnf0['dataset_loc']])
         matches = []
         for i in mods:
-            if(i[1]==ppl['model_loc'] and i[2]==ppl['DataSet_loc']):
+            if(i[1]==ppl['model_loc'] and i[2]==ppl['dataset_loc']):
                 matches.append(i[0])
         if(len(matches)>0):
             if(log==True):
@@ -938,7 +980,7 @@ def test_mods(dataset=None,model=None,model_loc=None, accuracy_loc=None, loss_lo
     - accuracy_loc (str, optional): The location for saving accuracy metrics within the `Libs.accuracies` module. If not provided, uses default from configuration file.
     - loss_loc (str, optional): The location for saving loss metrics within the `Libs.losses` module. If not provided, uses default from configuration file.
     - optimizer_loc (str, optional): The location for saving optimizer state within the `Libs.optimizers` module. If not provided, uses default from configuration file.
-    - dataset_loc (str, optional): The location of the dataset class within the `Libs.datasets` module. If not fully qualified, it will be prefixed with 'Libs.datasets.'.
+    - dataset_loc (str, optional): The location of the dataset class within the `Libs.Datasets` module. If not fully qualified, it will be prefixed with 'Libs.Datasets.'.
     - train_data_src (str, optional): Source of training data. If not provided, uses default from configuration file.
     - train_batch_size (int, optional): Batch size for training data. If not provided, uses default from configuration file.
     - valid_data_src (str, optional): Source of validation data. If not provided, uses default from configuration file.
@@ -951,7 +993,7 @@ def test_mods(dataset=None,model=None,model_loc=None, accuracy_loc=None, loss_lo
     if(model_loc!=None and len(model_loc.split('.'))==1):
         model_loc = 'Libs.models.'+model_loc
     if(dataset_loc!=None and len(dataset_loc.split('.'))==1):
-        dataset_loc = 'Libs.datasets.'+dataset_loc
+        dataset_loc = 'Libs.Datasets.'+dataset_loc
     with open("internal/Default_Config.json") as fl:
         def_conf = json.load(fl)
     if(accuracy_loc is None):
@@ -977,7 +1019,7 @@ def test_mods(dataset=None,model=None,model_loc=None, accuracy_loc=None, loss_lo
 
     P = PipeLine()
     if(dataset and issubclass(dataset,Dataset)):
-        P.DataSet = dataset
+        P.Dataset = dataset
     if(model and issubclass(model.__class__,nn.Module)):
         P.model = model
     P.setup(name='test', 
@@ -1028,7 +1070,7 @@ def train_new(
         The location of the optimizer module. If a simple name is provided, it is prefixed with 'Libs.optimizers.'.
 
     dataset_loc : str, optional
-        The location of the dataset module. If a simple name is provided, it is prefixed with 'Libs.datasets.'.
+        The location of the dataset module. If a simple name is provided, it is prefixed with 'Libs.Datasets.'.
     
     train_data_src : str, optional
         The source path for training data. Defaults to the value specified in the default configuration file if not provided.
@@ -1061,7 +1103,7 @@ def train_new(
     if(model_loc!=None and len(model_loc.split('.'))==1):
         model_loc = 'Libs.models.'+model_loc
     if(dataset_loc!=None and len(dataset_loc.split('.'))==1):
-        dataset_loc = 'Libs.datasets.'+dataset_loc
+        dataset_loc = 'Libs.Datasets.'+dataset_loc
     with open("internal/Default_Config.json") as fl:
         def_conf = json.load(fl)
     if(accuracy_loc is None):
@@ -1086,7 +1128,7 @@ def train_new(
         optimizer_loc = 'Libs.optimizers.'+optimizer_loc
     dct={
         'model_loc': model_loc,
-        'DataSet_loc': dataset_loc,
+        'dataset_loc': dataset_loc,
         'accuracy_loc': accuracy_loc,
         'loss_loc': loss_loc,
         'optimizer_loc': optimizer_loc,
@@ -1396,7 +1438,7 @@ def performance_plot(ppl=None, history=None, metric=None, config="internal", fig
     ax2.legend()
     fig2.suptitle(f"Loss Plot for {history.split('/')[-1].split('.')[0]}", fontsize=16)
 
-    plt.show()
+    # plt.show()
     
     return [[fig1, ax1], [fig2, ax2]]
 
