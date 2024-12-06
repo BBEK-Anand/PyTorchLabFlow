@@ -827,6 +827,7 @@ pipeline.setup(
     config_path="Configs/mymodel_config.json",
     use_config=False,
     make_config=True,
+    remark="New", 
     prepare=True
 )
 ```
