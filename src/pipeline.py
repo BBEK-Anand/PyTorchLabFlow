@@ -4,7 +4,6 @@
 import torch
 import shutil
 from torch import nn
-# import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 import os
 import psutil  # For detecting system memory usage
@@ -26,7 +25,7 @@ class PipeLine:
         config_path (str): Path to the configuration file. Default is None.
     """
     
-    def __init__(self, name='Default_name', config_path=None):
+    def __init__(self):
         """
         Initializes the PipeLine class, sets up default configurations and variables like device, paths, 
         model, loss, optimizer, and data loaders.
@@ -35,7 +34,8 @@ class PipeLine:
             name (str): The name of the pipeline. Defaults to 'Default_name'.
             config_path (str): Path to the configuration file. Defaults to None.
         """
-        self.name = name
+        self.name = None
+        self.remark = None
         self.__best_val_loss = float('inf')
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model_name = None
@@ -46,7 +46,7 @@ class PipeLine:
         self.trainDataLoader = None
         self.validDataLoader = None
 
-        self.config_path = config_path
+        self.config_path = None
         self.weights_path = None
         self.history_path = None
 
@@ -112,7 +112,7 @@ class PipeLine:
 
         return "#".join(text)
     
-    def setup(self, name=None, model_loc=None, accuracy_loc=None, loss_loc=None, optimizer_loc=None, dataset_loc=None,
+    def setup(self, name=None,  remark="New", model_loc=None, accuracy_loc=None, loss_loc=None, optimizer_loc=None, dataset_loc=None,
               train_data_src=None, train_batch_size=None, valid_data_src=None, valid_batch_size=None, history_path=None,
               weights_path=None, config_path=None, use_config=False, make_config=True, prepare=False):
         """
@@ -138,12 +138,13 @@ class PipeLine:
             prepare (bool): Whether to prepare data loaders after setting up the pipeline. Default is False.
         """
         cnfg = {
+            "ppl_name": name if name else self.name,
+            "remark":remark,
             'model_loc': model_loc,
             'dataset_loc': dataset_loc,
             'accuracy_loc': accuracy_loc,
             'loss_loc': loss_loc,
             'optimizer_loc': optimizer_loc,
-            "piLn_name": name if name else self.name,
             'last': {'epoch': 0, 'train_accuracy': 0, 'train_loss': float('inf')},
             'best': {'epoch': 0, 'val_accuracy': 0, 'val_loss': float('inf')},
             "valid_data_src": valid_data_src,
@@ -159,7 +160,7 @@ class PipeLine:
             cnfg1 = json.load(open(config_path))
             self.history_path = cnfg1.get('history_path')
             self.weights_path = cnfg1.get('weights_path')
-            self.name = cnfg1.get('piLn_name')
+            self.name = cnfg1.get('ppl_name')
             self.model_name = cnfg1['model_loc'].split('.')[-1]
             self.__best_val_loss = cnfg1['best']['val_loss']
             cnfg1["valid_data_src"] = valid_data_src if valid_data_src!=None else cnfg1["valid_data_src"]
@@ -175,7 +176,7 @@ class PipeLine:
             os.makedirs(root, exist_ok=True)
 
             cnfg.update({
-                'piLn_name': name if name else self.name,
+                'ppl_name': name if name else self.name,
                 'weights_path': weights_path or os.path.join(root, f"{self.name}.pth"),
                 'history_path': history_path or os.path.join(root, f"{self.name}.csv"),
                 'config_path': config_path,
@@ -198,7 +199,7 @@ class PipeLine:
             os.makedirs(self.name, exist_ok=True)
 
             cnfg.update({
-                'piLn_name': self.name,
+                'ppl_name': self.name,
                 'weights_path': os.path.join(self.name, f"{self.name}.pth"),
                 'history_path': os.path.join(self.name, f"{self.name}.csv"),
                 'config_path': os.path.join(self.name, f"{self.name}.json"),
@@ -457,7 +458,7 @@ class PipeLine:
             accuracy = correct / len(self.validDataLoader)
             avg_loss = running_loss / len(self.validDataLoader)
             return avg_loss, accuracy
-  
+ 
 def setup_project(project_name="MyProject",create_root=True):#
     """
     Create the directory structure for a new machine learning project.
@@ -719,6 +720,7 @@ def get_ppls(mode='name', config="internal"): #mode = {name}|epoch|all,#config =
             return cnf
 
 def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|training #config = {internal}|archive|transfer
+    
     """
     Verifies the existence or uniqueness of a pipeline based on the given mode and configuration.
 
@@ -734,7 +736,7 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
         - If `mode` is 'training', `ppl` should be a dictionary containing training configuration details:
           'optimizer_loc', 'train_batch_size', 'valid_batch_size', 'accuracy_loc', 'loss_loc', 
           'train_data_src', and 'valid_data_src'.
-        - If `mode` is 'all', `ppl` should be a dictionary with 'piLn_name', 'model_loc', 'dataset_loc', 
+        - If `mode` is 'all', `ppl` should be a dictionary with 'ppl_name', 'model_loc', 'dataset_loc', 
           and training configuration details as described above.
 
     mode : str, optional
@@ -779,7 +781,7 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
     
     if(mode=='name'):
         if(isinstance(ppl,dict)):
-            ppl = ppl['piLn_name']
+            ppl = ppl['ppl_name']
         with open(root+"config.json") as fl:
             cnf0 = json.load(fl)
             if(ppl in cnf0.keys()):
@@ -794,7 +796,7 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
         for i in ls:
             with open(os.path.join(root,"Configs",i)) as fl:
                 cnf0 = json.load(fl)
-                mods.append([cnf0['piLn_name'],cnf0['model_loc'],cnf0['dataset_loc']])
+                mods.append([cnf0['ppl_name'],cnf0['model_loc'],cnf0['dataset_loc']])
         matches = []
         for i in mods:
             if(i[1]==ppl['model_loc'] and i[2]==ppl['dataset_loc']):
@@ -811,7 +813,7 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
         for i in ls:
             with open(os.path.join(root,"Configs",i)) as fl:
                 cnf0 = json.load(fl)
-                mods.append([cnf0['piLn_name'],cnf0['optimizer_loc'],
+                mods.append([cnf0['ppl_name'],cnf0['optimizer_loc'],
                             cnf0['train_batch_size'],cnf0['valid_batch_size'],
                             cnf0["accuracy_loc"],cnf0["loss_loc"],
                             cnf0["train_data_src"],cnf0["valid_data_src"]
@@ -830,7 +832,9 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
             return False
     elif(mode=='all'):
 
-        a1 = verify(ppl['piLn_name'], mode='name', config=config, log=log)
+        
+
+        a1 = verify(ppl['ppl_name'], mode='name', config=config, log=log)
         a2 = verify(ppl, mode='mod_ds', config=config, log=log)
         a3 = verify(ppl, mode='training', config=config, log=log)
         
@@ -840,13 +844,15 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
             'training': a3
         }
         
-        # valid_sets = {key: set(val) for key, val in match_flags.items() if val!=False}
-        valid_sets = {key: set(val) for key, val in match_flags.items() if len(val) > 0 and any(val)}
+        valid_sets = {
+            key: set(val) for key, val in match_flags.items()
+            if val != False and len(val) > 0 and any(val)
+        }
 
-        if valid_sets:
-            if len(valid_sets) == 3:
-                return f"Common in all: {set.intersection(*valid_sets.values())}"
-            else:
+        if len(valid_sets) <2:
+            return False
+       
+        elif len(valid_sets) == 2:
                 intersections = dict()
                 if 'name' in valid_sets and 'mod_ds' in valid_sets:
                     intersections["name & mod_ds"]= set.intersection(valid_sets['name'], valid_sets['mod_ds'])
@@ -855,7 +861,9 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
                 if 'name' in valid_sets and 'training' in valid_sets:
                     intersections["name & training"]= set.intersection(valid_sets['name'], valid_sets['training'])
                 return intersections
-        return False
+        elif len(valid_sets) == 3:
+                return f"Common in all: {set.intersection(*valid_sets.values())}"
+
 
 def up2date(config='internal'): #config = {internal}|archive|transfer
     """
@@ -898,7 +906,7 @@ def up2date(config='internal'): #config = {internal}|archive|transfer
     for i in ls:
         with open(os.path.join(root+"Configs",i)) as fl:
             cnf0 = json.load(fl)
-            plns.append([cnf0['piLn_name'],cnf0['last']['epoch'],cnf0['best']['val_accuracy']])
+            plns.append([cnf0['ppl_name'],cnf0['last']['epoch'],cnf0['best']['val_accuracy']])
     with open(root+"config.json") as fl:
         cnf = json.load(fl)
         for i in plns:
@@ -1132,11 +1140,11 @@ def train_new(
         'accuracy_loc': accuracy_loc,
         'loss_loc': loss_loc,
         'optimizer_loc': optimizer_loc,
-        'piLn_name': name,
+        'ppl_name': name,
         'valid_batch_size': valid_batch_size,
         'train_batch_size': train_batch_size,
         }
-    if(verify(ppl=dct['piLn_name'],mode='name') == False):
+    if(verify(ppl=dct['ppl_name'],mode='name') == False):
         P.setup(
             name=name,
             model_loc=model_loc,
@@ -1556,7 +1564,7 @@ def use_ppl(ppl,trained=True,name=None,
     with open(config_path) as fl:
         cnfg = json.load(fl)
     cnfg.update({
-            'piLn_name': name,
+            'ppl_name': name,
             'valid_batch_size': valid_batch_size or cnfg['valid_batch_size'],
             'valid_data_src': valid_data_src or cnfg['valid_data_src'],
             'train_batch_size': train_batch_size or cnfg['train_batch_size'],
@@ -1568,15 +1576,22 @@ def use_ppl(ppl,trained=True,name=None,
             'weights_path': "internal/Weights/"+name+".pth",
             'config_path' : "internal/Configs/"+name+".json"
         })
+    cnfg['remark'] = ppl+f"[{cnfg['best']['epoch']}]" if trained else ppl
     cnfg["last"]["epoch"] = 0
-    cnfg["best"]["epoch"] = -1
+    cnfg["best"]["epoch"] = -1 if trained else 0
+    cnfg["best"]["val_loss"] = cnfg["best"]["val_loss"] if trained else float("inf")
+    # if( isinstance(vrf,dict) and (len(vrf["mod_ds & training"])==0)):
     vrf = verify(ppl=cnfg, mode="all")
-    if( isinstance(vrf,dict) and (len(vrf["mod_ds & training"])==0)):
+    # print(vrf)
+    # if isinstance(vrf, dict) and "mod_ds & training" in vrf and len(vrf["mod_ds & training"]) == 0:
+    if(not vrf or (isinstance(vrf, dict) and (len(vrf)==0 or ("mod_ds & training" in vrf and len(vrf["mod_ds & training"]) == 0)))):
+        with open("internal/Configs/"+name+".json",'w') as fl:
+            json.dump(cnfg, fl, indent=4)
         if(trained):
-            with open("internal/Configs/"+name+".json",'w') as fl:
-                json.dump(cnfg, fl, indent=4)
-            shutil.copy2(src="internal/Weights/"+ppl+".pth",dst=cnfg['weights_path'])
             
+            shutil.copy2(src="internal/Weights/"+ppl+".pth",dst=cnfg['weights_path'])
+            pd.DataFrame(columns=["epoch", "train_accuracy", "train_loss", "val_accuracy", "val_loss"]).to_csv(cnfg['history_path'] , index=False)
+           
             print("New ppl created ",name)
             P =PipeLine()
             P.setup(config_path=cnfg['config_path'],use_config=True, prepare=prepare)
