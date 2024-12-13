@@ -1878,13 +1878,14 @@ P.train(num_epochs=20,patience=6)
   - [tqdm](https://github.com/tqdm) - For progress bar during traing.
   - [matplotlib](https://matplotlib.org/) - For plotting.
 # Cite this
+```
   @misc{PyTorchLabFlow,
   author       = {BBEK-Anand},
   title        = {PyTorchLabFlow: A Python Library for Managing Deep Learning Experiments in PyTorch},
   year         = {2024},
   url          = {https://github.com/BBEK-Anand/PyTorchLabFlow},
   note         = {Version 0.2.5},
-}
+}```
 
 # Contributing
 Feel free to fork this project, open issues, or create pull requests. Contributions are always welcome!
