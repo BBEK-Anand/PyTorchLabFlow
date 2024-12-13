@@ -1,7 +1,7 @@
 # PyTorchLabFlow
 [![PyPI version](https://badge.fury.io/py/PyTorchLabFlow.svg)](https://badge.fury.io/py/PyTorchLabFlow)
 [![Downloads](https://static.pepy.tech/badge/Pytorchlabflow)](https://pepy.tech/project/Pytorchlabflow)
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-Repo-black?style=flat&logo=github)](https://github.com/BBEK-Anand/PyTorchLabFlow)
 
 ---
@@ -1883,11 +1883,13 @@ P.train(num_epochs=20,patience=6)
   title        = {PyTorchLabFlow: A Python Library for Managing Deep Learning Experiments in PyTorch},
   year         = {2024},
   url          = {https://github.com/BBEK-Anand/PyTorchLabFlow},
-  note         = {Version 0.2},
+  note         = {Version 0.2.5},
 }
 
 # Contributing
 Feel free to fork this project, open issues, or create pull requests. Contributions are always welcome!
 
 # License
-This project is licensed under the MIT License.
+This project is licensed under the Apache License 2.0.
+
+
