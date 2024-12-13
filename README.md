@@ -1885,7 +1885,8 @@ P.train(num_epochs=20,patience=6)
   year         = {2024},
   url          = {https://github.com/BBEK-Anand/PyTorchLabFlow},
   note         = {Version 0.2.5},
-}```
+}
+```
 
 # Contributing
 Feel free to fork this project, open issues, or create pull requests. Contributions are always welcome!
