@@ -395,7 +395,7 @@ class PipeLine:
             end_epoch = start_epoch + num_epochs
             self.model.to(self.device)
 
-            best_val_loss = float('inf')  # Start with the worst possible value for validation loss
+            best_val_loss = self.cnfg["best"]["val_loss"]  #float('inf')  # Start with the worst possible value for validation loss
             epochs_without_improvement = 0  # Track epochs without improvement in validation loss
             patience = patience or num_epochs  # If patience is None, set it to num_epochs
             for epoch in range(start_epoch, end_epoch):
@@ -827,12 +827,12 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
                 mods.append([cnf0['ppl_name'],cnf0['optimizer_loc'],
                             cnf0['train_batch_size'],cnf0['valid_batch_size'],
                             cnf0["accuracy_loc"],cnf0["loss_loc"],
-                            cnf0["train_data_src"],cnf0["valid_data_src"]
+                            cnf0["train_data_src"],cnf0["valid_data_src"], cnfg0["remark"]
                             
                         ])
         matches = []
         for i in mods:
-            if(i[1]==ppl['optimizer_loc'] and i[2]==ppl['train_batch_size'] and i[3]==ppl['valid_batch_size'] and ppl["accuracy_loc"]==i[4] and ppl["loss_loc"]==i[5] and  ppl["train_data_src"]==i[6] and ppl["valid_data_src"]==i[7]):
+            if(i[1]==ppl['optimizer_loc'] and i[2]==ppl['train_batch_size'] and i[3]==ppl['valid_batch_size'] and ppl["accuracy_loc"]==i[4] and ppl["loss_loc"]==i[5] and  ppl["train_data_src"]==i[6] and ppl["valid_data_src"]==i[7] and ppl['remark']==i[8]):
                 matches.append(i[0])
                 
         if(len(matches)>0):
