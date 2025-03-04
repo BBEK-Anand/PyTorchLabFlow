@@ -40,6 +40,7 @@ Your_directory
   │   ├── datasets.py
   │   ├── losses.py
   │   ├── models.py
+  │   ├── train_valids.py
   │   └── optimizers.py
   ├── internal
   │   ├── Histories
@@ -220,7 +221,9 @@ train_new(
     model_loc="Libs.models.testCNN",
     dataset_loc="Libs.datasets.testDS",
     train_data_src="DataSets/train", 
-    valid_data_src="DataSets/valid"
+    valid_data_src="DataSets/valid",
+    train_loc = "Libs.train_valids.testTrain",
+    valid_loc = "Libs.train_valids.testValid"
 )
 ```
 Here the parameter name is your experiment pipeline(ppl) this should be unique for each experiment. To know about previous experiment pipelines use `get_ppls(mode='name')`.
@@ -459,6 +462,8 @@ Configures and initializes a testing pipeline for evaluating a machine learning 
     - loss_loc (str, optional): The location for saving loss metrics within the `Libs.losses` module. If not provided, uses default from configuration file.
     - optimizer_loc (str, optional): The location for saving optimizer state within the `Libs.optimizers` module. If not provided, uses default from configuration file.
     - dataset_loc (str, optional): The location of the dataset class within the `Libs.datasets` module. If not fully qualified, it will be prefixed with 'Libs.datasets.'.
+    - train_loc (str, optional): The location of the training loop within the `Libs.train_valids` module. If not fully qualified, it will be prefixed with 'Libs.train_valids.'.
+    - valid_loc (str, optional): The location of the validation loop within the `Libs.train_valids` module. If not fully qualified, it will be prefixed with 'Libs.train_valids.'.
     - train_data_src (str, optional): Source of training data. If not provided, uses default from configuration file.
     - train_batch_size (int, optional): Batch size for training data. If not provided, uses default from configuration file.
     - valid_data_src (str, optional): Source of validation data. If not provided, uses default from configuration file.
@@ -495,7 +500,12 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
 ### dataset_loc : str, optional
         The location of the dataset module. If a simple name is provided, it is prefixed with 'Libs.datasets.'.
-    
+
+### train_loc : str, optional
+        The location of the training loop. If a simple name is provided, it is prefixed with 'Libs.train_valids.'.
+### valid_loc : str, optional
+        The location of the validation loop. If a simple name is provided, it is prefixed with 'Libs.train_valids.'.
+
 ### train_data_src : str, optional
         The source path for training data. Defaults to the value specified in the default configuration file if not provided.
     
@@ -580,6 +590,8 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - loss_loc (str, optional): The location for saving loss metrics. If a short name is provided, it will be prefixed with 'Libs.losses.'.
     - accuracy_loc (str, optional): The location for saving accuracy metrics. If a short name is provided, it will be prefixed with 'Libs.accuracies.'.
     - optimizer_loc (str, optional): The location for saving optimizer state. If a short name is provided, it will be prefixed with 'Libs.optimizers.'.
+    - train_loc (str, optional): The location of the training loop. If a simple name is provided, it is prefixed with 'Libs.train_valids.'.
+    - valid_loc (str, optional): The location of the validation loop. If a simple name is provided, it is prefixed with 'Libs.train_valids.'.
     - train_data_src (str, optional): The source for the training data. Overrides the source in the existing configuration.
     - valid_data_src (str, optional): The source for the validation data. Overrides the source in the existing configuration.
     - train_batch_size (int, optional): Batch size for training data. Overrides the value in the existing configuration.

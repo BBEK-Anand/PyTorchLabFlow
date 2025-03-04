@@ -25,25 +25,38 @@ import importlib
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
+import seaborn as sns
+from functools import partial
+
 
 class PipeLine:
-    """
-    Class for managing the entire machine learning pipeline, including model setup, training, validation, 
-    and saving configurations and weights.
-    
-    Args:
-        name (str): Name of the pipeline. Default is 'Default_name'.
-        config_path (str): Path to the configuration file. Default is None.
+    """Manages the entire machine learning pipeline, including model setup, training, validation, and configuration management.
+
+    This class orchestrates the setup, training, and validation of a machine learning model using PyTorch and related libraries.
+    It supports dynamic loading of components (e.g., models, datasets) and handles data loaders, training loops, and state persistence.
+
+    Attributes:
+        name (str): Name of the pipeline.
+        remark (str): Additional remark or description of the pipeline.
+        device (torch.device): The device (CPU/GPU) used for computation.
+        model (nn.Module): The machine learning model.
+        loss (nn.Module): The loss function.
+        optimizer (torch.optim.Optimizer): The optimizer for training.
+        trainDataLoader (DataLoader): DataLoader for training data.
+        validDataLoader (DataLoader): DataLoader for validation data.
+        config_path (str): Path to the configuration JSON file.
+        weights_path (str): Path to save model weights.
+        history_path (str): Path to save training history CSV.
+        cnfg (dict): Configuration dictionary.
+        _configured (bool): Whether the pipeline is fully configured.
+        Dataset (type): The dataset class used for data loading.
     """
     
     def __init__(self):
-        """
-        Initializes the PipeLine class, sets up default configurations and variables like device, paths, 
-        model, loss, optimizer, and data loaders.
-        
-        Args:
-            name (str): The name of the pipeline. Defaults to 'Default_name'.
-            config_path (str): Path to the configuration file. Defaults to None.
+        """Initializes the PipeLine class with default settings.
+
+        Sets up default attributes such as device, paths, and model components. Does not load any specific configuration or data
+        until `setup` or `prepare_data` is called.
         """
         self.name = None
         self.remark = None
@@ -62,46 +75,65 @@ class PipeLine:
         self.history_path = None
 
         self.cnfg = None
-        self.__configured = False
+        self._configured = False
         self.Dataset = None
-
+    
     def load_component(self, module_loc):
-        """
-        Loads a Python class from a given module location string.
-        
+        """Loads a Python class from a given module location string.
+
         Args:
-            module_loc (str): Dot-separated string representing the module and class to be loaded.
-        
+            module_loc (str): Dot-separated string representing the module and class (e.g., 'Libs.models.MyModel').
+
         Returns:
-            class_: The loaded class from the module.
+            type: The loaded class from the module.
+
+        Raises:
+            ImportError: If the module or class cannot be imported.
         """
         module = importlib.import_module('.'.join(module_loc.split('.')[:-1]))
         class_ = getattr(module, module_loc.split('.')[-1])
         return class_
 
     def load_optimizer(self, module_loc, **kwargs):
-        """
-        Loads an optimizer class from a given module location string and initializes it with the model's parameters.
-        
+        """Loads and initializes an optimizer class with the model's parameters.
+
         Args:
-            module_loc (str): Dot-separated string representing the module and optimizer class to be loaded.
-            **kwargs: Additional arguments to pass to the optimizer during initialization.
-        
+            module_loc (str): Dot-separated string representing the module and optimizer class (e.g., 'torch.optim.Adam').
+            **kwargs: Additional arguments passed to the optimizer constructor.
+
         Returns:
-            optimizer: The initialized optimizer instance.
+            torch.optim.Optimizer: The initialized optimizer instance.
+
+        Raises:
+            ImportError: If the optimizer module or class cannot be imported.
         """
         module = importlib.import_module('.'.join(module_loc.split('.')[:-1]))
         class_ = getattr(module, module_loc.split('.')[-1])
         return class_(self.model, **kwargs)
 
     def save_config(self):
-        """
-        Saves the current pipeline configuration to the specified config path in JSON format.
+        """Saves the current pipeline configuration to a JSON file.
+
+        Writes the `cnfg` dictionary to the file specified by `config_path`.
+
+        Raises:
+            FileNotFoundError: If the directory for `config_path` does not exist.
+            IOError: If writing to the file fails.
         """
         with open(self.cnfg['config_path'], "w") as out_file:
             json.dump(self.cnfg, out_file, indent=4)
     
     def get_desc(self,cnfg=None,mode="all",full=False):
+        """Generates a description string based on pipeline configuration.
+
+        Args:
+            cnfg (dict, optional): Configuration dictionary to use. Defaults to `self.cnfg`.
+            mode (str, optional): Type of description to generate ('mods', 'training', 'all'). Defaults to 'all'.
+            full (bool, optional): If True, includes full paths/locations; otherwise, uses short names. Defaults to False.
+
+        Returns:
+            str: A '#'-separated string summarizing the requested configuration components.
+        """
         cnfg = cnfg or self.cnfg
         if(mode=="mods"):
             components = ['model_loc','dataset_loc' ]
@@ -124,29 +156,36 @@ class PipeLine:
         return "#".join(text)
     
     def setup(self, name=None,  remark="New", model_loc=None, accuracy_loc=None, loss_loc=None, optimizer_loc=None, dataset_loc=None,
+              train_loc=None, valid_loc=None,
               train_data_src=None, train_batch_size=None, valid_data_src=None, valid_batch_size=None, history_path=None,
               weights_path=None, config_path=None, use_config=False, make_config=True, prepare=False):
-        """
-        Sets up the pipeline by loading and configuring the model, loss, optimizer, accuracy metrics, dataset, 
-        and other necessary components. Can either load from an existing configuration file or create a new one.
-        
+        """Configures the pipeline with model, dataset, and training parameters.
+
+        Can load from an existing configuration file or create a new one based on provided parameters.
+
         Args:
-            name (str): Name of the pipeline. If None, uses default or pre-existing configuration.
-            model_loc (str): Location of the model class to be loaded.
-            accuracy_loc (str): Location of the accuracy metric function to be loaded.
-            loss_loc (str): Location of the loss function to be loaded.
-            optimizer_loc (str): Location of the optimizer class to be loaded.
-            dataset_loc (str): Location of the dataset class to be loaded.
-            train_data_src (str): Path to the training data source.
-            train_batch_size (int): Batch size for training data loader.
-            valid_data_src (str): Path to the validation data source.
-            valid_batch_size (int): Batch size for validation data loader.
-            history_path (str): Path to save the training history CSV file.
-            weights_path (str): Path to save the model weights.
-            config_path (str): Path to the configuration JSON file.
-            use_config (bool): Whether to use an existing configuration file. Default is False.
-            make_config (bool): Whether to create a new configuration file if one does not exist. Default is True.
-            prepare (bool): Whether to prepare data loaders after setting up the pipeline. Default is False.
+            name (str, optional): Name of the pipeline.
+            remark (str, optional): Additional remark for the pipeline. Defaults to 'New'.
+            model_loc (str, optional): Module location of the model class.
+            accuracy_loc (str, optional): Module location of the accuracy metric.
+            loss_loc (str, optional): Module location of the loss function.
+            optimizer_loc (str, optional): Module location of the optimizer.
+            dataset_loc (str, optional): Module location of the dataset class.
+            train_loc (str, optional): Module location of the training function.
+            valid_loc (str, optional): Module location of the validation function.
+            train_data_src (str, optional): Path to training data.
+            train_batch_size (int, optional): Batch size for training data.
+            valid_data_src (str, optional): Path to validation data.
+            valid_batch_size (int, optional): Batch size for validation data.
+            history_path (str, optional): Path to save training history CSV.
+            weights_path (str, optional): Path to save model weights.
+            config_path (str, optional): Path to the configuration JSON file.
+            use_config (bool, optional): If True, loads an existing configuration. Defaults to False.
+            make_config (bool, optional): If True, creates a new configuration file. Defaults to True.
+            prepare (bool, optional): If True, prepares data loaders after setup. Defaults to False.
+
+        Raises:
+            ValueError: If required parameters are missing when creating a new configuration.
         """
         cnfg = {
             "ppl_name": name if name else self.name,
@@ -155,6 +194,8 @@ class PipeLine:
             'dataset_loc': dataset_loc,
             'accuracy_loc': accuracy_loc,
             'loss_loc': loss_loc,
+            'train_loc':train_loc ,
+            "valid_loc": valid_loc,
             'optimizer_loc': optimizer_loc,
             'last': {'epoch': 0, 'train_accuracy': 0, 'train_loss': float('inf')},
             'best': {'epoch': 0, 'val_accuracy': 0, 'val_loss': float('inf')},
@@ -233,20 +274,25 @@ class PipeLine:
         self.optimizer = self.load_optimizer(self.cnfg['optimizer_loc'])
         self.accuracy = self.load_component(self.cnfg['accuracy_loc'])()
         self.Dataset = self.load_component(self.cnfg['dataset_loc']) if(self.cnfg['dataset_loc']!=None) else self.Dataset
-        
+        if(self.cnfg['train_loc']!=None):
+            self.train =partial(self.load_component(self.cnfg['train_loc']), self)
+        if(self.cnfg['valid_loc']!=None):
+            self.validate =partial(self.load_component(self.cnfg['valid_loc']), self)
         if prepare:
             dataset_loc = self.cnfg['dataset_loc'] if(dataset_loc==None) else dataset_loc
             self.prepare_data(dataset_loc=dataset_loc)
 
     def __adjust_loader_params(self, mode):
-        """
-        Adjusts pin_memory and num_workers based on the batch size, dataset size, and system resources.
+        """Adjusts DataLoader parameters based on system resources and dataset size.
 
         Args:
-            mode (str): Mode of operation (either "train" or "valid").
-        
+            mode (str): Either 'train' or 'valid' to specify the data loader type.
+
         Returns:
-            dict: A dictionary containing optimal 'pin_memory', 'num_workers', and other loader parameters.
+            dict: Parameters for DataLoader including dataset, batch size, shuffle, num_workers, collate_fn, and pin_memory.
+
+        Raises:
+            ValueError: If mode is neither 'train' nor 'valid'.
         """
         if mode in {"valid", "train"}:
             # Initialize the dataset and batch size
@@ -254,11 +300,9 @@ class PipeLine:
             collate_fn = getattr(self.Dataset, "collate_fn", None) or None  # Default collate_fn if not present
             batch_size = self.cnfg[mode + "_batch_size"]
             shuffle = False if mode == "valid" else True
+            # print("ptlf2 line 287", collate_fn)
         else:
             raise ValueError(mode + '_data_src is not found')
-        
-        # Get system memory information
-        system_memory_available = psutil.virtual_memory().available > 8 * 1024**3  # Check if more than 8GB is available
         
         # Get number of CPU cores
         num_cpu_cores = os.cpu_count()
@@ -282,12 +326,25 @@ class PipeLine:
             num_workers = min(num_cpu_cores * 2, 16)  # For large batches, use more workers, but don't overdo it
         
         # Adjust based on system memory availability
+        # Get system memory information
+        system_memory_available = psutil.virtual_memory().available > 5 * 1024**3  # Check if more than 8GB is available
         if not system_memory_available:
             num_workers = min(num_workers, 4)  # Reduce num_workers if system memory is limited
             pin_memory = False  # Disable pin_memory to save memory
+            print(f"memory available={psutil.virtual_memory().available}<={5 * 1024**3} --> pin_memory={pin_memory}")
         
         num_workers = 0 if self.cnfg["dataset_loc"]==None else num_workers  # If it fails, use single-process loading
         # Return the optimal settings for DataLoader
+        # print({
+        #     'dataset': ds,
+        #     'batch_size': batch_size,
+        #     'shuffle': shuffle,
+        #     'num_workers': num_workers,
+        #     'collate_fn': collate_fn,
+        #     'pin_memory': pin_memory
+        # })
+        num_workers = 0   # PyG  does not support num_worker>0
+        # print(collate_fn,"line300")
         return {
             'dataset': ds,
             'batch_size': batch_size,
@@ -298,16 +355,17 @@ class PipeLine:
         }
 
     def prepare_data(self, dataset_loc=None, train_data_src=None, train_batch_size=None, valid_data_src=None, valid_batch_size=None):
-        """
-        Prepares the data loaders for training and validation by loading the dataset and setting up batch sizes 
-        and paths. Also saves the configuration after preparation.
-        
+        """Prepares training and validation data loaders.
+
         Args:
-            dataset_loc (str): Location of the dataset class to be loaded.
-            train_data_src (str): Path to the training data source.
-            train_batch_size (int): Batch size for the training data loader.
-            valid_data_src (str): Path to the validation data source.
-            valid_batch_size (int): Batch size for the validation data loader.
+            dataset_loc (str, optional): Module location of the dataset class.
+            train_data_src (str, optional): Path to training data.
+            train_batch_size (int, optional): Batch size for training data.
+            valid_data_src (str, optional): Path to validation data.
+            valid_batch_size (int, optional): Batch size for validation data.
+
+        Raises:
+            ValueError: If required data source or batch size parameters are missing.
         """
         if not (train_data_src or self.cnfg['train_data_src']):
             raise ValueError('train_data_src is not found')
@@ -338,15 +396,16 @@ class PipeLine:
         self.loss = self.loss.to(self.device)
         if(self.cnfg['last']['epoch']>0):
                 self.model.load_state_dict(torch.load(self.weights_path, weights_only=True), strict=False)
-        self.__configured =True
+        self._configured =True
 
     def update(self, data):
-        """
-        Updates the pipeline's configuration with the current epoch, training accuracy, training loss, 
-        validation accuracy, and validation loss. If the validation loss improves, saves the model weights.
-        
+        """Updates the pipeline configuration and saves state after an epoch.
+
         Args:
-            data (dict): Dictionary containing epoch, train_accuracy, train_loss, val_accuracy, and val_loss.
+            data (dict): Dictionary with keys 'epoch', 'train_accuracy', 'train_loss', 'val_accuracy', 'val_loss'.
+
+        Notes:
+            Saves model weights if validation loss improves.
         """
         self.cnfg['last'] = {'epoch': data['epoch'], 'train_accuracy': data['train_accuracy'], 'train_loss': data['train_loss']}
         if data['val_loss'] < self.cnfg['best']['val_loss']:
@@ -359,35 +418,16 @@ class PipeLine:
         record.to_csv(self.cnfg['history_path'], mode='a', header=False, index=False)
 
     def train(self, num_epochs=5, patience=None):
+            """Trains the model for a specified number of epochs with early stopping.
+
+            Args:
+                num_epochs (int, optional): Number of epochs to train. Defaults to 5.
+                patience (int, optional): Number of epochs to wait for improvement before stopping. Defaults to None (no early stopping).
+
+            Returns:
+                None: Prints training progress and stops early if patience is exceeded.
             """
-    Trains the model for a specified number of epochs with optional early stopping.
-
-    This method performs the training loop for the model, calculating the loss and accuracy at each 
-    epoch, and prints the results for both training and validation. If early stopping is enabled, 
-    training will stop if no improvement is seen in the validation loss for a specified number of epochs (patience).
-
-    Args:
-        num_epochs (int): The number of epochs to train the model. Default is 5.
-            If early stopping is used, this is the maximum number of epochs before training halts.
-        
-        patience (int, optional): The number of consecutive epochs to wait for an improvement in validation loss 
-            before stopping training early. Default is `None`, which means early stopping is disabled, 
-            and all epochs will run. If specified, training will stop if validation loss does not improve
-            for the given number of epochs.
-
-    Returns:
-        None: This method prints out the training progress and results during execution.
-
-    Notes:
-        - If early stopping is enabled, the patience parameter dictates how many epochs to wait for 
-          an improvement in validation loss. If no improvement is seen within the specified number of epochs, 
-          the training will stop early.
-        - The model's weights are not automatically saved in this method; you can modify this method to save 
-          the model if it achieves the best validation loss.
-        - The method assumes the model, optimizer, loss function, and training/validation data loaders 
-          have been properly configured before calling this function.
-            """
-            if (not self.__configured):
+            if (not self._configured):
                 print('Preparation Error. execute prepare_data or set prepare=True in setup before training')
                 return None
             
@@ -395,7 +435,7 @@ class PipeLine:
             end_epoch = start_epoch + num_epochs
             self.model.to(self.device)
 
-            best_val_loss = self.cnfg["best"]["val_loss"]  #float('inf')  # Start with the worst possible value for validation loss
+            best_val_loss = self.cnfg['best']['val_loss'] #float('inf')  # Start with the worst possible value for validation loss
             epochs_without_improvement = 0  # Track epochs without improvement in validation loss
             patience = patience or num_epochs  # If patience is None, set it to num_epochs
             for epoch in range(start_epoch, end_epoch):
@@ -405,19 +445,28 @@ class PipeLine:
                 accuracy_metric = self.accuracy.to(self.device)
                 train_loader_tqdm = tqdm(self.trainDataLoader, desc=f'Epoch {epoch+1}/{end_epoch}', leave=True)
 
-                for inputs, labels in train_loader_tqdm:
-                    inputs, labels = inputs.to(self.device), labels.to(self.device).float()
+                for drug1, drug2, b_graph, labels in train_loader_tqdm:
+                    drug1, drug2, b_graph, labels = drug1.to(self.device), drug2.to(self.device), b_graph.to(self.device), labels.to(self.device)
+                    
                     self.optimizer.zero_grad()
-                    outputs = self.model(inputs)
-                    if outputs.shape[1] == 1:  # Binary classification (output is a single neuron)
-                        outputs = outputs.view(-1)  # Flatten to shape [batch_size]
-                    elif outputs.shape[1]==2:
-                        labels = labels.long()
-                    loss = self.loss(outputs, labels)  
+                    
+                    logits = self.model(drug1, drug2, b_graph)
+
+                    loss = self.loss(logits.squeeze(), labels.float())  
+                    # weighted_loss = (loss * weights).mean()  # Apply class weights
+
+                    # Backward pass and optimization
                     loss.backward()
                     self.optimizer.step()
+
                     running_loss += loss.item()
-                    running_accuracy += accuracy_metric(outputs, labels.int()).item()
+
+                    accuracy = accuracy_metric(logits, labels)
+                    # Apply class weights to the accuracy calculation
+                    # weighted_accuracy = (accuracy * weights.sum() / len(weights))  # Weighted accuracy
+
+                    running_accuracy += accuracy.item()
+
                     train_loader_tqdm.set_postfix(loss=running_loss/len(train_loader_tqdm), accuracy=running_accuracy/len(train_loader_tqdm))
 
                 train_loss = running_loss / len(self.trainDataLoader)
@@ -442,33 +491,33 @@ class PipeLine:
             print('Finished Training')
             
     def validate(self):
-        """
-        Validates the model on the validation dataset, computing the loss and accuracy.
-        
+        """Validates the model on the validation dataset.
+
         Returns:
-            avg_loss (float): The average validation loss.
-            accuracy (float): The validation accuracy.
+            tuple: (avg_loss, accuracy) representing the average validation loss and accuracy.
         """
         self.model.eval()
         running_loss = 0.0
-        correct = 0
-        total = 0
+        running_accuracy = 0.0
         with torch.no_grad():
-            for inputs, labels in tqdm(self.validDataLoader, desc='Validating', leave=False):
-                inputs, labels = inputs.to(self.device), labels.to(self.device).float()
-                outputs = self.model(inputs) 
+            for drug1, drug2, b_graph, labels in tqdm(self.validDataLoader, desc='Validating', leave=False):
+                drug1, drug2, b_graph, labels = drug1.to(self.device), drug2.to(self.device), b_graph.to(self.device), labels.to(self.device)
+                logits = self.model(drug1, drug2, b_graph) 
+                
+                loss = self.loss(logits.squeeze(), labels.float())   
+                # weighted_loss = (loss * weights).mean()  # Apply class weights
 
-                if outputs.shape[1] == 1:  # Binary classification (output is a single neuron)
-                    outputs = outputs.view(-1)  # Flatten to shape [batch_size]
-                elif outputs.shape[1]==2:
-                    labels = labels.long()
-                loss = self.loss(outputs, labels)  
                 running_loss += loss.item()
-                correct += self.accuracy(outputs, labels.int()).item()
-                total += labels.size(0)
-            accuracy = correct / len(self.validDataLoader)
-            avg_loss = running_loss / len(self.validDataLoader)
-            return avg_loss, accuracy
+                
+                accuracy = self.accuracy(logits, labels)
+                # Apply class weights to the accuracy calculation
+                # weighted_accuracy = (accuracy * weights.sum() / len(weights))  # Weighted accuracy
+                
+                running_accuracy += accuracy.item()
+
+            val_loss = running_loss / len(self.validDataLoader)
+            val_accuracy = running_accuracy / len(self.validDataLoader)
+            return val_loss, val_accuracy
  
 def setup_project(project_name="MyProject",create_root=True):#
     """
@@ -642,6 +691,116 @@ from torch.utils.data import Dataset
 #    return optim.Adam(model.parameters(),**kwargs)
 '''
             file.write(code)
+        with open(os.path.join(project_name,'Libs','train_valids.py'), 'w') as file:
+            code = '''\
+#import your nessessary libreries here
+
+
+#define your train and validation loops here functions here
+###DEMO
+# import torch
+# from tqdm import tqdm
+
+
+# def train01(self, num_epochs=5, patience=None):
+
+#             if (not self._configured):
+#                 print('Preparation Error. execute prepare_data or set prepare=True in setup before training')
+#                 return None
+            
+#             start_epoch = self.cnfg['last']['epoch']
+#             end_epoch = start_epoch + num_epochs
+#             self.model.to(self.device)
+
+#             best_val_loss = self.cnfg['best']['val_loss'] #float('inf')  # Start with the worst possible value for validation loss
+#             epochs_without_improvement = 0  # Track epochs without improvement in validation loss
+#             patience = patience or num_epochs  # If patience is None, set it to num_epochs
+#             for epoch in range(start_epoch, end_epoch):
+#                 self.model.train()
+#                 running_loss = 0.0
+#                 running_accuracy = 0.0
+#                 accuracy_metric = self.accuracy.to(self.device)
+#                 train_loader_tqdm = tqdm(self.trainDataLoader, desc=f'Epoch {epoch+1}/{end_epoch}', leave=True)
+
+#                 for drug1, drug2, labels, weights in train_loader_tqdm:
+#                     drug1, drug2, labels, weights = drug1.to(self.device), drug2.to(self.device), labels.to(self.device), weights.to(self.device)
+                    
+#                     self.optimizer.zero_grad()
+                    
+#                     logits = self.model(drug1, drug2)
+
+#                     loss = self.loss(logits.squeeze(), labels.float())  
+#                     weighted_loss = (loss * weights).mean()  # Apply class weights
+
+#                     # Backward pass and optimization
+#                     weighted_loss.backward()
+#                     self.optimizer.step()
+
+#                     running_loss += weighted_loss.item()
+
+#                     accuracy = accuracy_metric(logits, labels)
+#                     # Apply class weights to the accuracy calculation
+#                     weighted_accuracy = (accuracy * weights.sum() / len(weights))  # Weighted accuracy
+
+#                     running_accuracy += weighted_accuracy.item()
+
+#                     train_loader_tqdm.set_postfix(loss=running_loss/len(train_loader_tqdm), accuracy=running_accuracy/len(train_loader_tqdm))
+
+#                 train_loss = running_loss / len(self.trainDataLoader)
+#                 train_accuracy = running_accuracy / len(self.trainDataLoader)
+#                 val_loss, val_accuracy = self.validate()
+                
+#                 print(f'Epoch {epoch+1}, Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.2f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.2f}')
+                
+#                 # Check if the validation loss has improved
+#                 if (val_loss < best_val_loss):
+#                     best_val_loss = val_loss
+#                     epochs_without_improvement = 0  # Reset the counter since we've improved
+#                 else:
+#                     epochs_without_improvement += 1  # Increment the counter for no improvement
+
+#                 data = {'epoch': epoch+1, 'train_accuracy': train_accuracy, 'train_loss': train_loss, 'val_accuracy': val_accuracy, 'val_loss': val_loss}
+#                 self.update(data)
+#                 # If we've hit the patience threshold, stop training early
+#                 if (epochs_without_improvement >= patience):
+#                     print(f'Early stopping after {epoch+1} epochs due to no improvement in validation loss.')
+#                     break
+#             print('Finished Training')
+            
+# def validate01(self):
+#         """
+#         Validates the model on the validation dataset, computing the loss and accuracy.
+        
+#         Returns:
+#             avg_loss (float): The average validation loss.
+#             accuracy (float): The validation accuracy.
+#         """
+#         self.model.eval()
+#         running_loss = 0.0
+#         running_accuracy = 0.0
+#         with torch.no_grad():
+#             for drug1, drug2, labels, weights in tqdm(self.validDataLoader, desc='Validating', leave=False):
+#                 drug1, drug2, labels, weights = drug1.to(self.device), drug2.to(self.device), labels.to(self.device), weights.to(self.device)
+#                 logits = self.model(drug1, drug2) 
+                
+#                 loss = self.loss(logits.squeeze(), labels.float())   
+#                 weighted_loss = (loss * weights).mean()  # Apply class weights
+
+#                 running_loss += weighted_loss.item()
+                
+#                 accuracy = self.accuracy(logits, labels)
+#                 # Apply class weights to the accuracy calculation
+#                 weighted_accuracy = (accuracy * weights.sum() / len(weights))  # Weighted accuracy
+                
+#                 running_accuracy += weighted_accuracy.item()
+
+#             val_loss = running_loss / len(self.validDataLoader)
+#             val_accuracy = running_accuracy / len(self.validDataLoader)
+#             return val_loss, val_accuracy
+
+
+'''
+            file.write(code)
         os.mkdir(os.path.join(project_name,'internal'))
         os.mkdir(os.path.join(project_name,'internal','Histories'))
         os.mkdir(os.path.join(project_name,'internal','Weights'))
@@ -731,7 +890,6 @@ def get_ppls(mode='name', config="internal"): #mode = {name}|epoch|all,#config =
             return cnf
 
 def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|training #config = {internal}|archive|transfer
-    
     """
     Verifies the existence or uniqueness of a pipeline based on the given mode and configuration.
 
@@ -827,12 +985,16 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
                 mods.append([cnf0['ppl_name'],cnf0['optimizer_loc'],
                             cnf0['train_batch_size'],cnf0['valid_batch_size'],
                             cnf0["accuracy_loc"],cnf0["loss_loc"],
-                            cnf0["train_data_src"],cnf0["valid_data_src"], cnfg0["remark"]
+                            cnf0["train_data_src"],cnf0["valid_data_src"],cnf0["remark"],cnf0["train_loc"],cnf0["valid_loc"]
                             
                         ])
         matches = []
         for i in mods:
-            if(i[1]==ppl['optimizer_loc'] and i[2]==ppl['train_batch_size'] and i[3]==ppl['valid_batch_size'] and ppl["accuracy_loc"]==i[4] and ppl["loss_loc"]==i[5] and  ppl["train_data_src"]==i[6] and ppl["valid_data_src"]==i[7] and ppl['remark']==i[8]):
+            if(i[1]==ppl['optimizer_loc'] and i[2]==ppl['train_batch_size'] and 
+               i[3]==ppl['valid_batch_size'] and ppl["accuracy_loc"]==i[4] and 
+               ppl["loss_loc"]==i[5] and  ppl["train_data_src"]==i[6] and 
+               ppl["valid_data_src"]==i[7] and ppl["remark"]==i[8] and 
+               ppl["train_loc"]==i[9] and ppl["valid_loc"]==i[10]):
                 matches.append(i[0])
                 
         if(len(matches)>0):
@@ -874,7 +1036,6 @@ def verify(ppl,mode='name',config="internal",log=False):   # mode = name|mod_ds|
                 return intersections
         elif len(valid_sets) == 3:
                 return f"Common in all: {set.intersection(*valid_sets.values())}"
-
 
 def up2date(config='internal'): #config = {internal}|archive|transfer
     """
@@ -984,30 +1145,31 @@ def set_default_config(data:dict):
             json.dump(cnfg, file, indent=4)
 
 def test_mods(dataset=None,model=None,model_loc=None, accuracy_loc=None, loss_loc=None, optimizer_loc=None, dataset_loc=None,
+            train_loc = None, valid_loc = None,train_loop=None, validation_loop=None,
               train_data_src=None, train_batch_size=None, valid_data_src=None, valid_batch_size=None,
               prepare=False):
-    """
-    Configures and initializes a testing pipeline for evaluating a machine learning model.
+    """Configures a testing pipeline for evaluating a machine learning model.
 
-    This function sets up a testing pipeline by configuring the model, dataset, and various paths for saving metrics, 
-    optimizer state, and model weights. It uses default configuration values if some parameters are not provided.
-
-    Parameters:
-    - dataset (Type[Dataset], optional): The dataset class to be used for testing. Must be a subclass of `Dataset`.
-    - model (Type[nn.Module], optional): The model to be tested. Must be a subclass of `nn.Module`.
-    - model_loc (str, optional): The location of the model within the `Libs.models` module. If not fully qualified, it will be prefixed with 'Libs.models.'.
-    - accuracy_loc (str, optional): The location for saving accuracy metrics within the `Libs.accuracies` module. If not provided, uses default from configuration file.
-    - loss_loc (str, optional): The location for saving loss metrics within the `Libs.losses` module. If not provided, uses default from configuration file.
-    - optimizer_loc (str, optional): The location for saving optimizer state within the `Libs.optimizers` module. If not provided, uses default from configuration file.
-    - dataset_loc (str, optional): The location of the dataset class within the `Libs.Datasets` module. If not fully qualified, it will be prefixed with 'Libs.Datasets.'.
-    - train_data_src (str, optional): Source of training data. If not provided, uses default from configuration file.
-    - train_batch_size (int, optional): Batch size for training data. If not provided, uses default from configuration file.
-    - valid_data_src (str, optional): Source of validation data. If not provided, uses default from configuration file.
-    - valid_batch_size (int, optional): Batch size for validation data. If not provided, uses default from configuration file.
-    - prepare (bool, optional): Whether to prepare the pipeline or not. Default is False.
+    Args:
+        dataset (type, optional): Dataset class (subclass of Dataset).
+        model (nn.Module, optional): Model instance.
+        train_loop: Training loop.
+        validation_loop: Validation loop.
+        model_loc (str, optional): Module location of the model.
+        accuracy_loc (str, optional): Module location of the accuracy metric.
+        loss_loc (str, optional): Module location of the loss function.
+        optimizer_loc (str, optional): Module location of the optimizer.
+        dataset_loc (str, optional): Module location of the dataset class.
+        train_loc (str, optional): Module location of the training function.
+        valid_loc (str, optional): Module location of the validation function.
+        train_data_src (str, optional): Path to training data.
+        train_batch_size (int, optional): Batch size for training data.
+        valid_data_src (str, optional): Path to validation data.
+        valid_batch_size (int, optional): Batch size for validation data.
+        prepare (bool, optional): If True, prepares data loaders. Defaults to False.
 
     Returns:
-    - PipeLine: An instance of the `PipeLine` class configured for testing with the provided or default parameters.
+        PipeLine: Configured pipeline instance.
     """
     if(model_loc!=None and len(model_loc.split('.'))==1):
         model_loc = 'Libs.models.'+model_loc
@@ -1021,6 +1183,12 @@ def test_mods(dataset=None,model=None,model_loc=None, accuracy_loc=None, loss_lo
         loss_loc = def_conf['loss_loc']
     if(optimizer_loc is None):
         optimizer_loc = def_conf['optimizer_loc']
+
+    if(train_loc!=None and len(train_loc.split('.'))==1):
+        train_loc = 'Libs.train_valids.'+train_loc
+    if(valid_loc!=None and len(valid_loc.split('.'))==1):
+        valid_loc = 'Libs.train_valids.'+valid_loc
+
     if(train_data_src is None):
         train_data_src = def_conf['train_data_src']
     if(valid_data_src is None):
@@ -1041,6 +1209,12 @@ def test_mods(dataset=None,model=None,model_loc=None, accuracy_loc=None, loss_lo
         P.Dataset = dataset
     if(model and issubclass(model.__class__,nn.Module)):
         P.model = model
+    
+    if(train_loop):
+        P.train = train_loop
+    if(validation_loop):
+        P.validate = validation_loop
+
     P.setup(name='test', 
             model_loc=model_loc, accuracy_loc=accuracy_loc, 
             loss_loc=loss_loc, optimizer_loc=optimizer_loc, 
@@ -1058,6 +1232,8 @@ def train_new(
                     accuracy_loc=None,
                     optimizer_loc=None,
                     dataset_loc=None,
+                    train_loc = None,
+                    valid_loc = None,
                     train_data_src=None,
                     valid_data_src=None,
                     train_batch_size=None,
@@ -1122,7 +1298,7 @@ def train_new(
     if(model_loc!=None and len(model_loc.split('.'))==1):
         model_loc = 'Libs.models.'+model_loc
     if(dataset_loc!=None and len(dataset_loc.split('.'))==1):
-        dataset_loc = 'Libs.Datasets.'+dataset_loc
+        dataset_loc = 'Libs.datasets.'+dataset_loc
     with open("internal/Default_Config.json") as fl:
         def_conf = json.load(fl)
     if(accuracy_loc is None):
@@ -1145,12 +1321,18 @@ def train_new(
         loss_loc = 'Libs.losses.'+loss_loc
     if(optimizer_loc!=None and len(optimizer_loc.split('.'))==1):
         optimizer_loc = 'Libs.optimizers.'+optimizer_loc
+    if(train_loc!=None and len(train_loc.split('.'))==1):
+        train_loc = 'Libs.train_valids.'+train_loc
+    if(valid_loc!=None and len(valid_loc.split('.'))==1):
+        valid_loc = 'Libs.train_valids.'+valid_loc
     dct={
         'model_loc': model_loc,
         'dataset_loc': dataset_loc,
         'accuracy_loc': accuracy_loc,
         'loss_loc': loss_loc,
         'optimizer_loc': optimizer_loc,
+        'train_loc' : train_loc,
+        'valid_loc' : valid_loc,
         'ppl_name': name,
         'valid_batch_size': valid_batch_size,
         'train_batch_size': train_batch_size,
@@ -1321,6 +1503,9 @@ def performance_plot(ppl=None, history=None, metric=None, config="internal", fig
         Displays the performance plots using Matplotlib.
     """
     
+    # Set seaborn grid style
+    sns.set(style="whitegrid")
+    
     # Set the root directory based on the configuration
     root = {
         "internal": "internal/",
@@ -1341,11 +1526,11 @@ def performance_plot(ppl=None, history=None, metric=None, config="internal", fig
         }
         ppl = list(record.keys())
         if len(ppl) == 1:
-            return performance_plot(ppl=ppl[0])
+            return performance_plot(ppl=ppl[0], history=history, metric=metric, config=config, figsize=figsize, label=label)
         df = [record[i] for i in ppl]
         
         if metric is None:
-            metric = ["train_accuracy", "train_loss", "val_accuracy", "val_loss"]
+            metric = ["train_accuracy", "train_loss", "val_accuracy", "val_loss"] #  to be updated in next version|costumizable
         
         if isinstance(metric, str):
             metric = [metric]  # Ensure `metric` is a list
@@ -1418,6 +1603,7 @@ def performance_plot(ppl=None, history=None, metric=None, config="internal", fig
                  xytext=(0, -10),  # Offset for the text below the point
                  textcoords='offset points',
                  ha='center', va='top', fontsize=10, color=line1.get_color())
+    
     ax1.annotate(f"{df['val_accuracy'].iloc[-1]:.4f}", 
                  xy=(df['epoch'].iloc[-1], df['val_accuracy'].iloc[-1]),
                  xycoords='data',
@@ -1530,9 +1716,13 @@ def use_ppl(ppl,trained=True,name=None,
             optimizer_loc=None,
             train_data_src=None,
             valid_data_src=None,
+            dataset_loc=None,
+            train_loc=None,
+            valid_loc=None,
             train_batch_size=None,
             valid_batch_size=None,
             prepare=None):
+    print(f"useppl->prepare{prepare}")
     """
     Configures and initializes a pipeline for an existing model or creates a new pipeline if necessary.
 
@@ -1571,6 +1761,13 @@ def use_ppl(ppl,trained=True,name=None,
         loss_loc = 'Libs.losses.'+loss_loc
     if(optimizer_loc!=None and len(optimizer_loc.split('.'))==1):
         optimizer_loc = 'Libs.optimizers.'+optimizer_loc
+    if(dataset_loc!=None and len(dataset_loc.split('.'))==1):
+        dataset_loc = 'Libs.datasets.'+dataset_loc
+
+    if(train_loc!=None and len(train_loc.split('.'))==1):
+        train_loc = 'Libs.train_valids.'+train_loc
+    if(valid_loc!=None and len(valid_loc.split('.'))==1):
+        valid_loc = 'Libs.train_valids.'+valid_loc
     config_path = "internal/Configs/"+ppl+".json"
     with open(config_path) as fl:
         cnfg = json.load(fl)
@@ -1583,6 +1780,9 @@ def use_ppl(ppl,trained=True,name=None,
             'optimizer_loc' : optimizer_loc or cnfg['optimizer_loc'],
             'accuracy_loc' : accuracy_loc or cnfg['accuracy_loc'],
             'loss_loc' : loss_loc or cnfg['loss_loc'],
+            'dataset_loc' : dataset_loc or cnfg['dataset_loc'],
+            'train_loc': train_loc or cnfg["train_loc"],
+            'valid_loc' : valid_loc or cnfg["valid_loc"], 
             'history_path': "internal/Histories/"+name+".csv",
             'weights_path': "internal/Weights/"+name+".pth",
             'config_path' : "internal/Configs/"+name+".json"
@@ -1591,23 +1791,26 @@ def use_ppl(ppl,trained=True,name=None,
     cnfg["last"]["epoch"] = 0
     cnfg["best"]["epoch"] = -1 if trained else 0
     cnfg["best"]["val_loss"] = cnfg["best"]["val_loss"] if trained else float("inf")
+    cnfg["best"]["val_accuracy"] = cnfg["best"]["val_accuracy"] if trained else 0
     # if( isinstance(vrf,dict) and (len(vrf["mod_ds & training"])==0)):
     vrf = verify(ppl=cnfg, mode="all")
     # print(vrf)
     # if isinstance(vrf, dict) and "mod_ds & training" in vrf and len(vrf["mod_ds & training"]) == 0:
     if(not vrf or (isinstance(vrf, dict) and (len(vrf)==0 or ("mod_ds & training" in vrf and len(vrf["mod_ds & training"]) == 0)))):
-        with open("internal/Configs/"+name+".json",'w') as fl:
-            json.dump(cnfg, fl, indent=4)
+        
         if(trained):
-            
+            with open(cnfg['config_path'],'w') as fl:
+                json.dump(cnfg, fl, indent=4)
             shutil.copy2(src="internal/Weights/"+ppl+".pth",dst=cnfg['weights_path'])
             pd.DataFrame(columns=["epoch", "train_accuracy", "train_loss", "val_accuracy", "val_loss"]).to_csv(cnfg['history_path'] , index=False)
            
             print("New ppl created ",name)
             P =PipeLine()
+            # print(f"useppl->trained->prepare={prepare}")
             P.setup(config_path=cnfg['config_path'],use_config=True, prepare=prepare)
             return P
         else:
+            # print(f"useppl->-trained->prepare={prepare}")
             P = train_new(
                     name = name,
                     model_loc = cnfg['model_loc'],
@@ -1669,8 +1872,8 @@ def archive(ppl, reverse = False):
             source = "internal/Archived/"
             log = verify(ppl=ppl,mode="name",config="archive",log=False)
         
-            
-        if(log is not False):
+ 
+        if(log):
             shutil.move(src=source+"Weights/"+ppl+".pth",dst=destin+"Weights/"+ppl+".pth")
             shutil.move(src=source+"Configs/"+ppl+".json",dst=destin+"Configs/"+ppl+".json")
             shutil.move(src=source+"Histories/"+ppl+".csv",dst=destin+"Histories/"+ppl+".csv")
