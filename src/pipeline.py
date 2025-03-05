@@ -800,6 +800,7 @@ from torch.utils.data import Dataset
         os.mkdir(os.path.join(project_name,'internal'))
         os.mkdir(os.path.join(project_name,'internal','Histories'))
         os.mkdir(os.path.join(project_name,'internal','Weights'))
+        os.mkdir(os.path.join(project_name,'internal','RecWeights'))
         os.mkdir(os.path.join(project_name,'internal','Configs'))
         with open(os.path.join(project_name,'internal','Default_Config.json'), 'w') as file:
             data = {
