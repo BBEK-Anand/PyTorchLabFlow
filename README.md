@@ -1,5 +1,5 @@
 # PyTorchLabFlow
-[![PyPI version](https://badge.fury.io/py/PyTorchLabFlow.svg)](https://badge.fury.io/py/PyTorchLabFlow)
+[![PyPI version](https://badge.fury.io/py/PyTorchLabFlow.svg?icon=si%3Apython)](https://badge.fury.io/py/PyTorchLabFlow.svg?icon=si%3Apython)
 [![Downloads](https://static.pepy.tech/badge/Pytorchlabflow)](https://pepy.tech/project/Pytorchlabflow)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-Repo-black?style=flat&logo=github)](https://github.com/BBEK-Anand/PyTorchLabFlow)
