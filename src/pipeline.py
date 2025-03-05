@@ -335,16 +335,7 @@ class PipeLine:
         
         num_workers = 0 if self.cnfg["dataset_loc"]==None else num_workers  # If it fails, use single-process loading
         # Return the optimal settings for DataLoader
-        # print({
-        #     'dataset': ds,
-        #     'batch_size': batch_size,
-        #     'shuffle': shuffle,
-        #     'num_workers': num_workers,
-        #     'collate_fn': collate_fn,
-        #     'pin_memory': pin_memory
-        # })
-        num_workers = 0   # PyG  does not support num_worker>0
-        # print(collate_fn,"line300")
+        
         return {
             'dataset': ds,
             'batch_size': batch_size,
@@ -394,8 +385,19 @@ class PipeLine:
         
         self.model=self.model.to(self.device)
         self.loss = self.loss.to(self.device)
+        
         if(self.cnfg['last']['epoch']>0):
+            if(self.cnfg['last']['epoch'] > self.cnfg['best']['epoch']):
+                try:
+                    t = self.cnfg['weights_path'].split("/")
+                    t[-2] = 'RecWeights' 
+                    self.model.load_state_dict(torch.load("/".join(t), weights_only=True), strict=False)
+                except:
+                    self.model.load_state_dict(torch.load(self.weights_path, weights_only=True), strict=False)
+            else:
                 self.model.load_state_dict(torch.load(self.weights_path, weights_only=True), strict=False)
+        
+        
         self._configured =True
 
     def update(self, data):
@@ -408,10 +410,17 @@ class PipeLine:
             Saves model weights if validation loss improves.
         """
         self.cnfg['last'] = {'epoch': data['epoch'], 'train_accuracy': data['train_accuracy'], 'train_loss': data['train_loss']}
+        
         if data['val_loss'] < self.cnfg['best']['val_loss']:
             self.cnfg['best'] = {'epoch': data['epoch'], 'val_accuracy': data['val_accuracy'], 'val_loss': data['val_loss']}
             torch.save(self.model.state_dict(), self.cnfg['weights_path'])
             print(f"Best Model Weights Updated: Epoch {data['epoch']} - Val Loss: {data['val_loss']}")
+        else:
+            t = self.cnfg['weights_path'].split("/")
+            t[-2] = 'RecWeights'
+            torch.save(self.model.state_dict(), "/".join(t))
+            print(f"Current Model Weights saved temporarily")
+        
         self.save_config()
         record = pd.DataFrame([[data['epoch'], data['train_accuracy'], data['train_loss'], data['val_accuracy'], data['val_loss']]],
                               columns=["epoch", "train_accuracy", "train_loss", "val_accuracy", "val_loss"])
@@ -444,31 +453,22 @@ class PipeLine:
                 running_accuracy = 0.0
                 accuracy_metric = self.accuracy.to(self.device)
                 train_loader_tqdm = tqdm(self.trainDataLoader, desc=f'Epoch {epoch+1}/{end_epoch}', leave=True)
-
-                for drug1, drug2, b_graph, labels in train_loader_tqdm:
-                    drug1, drug2, b_graph, labels = drug1.to(self.device), drug2.to(self.device), b_graph.to(self.device), labels.to(self.device)
-                    
+                for inputs, labels in train_loader_tqdm:
+                    inputs = inputs.to(self.device)
+                    labels = labels.to(self.device)
+                    labels = labels.float().view(-1,1)
                     self.optimizer.zero_grad()
+                    outputs = self.model(inputs)
+                    if labels.shape != outputs.shape:
+                        labels = labels.view_as(outputs)
+                    loss = self.loss(outputs, labels)
                     
-                    logits = self.model(drug1, drug2, b_graph)
-
-                    loss = self.loss(logits.squeeze(), labels.float())  
-                    # weighted_loss = (loss * weights).mean()  # Apply class weights
-
-                    # Backward pass and optimization
                     loss.backward()
                     self.optimizer.step()
-
                     running_loss += loss.item()
-
-                    accuracy = accuracy_metric(logits, labels)
-                    # Apply class weights to the accuracy calculation
-                    # weighted_accuracy = (accuracy * weights.sum() / len(weights))  # Weighted accuracy
-
-                    running_accuracy += accuracy.item()
-
+                    running_accuracy += accuracy_metric(outputs, labels.int()).item()
                     train_loader_tqdm.set_postfix(loss=running_loss/len(train_loader_tqdm), accuracy=running_accuracy/len(train_loader_tqdm))
-
+          
                 train_loss = running_loss / len(self.trainDataLoader)
                 train_accuracy = running_accuracy / len(self.trainDataLoader)
                 val_loss, val_accuracy = self.validate()
@@ -500,21 +500,17 @@ class PipeLine:
         running_loss = 0.0
         running_accuracy = 0.0
         with torch.no_grad():
-            for drug1, drug2, b_graph, labels in tqdm(self.validDataLoader, desc='Validating', leave=False):
-                drug1, drug2, b_graph, labels = drug1.to(self.device), drug2.to(self.device), b_graph.to(self.device), labels.to(self.device)
-                logits = self.model(drug1, drug2, b_graph) 
-                
-                loss = self.loss(logits.squeeze(), labels.float())   
-                # weighted_loss = (loss * weights).mean()  # Apply class weights
+            for inputs, labels in tqdm(self.validDataLoader, desc='Validating', leave=False):
+                inputs = inputs.to(self.device)
+                labels = labels.to(self.device)                
+                labels = labels.float().unsqueeze(1) #only for base audio file
 
+                outputs = self.model(inputs) # 0 bcz input only has base audio array
+                loss = self.loss(outputs, labels)
                 running_loss += loss.item()
-                
-                accuracy = self.accuracy(logits, labels)
-                # Apply class weights to the accuracy calculation
-                # weighted_accuracy = (accuracy * weights.sum() / len(weights))  # Weighted accuracy
-                
-                running_accuracy += accuracy.item()
-
+                correct += self.accuracy(outputs, labels.int()).item()
+                total += labels.size(0)
+            
             val_loss = running_loss / len(self.validDataLoader)
             val_accuracy = running_accuracy / len(self.validDataLoader)
             return val_loss, val_accuracy
