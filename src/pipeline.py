@@ -443,12 +443,17 @@ class PipeLine:
             start_epoch = self.cnfg['last']['epoch']
             end_epoch = start_epoch + num_epochs
             self.model.to(self.device)
-
-            best_val_loss = self.cnfg['best']['val_loss'] #float('inf')  # Start with the worst possible value for validation loss
-            epochs_without_improvement = 0  # Track epochs without improvement in validation loss
             patience = patience or num_epochs  # If patience is None, set it to num_epochs
+            best_val_loss = self.cnfg['best']['val_loss'] #float('inf')  # Start with the worst possible value for validation loss
+            epochs_without_improvement = self.cnfg['last']['epoch'] - self.cnfg['best']['epoch']
+            
             for epoch in range(start_epoch, end_epoch):
                 self.model.train()
+
+                # If we've hit the patience threshold, stop training early
+                if (epochs_without_improvement >= patience):
+                    print(f'Early stopping after {epoch+1} epochs due to no improvement in validation loss.')
+                    break
                 running_loss = 0.0
                 running_accuracy = 0.0
                 accuracy_metric = self.accuracy.to(self.device)
@@ -484,10 +489,7 @@ class PipeLine:
 
                 data = {'epoch': epoch+1, 'train_accuracy': train_accuracy, 'train_loss': train_loss, 'val_accuracy': val_accuracy, 'val_loss': val_loss}
                 self.update(data)
-                # If we've hit the patience threshold, stop training early
-                if (epochs_without_improvement >= patience):
-                    print(f'Early stopping after {epoch+1} epochs due to no improvement in validation loss.')
-                    break
+                
             print('Finished Training')
             
     def validate(self):
@@ -515,7 +517,7 @@ class PipeLine:
             val_accuracy = running_accuracy / len(self.validDataLoader)
             return val_loss, val_accuracy
  
-def setup_project(project_name="MyProject",create_root=True):#
+def setup_project(project_name="MyProject",create_root=True):
     """
     Create the directory structure for a new machine learning project.
 
@@ -718,12 +720,12 @@ from torch.utils.data import Dataset
 #                 accuracy_metric = self.accuracy.to(self.device)
 #                 train_loader_tqdm = tqdm(self.trainDataLoader, desc=f'Epoch {epoch+1}/{end_epoch}', leave=True)
 
-#                 for drug1, drug2, labels, weights in train_loader_tqdm:
-#                     drug1, drug2, labels, weights = drug1.to(self.device), drug2.to(self.device), labels.to(self.device), weights.to(self.device)
+#                 for inputs, labels, weights in train_loader_tqdm :
+#                     inputs, labels, weights = inputs.to(self.device), labels.to(self.device), weights.to(self.device)
                     
 #                     self.optimizer.zero_grad()
                     
-#                     logits = self.model(drug1, drug2)
+#                     logits = self.model(inputs)
 
 #                     loss = self.loss(logits.squeeze(), labels.float())  
 #                     weighted_loss = (loss * weights).mean()  # Apply class weights
@@ -775,9 +777,9 @@ from torch.utils.data import Dataset
 #         running_loss = 0.0
 #         running_accuracy = 0.0
 #         with torch.no_grad():
-#             for drug1, drug2, labels, weights in tqdm(self.validDataLoader, desc='Validating', leave=False):
-#                 drug1, drug2, labels, weights = drug1.to(self.device), drug2.to(self.device), labels.to(self.device), weights.to(self.device)
-#                 logits = self.model(drug1, drug2) 
+#             for inputs, labels, weights in tqdm(self.validDataLoader, desc='Validating', leave=False):
+#                 inputs, labels, weights = inputs.to(self.device), labels.to(self.device), weights.to(self.device)
+#                 logits = self.model(inputs) 
                 
 #                 loss = self.loss(logits.squeeze(), labels.float())   
 #                 weighted_loss = (loss * weights).mean()  # Apply class weights
@@ -797,6 +799,9 @@ from torch.utils.data import Dataset
 
 '''
             file.write(code)
+        
+        
+        
         os.mkdir(os.path.join(project_name,'internal'))
         os.mkdir(os.path.join(project_name,'internal','Histories'))
         os.mkdir(os.path.join(project_name,'internal','Weights'))
