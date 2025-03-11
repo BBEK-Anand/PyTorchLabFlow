@@ -712,6 +712,45 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - The function updates the configuration before attempting to load the model.
     - Model classes are imported dynamically based on the module location specified in the pipeline configuration.
     - The module location should be a valid Python module path, and the model class should be defined in that module.
+# current_status
+    - Retrieves and summarizes the current status of experiments based on a list of people (experiments).
+    - This function fetches various configurations, metrics, and experiment details for a given set of experiments, such as model locations, dataset paths, training details, accuracy, loss, etc. It compiles this data into a pandas DataFrame and can also provide a simplified (mini) version of the data if required.
+## Parameters
+### ppl : list, optional
+        - The name(s) of the experiment(s) for which to retrieve the status.  
+        - If `ppl` is `None`, it fetches all experiment identifiers using `get_ppls()`.  
+        - If `ppl` is a list, it returns the status of each experiment in the list.  
+        - If `ppl` is a string, it is treated as a single experiment identifier.
+## mini : bool, optional
+        - If `True`, returns a simplified version of the data with some path information truncated.  
+        - **Default** is `False`.
+## Returns
+    pandas.DataFrame  
+    - A DataFrame containing the following columns:
+        - **experiment_id**: The unique identifier for each experiment.
+        - **models**: The file locations of the models used in each experiment.
+        - **datasets**: The file locations of the datasets used in each experiment.
+        - **accuracy**: The file locations of the accuracy metrics for each experiment.
+        - **loss**: The file locations of the loss metrics for each experiment.
+        - **optimizer**: The file locations of the optimizer configurations for each experiment.
+        - **trainer**: The file locations of the training configurations for each experiment.
+        - **validator**: The file locations of the validation configurations for each experiment.
+        - **train_data**: The paths to the training data used in each experiment.
+        - **train_batch**: The batch sizes used during training.
+        - **valid_data**: The paths to the validation data used in each experiment.
+        - **epochs**: The number of epochs used in each experiment.
+        - **remarks**: Any remarks associated with each experiment.
+        - **val_acc**: The validation accuracy at the epoch defined in `epochs`.
+        - **train_acc**: The training accuracy at the epoch defined in `epochs`.
+        - **val_loss**: The validation loss at the epoch defined in `epochs`.
+        - **train_loss**: The training loss at the epoch defined in `epochs`.
+
+## Notes
+        - The function fetches configuration details such as model locations, dataset paths, and training data from the experiment configuration.
+        - It calculates the model's accuracy and loss at the specified epoch by reading CSV files containing the training history.
+        - If `mini=True`, the function truncates paths to display only the most relevant information (e.g., filenames instead of full directory paths).
+        - The function is useful for tracking and comparing the status of multiple experiments, particularly when you need to review configurations or evaluate performance metrics across different training runs.
+
 
 # archive
 

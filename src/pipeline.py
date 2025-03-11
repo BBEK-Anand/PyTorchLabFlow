@@ -1832,6 +1832,44 @@ def use_ppl(ppl,trained=True,name=None,
 
 
 def current_status(ppl=None, mini=False):
+    """
+    Retrieves and summarizes the current status of experiments based on a list of people (experiments).
+
+    This function fetches various configurations, metrics, and experiment details for a given set of experiments, 
+    such as model locations, dataset paths, training details, accuracy, loss, etc. It compiles this data into a 
+    pandas DataFrame and can also provide a simplified (mini) version of the data if required.
+
+    Args:
+        ppl (list, optional): A list of experiment identifiers (people). If None, the function will retrieve 
+                               the list of all available experiments using `get_ppls()`. Defaults to None.
+        mini (bool, optional): If True, the function will return a simplified version of the data, with some 
+                               path information truncated. Defaults to False.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing the following columns:
+            - experiment_id: The unique identifier for each experiment.
+            - models: The file locations of the models used in each experiment.
+            - datasets: The file locations of the datasets used in each experiment.
+            - accuracy: The file locations of the accuracy metrics for each experiment.
+            - loss: The file locations of the loss metrics for each experiment.
+            - optimizer: The file locations of the optimizer configurations for each experiment.
+            - trainer: The file locations of the training configurations for each experiment.
+            - validator: The file locations of the validation configurations for each experiment.
+            - train_data: The source paths for training data used in each experiment.
+            - train_batch: The batch sizes used during training.
+            - valid_data: The source paths for validation data used in each experiment.
+            - epochs: The number of epochs used in each experiment.
+            - remarks: Any remarks associated with each experiment.
+            - val_acc: The validation accuracy at the epoch defined in `epochs`.
+            - train_acc: The training accuracy at the epoch defined in `epochs`.
+            - val_loss: The validation loss at the epoch defined in `epochs`.
+            - train_loss: The training loss at the epoch defined in `epochs`.
+
+    Example:
+        df = current_status(ppl=[1, 2, 3], mini=True)
+        This will return a DataFrame summarizing the status of experiments 1, 2, and 3 with simplified paths.
+    
+    """
     ppl = get_ppls() if ppl==None else ppl
 
     data = {
