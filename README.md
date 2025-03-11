@@ -274,6 +274,7 @@ Following functions are
   - [performance_plot](#performance_plot)
   - [multi_train](#multi_train)
   - [get_model](#get_model)
+  - [current_status](#current_status)
   - [archive](#archive)
   - [delete](#delete)
   - [setup_trasfer](#setup_trasfer)
@@ -712,6 +713,7 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - The function updates the configuration before attempting to load the model.
     - Model classes are imported dynamically based on the module location specified in the pipeline configuration.
     - The module location should be a valid Python module path, and the model class should be defined in that module.
+
 # current_status
     - Retrieves and summarizes the current status of experiments based on a list of people (experiments).
     - This function fetches various configurations, metrics, and experiment details for a given set of experiments, such as model locations, dataset paths, training details, accuracy, loss, etc. It compiles this data into a pandas DataFrame and can also provide a simplified (mini) version of the data if required.
