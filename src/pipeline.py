@@ -1830,6 +1830,53 @@ def use_ppl(ppl,trained=True,name=None,
     else:
         print(vrf)
 
+
+def current_status(ppl=None, mini=False):
+    ppl = get_ppls() if ppl==None else ppl
+
+    data = {
+        "experiment_id":ppl,
+        "models":[re_train(ppl=i).cnfg["model_loc"] for i in ppl], 
+        "datasets":[re_train(ppl=i).cnfg["dataset_loc"] for i in ppl],
+        "accuracy" : [re_train(ppl=i).cnfg["accuracy_loc"] for i in ppl],
+        "loss": [re_train(ppl=i).cnfg["loss_loc"] for i in ppl],
+        "optimizer": [re_train(ppl=i).cnfg["optimizer_loc"] for i in ppl],
+        "trainer": [re_train(ppl=i).cnfg["train_loc"] for i in ppl],
+        "validator": [re_train(ppl=i).cnfg["valid_loc"] for i in ppl],
+        "train_data":[re_train(ppl=i).cnfg["train_data_src"] for i in ppl], 
+        "train_batch":[re_train(ppl=i).cnfg["train_batch_size"] for i in ppl],
+        "valid_data":[re_train(ppl=i).cnfg["valid_data_src"] for i in ppl],
+        "epochs":[re_train(ppl=i).cnfg["best"]["epoch"] for i in ppl],
+        "remarks": [re_train(ppl=i).cnfg["remark"] for i in ppl]
+    }
+    def get_metric(row,metric="accuracy",mode="train"):
+        p = re_train(ppl=row["experiment_id"])
+        if row["epochs"]==0:
+            return None
+        try:
+            t = pd.read_csv(p.cnfg['history_path'])
+            score = t[t["epoch"]==row["epochs"]][f"{mode}_{metric}"].item()
+            return score
+        except:
+            return None
+    df = pd.DataFrame(data)
+    df["val_acc"] = df.apply(get_metric,axis=1,metric="accuracy",mode="val")
+    df["train_acc"] = df.apply(get_metric,axis=1,metric="accuracy",mode="train")
+    df["val_loss"] = df.apply(get_metric,axis=1,metric="loss",mode="val")
+    df["train_loss"] = df.apply(get_metric,axis=1,metric="loss",mode="train")
+    if mini:
+        df['models'] = df['models'].apply(lambda x: x.split(".")[-1])
+        df['datasets'] = df['datasets'].apply(lambda x: x.split(".")[-1])
+        df['accuracy'] = df['accuracy'].apply(lambda x: x.split(".")[-1])
+        df['loss'] = df['loss'].apply(lambda x: x.split(".")[-1]) 
+        df['optimizer'] = df['optimizer'].apply(lambda x: x.split(".")[-1])
+        df['trainer'] = df['trainer'].apply(lambda x: x.split(".")[-1])
+        df['validator'] = df['validator'].apply(lambda x: x.split(".")[-1])
+        df['datasets'] = df['datasets'].apply(lambda x: x.split(".")[-1])
+        df['train_data'] = df['train_data'].apply(lambda x: "/".join(x.split("/")[-3:]))
+        df['valid_data'] = df['valid_data'].apply(lambda x: "/".join(x.split("/")[-3:]))
+    return df
+ 
 def archive(ppl, reverse = False):
     """
     Archive or restore a project pipeline's files.
