@@ -458,20 +458,27 @@ class PipeLine:
                 running_accuracy = 0.0
                 accuracy_metric = self.accuracy.to(self.device)
                 train_loader_tqdm = tqdm(self.trainDataLoader, desc=f'Epoch {epoch+1}/{end_epoch}', leave=True)
-                for inputs, labels in train_loader_tqdm:
-                    inputs = inputs.to(self.device)
-                    labels = labels.to(self.device)
-                    labels = labels.float().view(-1,1)
+                for datas in train_loader_tqdm:
+                    datas = [i.to(self.device) for i in datas]
+                    labels = datas[-1]
+
                     self.optimizer.zero_grad()
-                    outputs = self.model(inputs)
-                    if labels.shape != outputs.shape:
-                        labels = labels.view_as(outputs)
-                    loss = self.loss(outputs, labels)
                     
+                    logits = self.model(*datas[:-1])
+                    labels = labels.view_as(logits)
+                    # print(logits.squeeze().shape, labels.float().shape)
+                    loss = self.loss(logits.squeeze(), labels.float())  
+
+                    # Backward pass and optimization
                     loss.backward()
                     self.optimizer.step()
+
                     running_loss += loss.item()
-                    running_accuracy += accuracy_metric(outputs, labels.int()).item()
+
+                    accuracy = accuracy_metric(logits, labels)
+
+                    running_accuracy += accuracy.item()
+
                     train_loader_tqdm.set_postfix(loss=running_loss/len(train_loader_tqdm), accuracy=running_accuracy/len(train_loader_tqdm))
           
                 train_loss = running_loss / len(self.trainDataLoader)
@@ -502,20 +509,18 @@ class PipeLine:
         running_loss = 0.0
         running_accuracy = 0.0
         with torch.no_grad():
-            for inputs, labels in tqdm(self.validDataLoader, desc='Validating', leave=False):
-                inputs = inputs.to(self.device)
-                labels = labels.to(self.device)                
-                labels = labels.float().unsqueeze(1) #only for base audio file
+            for datas in tqdm(self.validDataLoader, desc='Validating', leave=False):
+                datas = [i.to(self.device) for i in datas]
+                labels = datas[-1]
+                logits = self.model(*datas[:-1]) 
+                # labels = labels.view_as(logits)
+                loss = self.loss(logits.squeeze(), labels.float())   
 
-                outputs = self.model(inputs) # 0 bcz input only has base audio array
-                loss = self.loss(outputs, labels)
                 running_loss += loss.item()
-                correct += self.accuracy(outputs, labels.int()).item()
-                total += labels.size(0)
-            
-            val_loss = running_loss / len(self.validDataLoader)
-            val_accuracy = running_accuracy / len(self.validDataLoader)
-            return val_loss, val_accuracy
+                
+                accuracy = self.accuracy(logits, labels)
+                
+                running_accuracy += accuracy.item()
  
 def setup_project(project_name="MyProject",create_root=True):
     """
