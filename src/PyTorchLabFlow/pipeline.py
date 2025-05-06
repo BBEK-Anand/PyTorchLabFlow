@@ -16,7 +16,7 @@ import torch
 import shutil
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
-import os
+import os,sys
 import psutil  # For detecting system memory usage
 import pandas as pd
 from tqdm import tqdm
@@ -90,8 +90,12 @@ class PipeLine:
         Raises:
             ImportError: If the module or class cannot be imported.
         """
-        module = importlib.import_module('.'.join(module_loc.split('.')[:-1]))
-        class_ = getattr(module, module_loc.split('.')[-1])
+        module_path = '.'.join(module_loc.split('.')[:-1])
+        if module_path in sys.modules:
+            module = importlib.reload(sys.modules[module_path])
+        else:
+            module = importlib.import_module(module_path)
+        class_ = getattr(module, module_loc.split('.')[-1])()
         return class_
 
     def load_optimizer(self, module_loc, **kwargs):
@@ -107,8 +111,14 @@ class PipeLine:
         Raises:
             ImportError: If the optimizer module or class cannot be imported.
         """
-        module = importlib.import_module('.'.join(module_loc.split('.')[:-1]))
-        class_ = getattr(module, module_loc.split('.')[-1])
+        module_path = '.'.join(module_loc.split('.')[:-1])
+        if module_path in sys.modules:
+            module = importlib.reload(sys.modules[module_path])
+        else:
+            module = importlib.import_module(module_path)
+        class_ = getattr(module, module_loc.split('.')[-1])()
+        
+        
         return class_(self.model, **kwargs)
 
     def save_config(self):
@@ -701,11 +711,12 @@ from torch.utils.data import Dataset
 
 #define your train and validation loops here functions here
 ###DEMO
+
 # import torch
 # from tqdm import tqdm
 
 
-# def train01(self, num_epochs=5, patience=None):
+# def trainer(self, num_epochs=5, patience=None):
 
 #             if (not self._configured):
 #                 print('Preparation Error. execute prepare_data or set prepare=True in setup before training')
@@ -725,27 +736,26 @@ from torch.utils.data import Dataset
 #                 accuracy_metric = self.accuracy.to(self.device)
 #                 train_loader_tqdm = tqdm(self.trainDataLoader, desc=f'Epoch {epoch+1}/{end_epoch}', leave=True)
 
-#                 for inputs, labels, weights in train_loader_tqdm :
-#                     inputs, labels, weights = inputs.to(self.device), labels.to(self.device), weights.to(self.device)
-                    
+#                 for datas in train_loader_tqdm:
+#                     datas = [d.to(self.device) for d in datas]
+#                     labels = datas[-1]
 #                     self.optimizer.zero_grad()
                     
-#                     logits = self.model(inputs)
-
+#                     logits = self.model(*datas[:-1])
+#                     labels = labels.view_as(logits)
+                    
 #                     loss = self.loss(logits.squeeze(), labels.float())  
-#                     weighted_loss = (loss * weights).mean()  # Apply class weights
+
 
 #                     # Backward pass and optimization
-#                     weighted_loss.backward()
+#                     loss.backward()
 #                     self.optimizer.step()
 
-#                     running_loss += weighted_loss.item()
+#                     running_loss += loss.item()
 
 #                     accuracy = accuracy_metric(logits, labels)
-#                     # Apply class weights to the accuracy calculation
-#                     weighted_accuracy = (accuracy * weights.sum() / len(weights))  # Weighted accuracy
 
-#                     running_accuracy += weighted_accuracy.item()
+#                     running_accuracy += accuracy.item()
 
 #                     train_loader_tqdm.set_postfix(loss=running_loss/len(train_loader_tqdm), accuracy=running_accuracy/len(train_loader_tqdm))
 
@@ -770,7 +780,7 @@ from torch.utils.data import Dataset
 #                     break
 #             print('Finished Training')
             
-# def validate01(self):
+# def validator(self):
 #         """
 #         Validates the model on the validation dataset, computing the loss and accuracy.
         
@@ -782,25 +792,23 @@ from torch.utils.data import Dataset
 #         running_loss = 0.0
 #         running_accuracy = 0.0
 #         with torch.no_grad():
-#             for inputs, labels, weights in tqdm(self.validDataLoader, desc='Validating', leave=False):
-#                 inputs, labels, weights = inputs.to(self.device), labels.to(self.device), weights.to(self.device)
-#                 logits = self.model(inputs) 
+#             for datas in tqdm(self.validDataLoader, desc='Validating', leave=False):
+#                 datas = [d.to(self.device) for d in datas]
+#                 labels = datas[-1]
+                
+#                 logits = self.model(*datas[:-1]) 
                 
 #                 loss = self.loss(logits.squeeze(), labels.float())   
-#                 weighted_loss = (loss * weights).mean()  # Apply class weights
 
-#                 running_loss += weighted_loss.item()
+#                 running_loss += loss.item()
                 
 #                 accuracy = self.accuracy(logits, labels)
-#                 # Apply class weights to the accuracy calculation
-#                 weighted_accuracy = (accuracy * weights.sum() / len(weights))  # Weighted accuracy
                 
-#                 running_accuracy += weighted_accuracy.item()
+#                 running_accuracy += accuracy.item()
 
 #             val_loss = running_loss / len(self.validDataLoader)
 #             val_accuracy = running_accuracy / len(self.validDataLoader)
 #             return val_loss, val_accuracy
-
 
 '''
             file.write(code)
