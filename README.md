@@ -102,7 +102,7 @@ Navigate to the newly created project directory and create a new Jupyter noteboo
   - **Accuracy functions**: `Libs/accuracies.py`
   - **Models**: `Libs/models.py`
   - **Datasets**: `Libs/datasets.py`
-  
+
   For example, you can create multiple accuracy, loss, and optimizer functions inside their respective files.
 
 ## Step 3: Configure Defaults
@@ -160,25 +160,25 @@ class testDS(Dataset):
     def __init__(self, root_dir):
         self.root_dir = root_dir
         self.transform = transforms.Compose([
-                            transforms.Resize((128,128)),  # Resize images 
+                            transforms.Resize((128,128)),  # Resize images
                             transforms.ToTensor()        # Convert images to tensor
                         ])
         self.image_paths = []
         self.labels = []
-        
+
         # Map directories with 'real' or 'fake' in their name to corresponding labels
         self.class_to_idx = {'real': 1, 'fake': 0}  # 1 for real, 0 for fake
-        
+
         # Traverse through subdirectories
         for subdir in os.listdir(root_dir):
             class_name = None
-            
+
             # Identify if subdir is 'real' or 'fake' by checking the directory name
             if 'real' in subdir.lower():
                 class_name = 'real'
             elif 'fake' in subdir.lower():
                 class_name = 'fake'
-            
+
             if class_name:
                 class_dir = os.path.join(root_dir, subdir)
                 if os.path.isdir(class_dir):
@@ -195,13 +195,13 @@ class testDS(Dataset):
     def __getitem__(self, idx):
         img_path = self.image_paths[idx]
         label = self.labels[idx]
-        
+
         # Open image
         image = Image.open(img_path).convert("RGB")
-        
+
         # Apply transforms if provided
         image = self.transform(image)
-        
+
         return image, label
 
 ```
@@ -217,10 +217,10 @@ Create another notebook file, `training.ipynb`, to train your model. To start a 
 from PyTorchLabFlow import train_new
 
 train_new(
-    name="exp01", 
+    name="exp01",
     model_loc="Libs.models.testCNN",
     dataset_loc="Libs.datasets.testDS",
-    train_data_src="DataSets/train", 
+    train_data_src="DataSets/train",
     valid_data_src="DataSets/valid",
     train_loc = "Libs.train_valids.testTrain",
     valid_loc = "Libs.train_valids.testValid"
@@ -248,8 +248,8 @@ If you want to remove experiment/s then use `archive` function. this will move a
 If you want to delete (archive does not delete a pipeline) then use `delete` function after archiving the pipeline.
 
 ### Transfer an experiment
-If you want to transfer experimment/s to a different system, use `transfer` function. 
-    
+If you want to transfer experimment/s to a different system, use `transfer` function.
+
     - By using `transfer(type='export',mode='copy')` copy all the files to `Transfer` folder. (`Transfer` folder is inside `your_project_root/internal`)
     - setup new project in your other(high-end) system, then this will create the same directory structure.
     - copy the `Transfer` folder( experiment configurations) and `Libs` folder( experiment components) from your 1st(low-end system/laptop) system and replace these in your 2nd(high-end) system's respectively their places.
@@ -260,7 +260,7 @@ If you want to transfer experimment/s to a different system, use `transfer` func
 
 <h1 style="font-size: 100px;" id="functions">Functions</h1>
 
-Following functions are 
+Following functions are
 
   - [setup_project](#setup_project)
   - [get_ppls](#get_ppls)
@@ -277,7 +277,7 @@ Following functions are
   - [current_status](#current_status)
   - [archive](#archive)
   - [delete](#delete)
-  - [setup_trasfer](#setup_trasfer)
+  - [setup_trasfer](#setup_transfer)
   - [transfer](#transfer)
 
 ---
@@ -285,24 +285,24 @@ Following functions are
 # setup_project
 Create the directory structure for a new machine learning project.
 
-    This function sets up the required directories and files for organizing datasets, 
-    models, and configurations for a machine learning project. It creates a base project 
-    structure with folders like 'DataSets', 'Libs', 'internal', and 'Archived', and 
+    This function sets up the required directories and files for organizing datasets,
+    models, and configurations for a machine learning project. It creates a base project
+    structure with folders like 'DataSets', 'Libs', 'internal', and 'Archived', and
     generates some basic template files.
 
 ## Parameters
-    
+
 ### project_name : str, optional
         The name of the project directory to create. Defaults to 'MyProject'.
 ### create_root : bool, optional
         If set to False, the project will be created in the current directory without creating a root folder. Defaults to True.
 ## Returns
-    
+
     None
         The function prints the status of the setup process.
 
     Notes
-    
+
     - This function will create template Python files under the 'Libs' directory for models, datasets, accuracies, losses, and optimizers.
     - It will also generate configuration JSON files in the 'internal' directory.
 
@@ -315,7 +315,7 @@ Retrieves pipeline information based on the specified mode and configuration.
     which set of pipelines to retrieve.
 
 ## Parameters
-    
+
 ### mode : str, optional
         Determines the type of information to return. Options include:
             - 'name' (default): Returns a list of experiment names.
@@ -329,7 +329,7 @@ Retrieves pipeline information based on the specified mode and configuration.
             - 'transfer': For the experiments which are for/from Transfer to other machine, Uses the configuration file located at "internal/Transfer/config.json".
 
 ## Returns
-    
+
     list or dict
         Depending on the `mode`, the return type will vary:
             - If `mode` is 'name', a list of experiment names is returned.
@@ -337,7 +337,7 @@ Retrieves pipeline information based on the specified mode and configuration.
             - If `mode` is 'all', a dictionary with detailed experiment information is returned.
 
 ## Raises
-    
+
     FileNotFoundError
         If the configuration file specified by the `config` parameter does not exist.
     JSONDecodeError
@@ -346,12 +346,12 @@ Retrieves pipeline information based on the specified mode and configuration.
 # verify
 Verifies the existence or uniqueness of a pipeline based on the given mode and configuration.
 
-    This function checks if a pipeline or its components already exist in the specified configuration 
-    based on the provided `mode`. It can verify by pipeline name, model-dataset combination, or training 
+    This function checks if a pipeline or its components already exist in the specified configuration
+    based on the provided `mode`. It can verify by pipeline name, model-dataset combination, or training
     configurations. Additionally, it can log information about the presence of duplicates.
 
 ## Parameters
-  
+
 ### ppl : str, list, dict
         - If `mode` is 'name', `ppl` should be a string representing the pipeline name.
         - If `mode` is 'mod_ds', `ppl` should be a dictionary containing 'model_loc' and 'DataSet_loc' keys.
@@ -376,7 +376,7 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
         If True, logs information about existing pipelines or combinations that match the query. Defaults to True.
 
 ## Returns
-    
+
     bool, list, or str
         - If `mode` is 'name', returns the pipeline name if it exists, otherwise False.
         - If `mode` is 'mod_ds', returns a list of names where the model-dataset combination matches, or False if no matches are found.
@@ -384,7 +384,7 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
         - If `mode` is 'all', returns a list of commonalities between all specified modes or a message indicating common pipelines across all modes.
 
 ## Raises
-  
+
     FileNotFoundError
         If the specified configuration or experiment files are not found.
     JSONDecodeError
@@ -393,11 +393,11 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
 # up2date
     Updates the root configuration file with the latest information from individual experiment JSON files.
 
-    - This function reads experiment data from JSON files in the `Configs` directory based on the specified `config`parameter and updates the corresponding root configuration file (`config.json`) with the latest epoch and validation accuracy for each experiment. 
+    - This function reads experiment data from JSON files in the `Configs` directory based on the specified `config`parameter and updates the corresponding root configuration file (`config.json`) with the latest epoch and validation accuracy for each experiment.
     - If an experiment is new or has updated information, it reflects those changes in the root configuration file.
 
 ## Parameters
-    
+
 ### config : str, optional
         Specifies which configuration files to update. Options include:
             - 'internal' (default): Updates the `internal/config.json` file with data from the `internal/Configs/` folder.
@@ -405,26 +405,26 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
             - 'transfer': Updates the `internal/Transfer/config.json` file with data from the `internal/Transfer/Configs/` folder.
 
 ### Returns
-    
+
     None
         This function does not return any value. It updates the specified configuration file directly.
 
 ### Raises
-    
+
     FileNotFoundError
         - If the specified configuration or experiment files are not found.
     JSONDecodeError
         - If there is an error decoding the JSON files.
 
-# set_default_config      
+# set_default_config
 
     Set the default configuration for the project.
 
-    - This function saves the provided configuration data to 'internal/Default_Config.json'. 
+    - This function saves the provided configuration data to 'internal/Default_Config.json'.
     - The configuration includes paths to accuracy, loss, optimizer, dataset, and batch sizes for training and validation.
 
 ## Parameters
-    
+
 ### data : dict
         A dictionary containing the configuration settings. Keys should include 'accuracy_loc', 'loss_loc', 'optimizer_loc', 'train_data_src', 'valid_data_src', 'train_batch_size', and 'valid_batch_size'.
 
@@ -434,7 +434,7 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
         The function writes the configuration to a JSON file.
 
 ## Examples
-   
+
     ```python
     set_default_config({
             "accuracy_loc": "Libs.accuracies.BinAcc",
@@ -447,12 +447,12 @@ Verifies the existence or uniqueness of a pipeline based on the given mode and c
         })
     # Saves the configuration to the default configuration file.
     ```
-    
+
 
 # test_mods
 Configures and initializes a testing pipeline for evaluating a machine learning model.
 
-    This function sets up a testing pipeline by configuring the model, dataset, and various paths for saving metrics, 
+    This function sets up a testing pipeline by configuring the model, dataset, and various paths for saving metrics,
     optimizer state, and model weights. It uses default configuration values if some parameters are not provided.
 
 ## Parameters:
@@ -473,26 +473,26 @@ Configures and initializes a testing pipeline for evaluating a machine learning 
 
 ## Returns:
     - PipeLine: An instance of the `PipeLine` class configured for testing with the provided or default parameters.
-    
+
 
 # train_new
 Initializes and sets up a new pipeline for training a machine learning model.
 
-    - This function configures a new training pipeline by specifying the model, dataset, loss function, accuracy metric, optimizer, and various training parameters. 
-    - It uses default values from a configuration file(saved using save_default_config) if certain parameters are not provided. 
+    - This function configures a new training pipeline by specifying the model, dataset, loss function, accuracy metric, optimizer, and various training parameters.
+    - It uses default values from a configuration file(saved using save_default_config) if certain parameters are not provided.
     - The function verifies the uniqueness of the pipeline name and initializes a `PipeLine` instance if the name is not already in use.
 
 ## Parameters
-    
+
 ### name : str, optional
         The name of the pipeline. If not provided, the pipeline will not be created.
-    
+
 ### model_loc : str, optional
         The location of the model module. If a simple name is provided, it is prefixed with 'Libs.models.'.
 
 ### loss_loc : str, optional
         The location of the loss function module. If a simple name is provided, it is prefixed with 'Libs.losses.'.
-    
+
 ### accuracy_loc : str, optional
         The location of the accuracy metric module. If a simple name is provided, it is prefixed with 'Libs.accuracies.'.
 
@@ -509,16 +509,16 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
 ### train_data_src : str, optional
         The source path for training data. Defaults to the value specified in the default configuration file if not provided.
-    
+
 ### valid_data_src : str, optional
         The source path for validation data. Defaults to the value specified in the default configuration file if not provided.
-    
+
 ### train_batch_size : int, optional
         The batch size for training data. Defaults to the value specified in the default configuration file if not provided.
-    
+
 ### valid_batch_size : int, optional
         The batch size for validation data. Defaults to the value specified in the default configuration file if not provided.
-    
+
 ### prepare : callable, optional
         A function or callable to prepare the pipeline. This function is called during the setup of the pipeline.
 
@@ -537,51 +537,51 @@ Initializes and sets up a new pipeline for training a machine learning model.
 
     Re-trains an existing pipeline or initializes a new pipeline with the provided configuration.
 
-    - This function sets up and optionally trains a `PipeLine` instance based on the specified configuration or pipeline name. 
-    - If a pipeline name (`ppl`) is provided, it constructs the configuration path from the pipeline name. 
+    - This function sets up and optionally trains a `PipeLine` instance based on the specified configuration or pipeline name.
+    - If a pipeline name (`ppl`) is provided, it constructs the configuration path from the pipeline name.
     - If `num_epochs` is specified and greater than zero, it performs training for the given number of epochs.
 
 ## Parameters
-  
+
 ### ppl : str, optional
-        - The name of the pipeline for which to re-train or initialize. If provided, the function constructs the configuration path as "internal/Configs/{ppl}.json". 
+        - The name of the pipeline for which to re-train or initialize. If provided, the function constructs the configuration path as "internal/Configs/{ppl}.json".
         - If `ppl` is `None`, the `config_path` must be specified.
-    
+
 ### config_path : str, optional
         - The path to the configuration file. This parameter is ignored if `ppl` is provided, as the configuration path will be constructed from the `ppl` name.
-    
+
 ### train_data_src : str, optional
-        - The source path for training data. This is used only if `num_epochs` is greater than zero and a new training session 
+        - The source path for training data. This is used only if `num_epochs` is greater than zero and a new training session
         is to be started.
-    
+
 ### valid_data_src : str, optional
-        - The source path for validation data. 
+        - The source path for validation data.
         - This is used only if `num_epochs` is greater than zero and a new training session is to be started.
-    
+
 ### prepare : callable, optional
-        A function or callable to prepare the pipeline. This function is called during the setup of the pipeline if `num_epochs` 
+        A function or callable to prepare the pipeline. This function is called during the setup of the pipeline if `num_epochs`
         is zero or if `prepare` is specified.
-    
+
 ### num_epochs : int, optional
-        The number of epochs for training. If greater than zero, the `PipeLine` will be trained for this many epochs. If zero, 
+        The number of epochs for training. If greater than zero, the `PipeLine` will be trained for this many epochs. If zero,
         only the pipeline will be set up without training.
 
 ## Returns
-    
+
     PipeLine
         An instance of the `PipeLine` class, set up and optionally trained according to the provided parameters.
 
 ## Notes
-    
+
     - If both `ppl` and `config_path` are provided, `ppl` takes precedence, and `config_path` will be constructed from `ppl`.
     - The function will initialize a new `PipeLine` instance if the `ppl` parameter is provided or if `config_path` is specified.
     - Training is only performed if `num_epochs` is greater than zero.
-    
+
 # use_ppl
 
     Configures and initializes a pipeline for an existing model or creates a new pipeline if necessary.
 
-    - This function either sets up a pipeline based on an existing configuration and trained model weights, or trains a new model if no trained pipeline is available. 
+    - This function either sets up a pipeline based on an existing configuration and trained model weights, or trains a new model if no trained pipeline is available.
     - It also updates and verifies the configuration before use.
 
 ## Parameters:
@@ -600,8 +600,8 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - prepare (bool, optional): Whether to prepare the pipeline before running. Default is None.
 
 ## Returns:
-    PipeLine: 
-      - An instance of the `PipeLine` class, either initialized with the provided or default configuration 
+    PipeLine:
+      - An instance of the `PipeLine` class, either initialized with the provided or default configuration
                 and pre-trained weights, or trained from scratch if no pre-trained pipeline is found.
 
 ## Notes:
@@ -614,24 +614,24 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - Any verification issues with the provided pipeline configuration are printed and no pipeline is returned.
 
 
-# performance_plot    
+# performance_plot
 
     Plots performance metrics (accuracy and loss) over epochs for one or more pipelines.
 
-    - This function generates plots for training and validation accuracy, as well as training and validation loss, using data from a CSV file or a DataFrame. 
+    - This function generates plots for training and validation accuracy, as well as training and validation loss, using data from a CSV file or a DataFrame.
     - It can handle single or multiple pipelines, and plots the performance metrics for each specified pipeline.
 
 ## Parameters
-    
+
 ### ppl : str, list, optional
-        - The name(s) of the pipeline(s) for which to plot performance metrics. 
+        - The name(s) of the pipeline(s) for which to plot performance metrics.
         - If `None`, it fetches all pipeline names using `get_ppls`. If `ppl` is a list, it plots performance metrics for each pipeline in the list. If `ppl` is a string, it is treated as a single pipeline name.
 
 ### history : str, optional
-        - The path to the CSV file containing performance metrics (e.g., accuracy and loss) over epochs. 
+        - The path to the CSV file containing performance metrics (e.g., accuracy and loss) over epochs.
         - If `None`, it defaults to the file located in `internal/Histories/` directory with the name corresponding to the pipeline name.
 
-### matrics : list of str, optional  
+### matrics : list of str, optional
         - List of performance data to plot (e.g., `["train_accuracy", "train_loss"]`). If `None`, defaults to `["train_accuracy", "train_loss", "val_accuracy", "val_loss"]`.
 
 ### config : str, optional
@@ -640,11 +640,11 @@ Initializes and sets up a new pipeline for training a machine learning model.
         - `archive`: Uses configurations from the `internal/Archived/` directory.
         - `transfer`: Uses configurations from the `internal/Transfer/` directory.
 
-### figsize` : tuple, optional  
+### figsize` : tuple, optional
         Size of the plot. Default is `(6, 4)`.
 ## Returns
-    
-    fig, ax:  
+
+    fig, ax:
         - Matplotlib `Figure` and `Axes` objects containing the generated plots. These can be used to further customize or save the plots. If no further customization is needed, the function only displays the plots and returns `None`.
 
 ## Notes
@@ -652,28 +652,28 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - The function updates the configuration before attempting to load the performance history.
     - If both `history` and `df` are `None`, an error message is printed.
     - If the DataFrame is empty, an appropriate message is printed.
-    
+
 
 # multi_train
 
     - Train or re-train multiple pipelines up to the specified number of epochs.
-    - This function checks the number of epochs each pipeline has already been trained for, and continues training until the specified `last_epoch` is reached. 
+    - This function checks the number of epochs each pipeline has already been trained for, and continues training until the specified `last_epoch` is reached.
     - The training configuration for each pipeline is read from a corresponding JSON file.
 
 ## Parameters
-    
+
 ### ppl : list of str, optional
         A list of pipeline names to train. If not provided, all pipelines will be selected.
 ### last_epoch : int, optional
         The maximum number of epochs to train for. Defaults to 10.
 
 ## Returns
-    
+
     None
         - The function prints training progress and status messages.
 
 ## Notes
-  
+
     - If the pipeline has already been trained for the specified `last_epoch`, it will be skipped.
     - Each pipeline's configuration is expected to be located at 'internal/Configs/{pipeline_name}.json'.
 
@@ -681,21 +681,21 @@ Initializes and sets up a new pipeline for training a machine learning model.
 # get_model
 
     - Retrieves the model class or its name for a given pipeline or a list of pipelines.
-    - This function fetches the model class or its name based on the specified pipeline(s). 
+    - This function fetches the model class or its name based on the specified pipeline(s).
     - It can handle single pipeline names, lists of pipeline names, or return a list of models corresponding to those pipelines.
 
 ## Parameters
-    
+
 ### ppl : str, list, optional
-        - The name(s) of the pipeline(s) for which to retrieve the model. 
-        - If `ppl` is `None`, it fetches all pipeline names using `get_ppls`. 
-        - If `ppl` is a list, it returns a list of models for each pipeline in the list. 
+        - The name(s) of the pipeline(s) for which to retrieve the model.
+        - If `ppl` is `None`, it fetches all pipeline names using `get_ppls`.
+        - If `ppl` is a list, it returns a list of models for each pipeline in the list.
         - If `ppl` is a string, it is treated as a single pipeline name.
-    
+
 ### name : bool, optional
-        - If `True`, returns the name of the model class as a string. If `False`, returns an instance of the model class. 
+        - If `True`, returns the name of the model class as a string. If `False`, returns an instance of the model class.
         - The default is `True`.
-    
+
 ### config : str, optional
       The configuration type to use when retrieving the pipeline. Options are:
         - `internal` [default]: Uses configurations from the `internal/` directory.
@@ -707,9 +707,9 @@ Initializes and sets up a new pipeline for training a machine learning model.
         - If `ppl` is a single string, returns either the model name (if `name=True`) or an instance of the model (if `name=False`).
         - If `ppl` is a list of strings, returns a list of model names or instances for each pipeline in the list.
         - If `ppl` is `None`, retrieves all pipeline names and returns them in the specified format.
-    
+
 ## Notes
-    
+
     - The function updates the configuration before attempting to load the model.
     - Model classes are imported dynamically based on the module location specified in the pipeline configuration.
     - The module location should be a valid Python module path, and the model class should be defined in that module.
@@ -719,15 +719,15 @@ Initializes and sets up a new pipeline for training a machine learning model.
     - This function fetches various configurations, metrics, and experiment details for a given set of experiments, such as model locations, dataset paths, training details, accuracy, loss, etc. It compiles this data into a pandas DataFrame and can also provide a simplified (mini) version of the data if required.
 ## Parameters
 ### ppl : list, optional
-        - The name(s) of the experiment(s) for which to retrieve the status.  
-        - If `ppl` is `None`, it fetches all experiment identifiers using `get_ppls()`.  
-        - If `ppl` is a list, it returns the status of each experiment in the list.  
+        - The name(s) of the experiment(s) for which to retrieve the status.
+        - If `ppl` is `None`, it fetches all experiment identifiers using `get_ppls()`.
+        - If `ppl` is a list, it returns the status of each experiment in the list.
         - If `ppl` is a string, it is treated as a single experiment identifier.
 ## mini : bool, optional
-        - If `True`, returns a simplified version of the data with some path information truncated.  
+        - If `True`, returns a simplified version of the data with some path information truncated.
         - **Default** is `False`.
 ## Returns
-    pandas.DataFrame  
+    pandas.DataFrame
     - A DataFrame containing the following columns:
         - **experiment_id**: The unique identifier for each experiment.
         - **models**: The file locations of the models used in each experiment.
@@ -757,72 +757,72 @@ Initializes and sets up a new pipeline for training a machine learning model.
 # archive
 
     - Archive or restore a project pipeline's files.
-    - This function moves the project's configuration, weights, and history files to or from the 'internal/Archived' directory based on the provided pipeline name(s). 
+    - This function moves the project's configuration, weights, and history files to or from the 'internal/Archived' directory based on the provided pipeline name(s).
     - Archiving moves files to the archive, while restoring moves them back.
 
 ## Parameters
-    
+
 ### ppl : str or list of str
         - The name(s) of the project pipeline to archive or restore.
 ### reverse : bool, optional
-        - If True, restores the project from the archive to the active directory. 
+        - If True, restores the project from the archive to the active directory.
         - Defaults to False.
 
 ## Returns
-    
+
     None
         - The function prints the status of the archiving process.
 
 ## Notes
-    
+
     - The function checks whether the project is already archived before proceeding.
     - If a list of projects is provided, the function archives or restores each project in the list.
 
 # delete
- 
+
     - Delete project files from the archive.
-    - This function deletes project files (configuration, weights, and history) from the archive directory. 
+    - This function deletes project files (configuration, weights, and history) from the archive directory.
     - It operates on files specified by the `ppl` parameter.
 
 ## Parameters
-   
+
 ### ppl : str or list of str
         - The name(s) of the project to delete. If a string, it represents a single project; if a list, it represents multiple projects.
 
 ## Returns
-    
+
     None
         - The function performs file operations but does not return any value.
 
 ## Notes
-    
+
     - The function will attempt to remove files from the `internal/Archived` directory.
     - If the project is not found in the archive, a message will be printed.
 
 # setup_transfer
     - Setup the directory structure for transferring pipelines.
 
-    - This function creates the necessary directories and configuration files for transferring pipelines between environments. 
+    - This function creates the necessary directories and configuration files for transferring pipelines between environments.
     - It creates a 'Transfer' folder inside 'internal', with subdirectories for storing histories, weights, and configurations.
 
 ## Returns
-    
+
     None
         - The function prints a message indicating whether the setup was completed or already exists.
-    
+
 # transfer
     - Transfer pipeline files between active and transfer directories.
     - This function transfers pipeline files (configurations, weights, and histories) either from the active directory to the transfer directory or vice versa. The transfer can be done using either copy or move operations.
     - make sure `setup_trasfer` for the first time before using `transfer`.
 
 ## Parameters
-    
+
 ### ppl : str or list of str
         The name(s) of the project pipeline to transfer.
 ### type : str, optional
         - The type of transfer, either 'export' to transfer to the transfer directory or 'import' to transfer back to the active directory. Defaults to 'export'.
 ### mode : str, optional
-        - The method of transfer: 'copy' to duplicate files, or 'move' to transfer them. 
+        - The method of transfer: 'copy' to duplicate files, or 'move' to transfer them.
         - Defaults to 'copy'.
 
 ## Returns
@@ -880,7 +880,7 @@ pipeline.setup(
     config_path="Configs/mymodel_config.json",
     use_config=False,
     make_config=True,
-    remark="New", 
+    remark="New",
     prepare=True
 )
 ```
@@ -1012,7 +1012,7 @@ This function generates a descriptive summary of the configuration parameters ba
 #### Functionality:
 - **When `mode == "mods"`**:
   - Returns the locations of the model and dataset, either in full or abbreviated form, depending on the `full` flag.
-  
+
 - **When `mode == "training"`**:
   - Returns training-related configurations, including the optimizer location, data source paths, and batch sizes, either in full or abbreviated form.
 
@@ -1343,13 +1343,13 @@ def get_loss():
 To effectively use the `PipeLine` class, users are encouraged to customize the `Libs` folder to suit their specific needs. You can create or modify the following files to define your models, datasets, accuracies, losses, and optimizers:
 
 - **`Libs/models.py`**: Define your model classes here. You can create custom neural network architectures or use pre-existing ones.
-  
+
 - **`Libs/datasets.py`**: Implement your dataset classes to load and preprocess your data.
-  
+
 - **`Libs/accuracies.py`**: Create custom accuracy metrics for evaluating your models.
-  
+
 - **`Libs/losses.py`**: Define your loss functions or use existing ones from PyTorch.
-  
+
 - **`Libs/optimizers.py`**: Implement or import custom optimizers for training your models.
 
 By following this structure, you can keep your project organized and make it easier to manage different models and datasets.
@@ -1383,14 +1383,14 @@ class DS01(Dataset):
 
     def __len__(self):
         return len(self.file_list)
-    
+
     def __getitem__(self, idx):
         file_path = os.path.join(self.folder, self.file_list[idx])
         waveform, sr = librosa.load(file_path, sr=self.sr)
 
         # Convert the waveform to a mel-spectrogram
         mel_spectrogram = librosa.feature.melspectrogram(
-            y=waveform, sr=self.sr, n_fft=self.n_fft, 
+            y=waveform, sr=self.sr, n_fft=self.n_fft,
             hop_length=self.hop_length, n_mels=self.n_mels
         )
 
@@ -1407,7 +1407,7 @@ class DS01(Dataset):
         label = torch.tensor(label, dtype=torch.float32)  # Shape: []
 
         return log_mel_spectrogram, label
-    
+
     @staticmethod
     def collate_fn(batch):
         spectrograms, labels = zip(*batch)
@@ -1430,7 +1430,7 @@ class DS01(Dataset):
 class CNN_LSTMAttentionWithMask(nn.Module):
     def __init__(self):
         super(CNN_LSTMAttentionWithMask, self).__init__()
-        
+
         # CNN layers for feature extraction
         self.cnn = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=3, padding=1),  # (batch_size, 1, H, W) -> (batch_size, 32, H, W)
@@ -1440,7 +1440,7 @@ class CNN_LSTMAttentionWithMask(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(2, 2)  # (batch_size, 64, H/4, W/4)
         )
-        
+
         # LSTM layers for sequence modeling
         self.lstm = nn.LSTM(input_size=64*32, hidden_size=128, num_layers=2, batch_first=True, bidirectional=True)
 
@@ -1450,12 +1450,12 @@ class CNN_LSTMAttentionWithMask(nn.Module):
             nn.Tanh(),
             nn.Linear(128 * 2, 1)  # Single value for each time step
         )
-        
+
         # Fully connected layers for classification
         self.fc1 = nn.Linear(128 * 2, 100)  # Output from attention applied on LSTM hidden state
         self.fc2 = nn.Linear(100, 10)
         self.fc3 = nn.Linear(10, 1)  # Ensure output is single dimension for binary classification
-        
+
         # Batch normalization and dropout
         self.bn1 = nn.BatchNorm1d(100)
         self.bn2 = nn.BatchNorm1d(10)
@@ -1531,7 +1531,7 @@ class DSbbek04(Dataset):
         waveform, sr = librosa.load(os.path.join(self.folder, file_path))
         waveform = torch.tensor(waveform).unsqueeze(0)
         cropped_waveform = self.random_crop(waveform, self.crop_size)
-        
+
         mfcc = librosa.feature.mfcc(y = cropped_waveform.numpy(), sr = sr, n_mfcc=21)
         mfcc= torch.tensor(mfcc)#.unsqueeze(0)
         label = int(os.path.basename(file_path)[-5])
@@ -1547,7 +1547,7 @@ class DSbbek04(Dataset):
             cropped_waveform = waveform[:, start:start + crop_size]
         return cropped_waveform
 
-``` 
+```
 ### model / architecture
 
     The MdLamn01 model is an Audio Spectrogram Transformer (AST) designed for processing MFCC spectrograms with input dimensions of (1, 21, 21). It first applies a patch embedding via a convolution layer, transforming the input into smaller patches. Then, the encoded patches are processed by a custom Transformer Encoder Layer (with multi-head attention and feedforward layers), followed by global average pooling. Finally, the output is passed through a fully connected layer, producing a binary classification result using a sigmoid activation.
@@ -1561,12 +1561,12 @@ class MdLamn01(nn.Module):
     '''
     def __init__(self, d_model=512, nhead=8, dim_feedforward=2048, dropout=0.1):
         super(MdLamn01, self).__init__()
-        
+
         self.patch_embedding = nn.Conv2d(1, d_model, kernel_size=(4, 4), stride=(4,4))
-        
+
         self.transformer_layer = self.TfEL(d_model=d_model,nhead=nhead,dim_feedforward=dim_feedforward, dropout=dropout)
         self.fc = nn.Linear(d_model, 1)
-        
+
     def TfEL(self,d_model,nhead,dim_feedforward,dropout=0.1):
         class TransformerEncoderLayer(nn.Module):
             def __init__(self, d_model, nhead, dim_feedforward, dropout):
@@ -1609,25 +1609,25 @@ class DS01(Dataset):
     def __init__(self, root_dir):
         self.root_dir = root_dir
         self.transform = transforms.Compose([
-                            transforms.Resize((128,128)),  # Resize images 
+                            transforms.Resize((128,128)),  # Resize images
                             transforms.ToTensor()        # Convert images to tensor
                         ])
         self.image_paths = []
         self.labels = []
-        
+
         # Map directories with 'real' or 'fake' in their name to corresponding labels
         self.class_to_idx = {'real': 1, 'fake': 0}  # 1 for real, 0 for fake
-        
+
         # Traverse through subdirectories
         for subdir in os.listdir(root_dir):
             class_name = None
-            
+
             # Identify if subdir is 'real' or 'fake' by checking the directory name
             if 'real' in subdir.lower():
                 class_name = 'real'
             elif 'fake' in subdir.lower():
                 class_name = 'fake'
-            
+
             if class_name:
                 class_dir = os.path.join(root_dir, subdir)
                 if os.path.isdir(class_dir):
@@ -1644,13 +1644,13 @@ class DS01(Dataset):
     def __getitem__(self, idx):
         img_path = self.image_paths[idx]
         label = self.labels[idx]
-        
+
         # Open image
         image = Image.open(img_path).convert("RGB")
-        
+
         # Apply transforms if provided
         image = self.transform(image)
-        
+
         return image, label
 ```
 ### model / architecture
@@ -1664,7 +1664,7 @@ class Meso4_01(nn.Module):
         self.conv1 = nn.Conv2d(3, 8, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(8, 8, kernel_size=5, padding=2)
         self.conv3 = nn.Conv2d(8, 16, kernel_size=5, padding=2)
-        self.conv4 = nn.Conv2d(16, 16, kernel_size=5, padding=2)  
+        self.conv4 = nn.Conv2d(16, 16, kernel_size=5, padding=2)
 
         self.bn1 = nn.BatchNorm2d(8)
         self.bn2 = nn.BatchNorm2d(8)
@@ -1673,15 +1673,15 @@ class Meso4_01(nn.Module):
 
         self.pool = nn.MaxPool2d(kernel_size=2,stride=2,padding=0)
         self.pool2 = nn.MaxPool2d(kernel_size=4, stride=4)
-        
+
         self.fc1 = nn.Linear(16 * 4 * 4, 16)
         self.fc2 = nn.Linear(16, 1)
-        
+
         self.dropout = nn.Dropout(0.5)
-        
+
     def forward(self, x):
         x = self.pool(F.relu(self.bn1(self.conv1(x))))
-        
+
         x = self.pool(F.relu(self.bn2(self.conv2(x))))
         x = self.pool(F.relu(self.bn3(self.conv3(x))))
         x = self.pool2(F.relu(self.bn4(self.conv4(x))))
@@ -1694,7 +1694,7 @@ class Meso4_01(nn.Module):
 
 ```
 ## CSV file data
-    For tabular data. 
+    For tabular data.
 ### dataset
     The DS01 dataset class loads data from a CSV file into a Pandas DataFrame, where the __getitem__ method extracts the features (all columns except 'Quality') and the label ('Quality') for each sample. The features are converted into a torch tensor and reshaped to include a channel dimension (features[np.newaxis, :]). The label is also converted into a tensor of type torch.long. The method returns the reshaped features and the label.
 ```python
@@ -1705,11 +1705,11 @@ class DS01(Dataset):
     def __len__(self):
         # Return the total number of samples in the dataset
         return len(self.data_frame)
-    
+
     def __getitem__(self, idx):
         # Get a row at the given index (iloc is used to access by index)
         row = self.data_frame.iloc[idx]
-        
+
         features = row.drop('Quality').values.astype(float)  # Assuming 'label' column contains labels
         label = row['Quality']
 
@@ -1719,7 +1719,7 @@ class DS01(Dataset):
         features = features[np.newaxis,:]
         # label = label.view(1,1)
         features.shape, label.shape,label
-        
+
         return features, label
 ```
 ### model / architecture
@@ -1758,24 +1758,24 @@ class DS_01(Dataset):
     def __init__(self, root_dir):
         self.desc = "resize[224, 224] -> transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])"
         self.root_dir = root_dir
-        
+
         # Define default transformations (resize, to tensor, and normalization)
         self.transform = transforms.Compose([
             transforms.Resize((224, 224)),  # Resize to 224x224 pixels
             transforms.ToTensor(),  # Convert image to tensor
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # ImageNet normalization
         ])
-        
+
         # Get all class names (subfolder names)
         self.class_names = sorted(os.listdir(root_dir))
-        
+
         # Create a mapping from class name to class index
         self.class_to_idx = {class_name: idx for idx, class_name in enumerate(self.class_names)}
-        
+
         # Collect all image paths and their corresponding class labels
         self.image_paths = []
         self.labels = []
-        
+
         for class_name in self.class_names:
             class_dir = os.path.join(root_dir, class_name)
             if os.path.isdir(class_dir):
@@ -1792,7 +1792,7 @@ class DS_01(Dataset):
             return torch.eye(num_classes)[labels]
         # Apply one-hot encoding to the labels
         labels = one_hot_encode(labels)
-        
+
         return inputs, labels
     def __len__(self):
         return len(self.image_paths)
@@ -1801,13 +1801,13 @@ class DS_01(Dataset):
         # Load image
         img_path = self.image_paths[idx]
         img = Image.open(img_path).convert("RGB")  # Convert to RGB to ensure consistent color channels
-        
+
         # Get the label for the image
         label = self.labels[idx]
-        
+
         # Apply transformations if provided
         img = self.transform(img)
-        
+
         return img, label
 
 ```
@@ -1822,12 +1822,12 @@ class ResN50_40(nn.Module):
 
         self.desc = "[3,224,224] -> ResNet50preTrained(-40:)[2048] -> 256 -> 74"
 
-        # Step 1: Load ResNet50 base model (without pre-trained weights) 
+        # Step 1: Load ResNet50 base model (without pre-trained weights)
         self.base_model = models.resnet50(weights=None)  # No pretrained weights at first
         self.base_model.fc = nn.Identity()  # Remove the final fully connected (fc) layer
 
         # Step 2: Load the pre-trained weights into the base model "pretrained" folder should be inside your project directory
-        state_dict = torch.load("preTrained/resnet50_pretrained.pth", weights_only=True) 
+        state_dict = torch.load("preTrained/resnet50_pretrained.pth", weights_only=True)
         self.base_model.load_state_dict(state_dict, strict=False)  # Load the pre-trained weights
 
         # Custom layers after the base model
@@ -1837,7 +1837,7 @@ class ResN50_40(nn.Module):
         self.dropout = nn.Dropout(0.3)
         self.fc2 = nn.Linear(256, 74)  # Output layer (num_classes will be 74)
 
-        # Step 3: Create a list of all parameters 
+        # Step 3: Create a list of all parameters
         self.params = list(self.base_model.named_parameters())
         # print(f"Total parameters: {len(self.params)}")
 
@@ -1872,7 +1872,7 @@ class OptimizerWithScheduler:
    def __init__(self, optimizer, scheduler_type='StepLR', **kwargs):
             # Create Adamax optimizer
             self.optimizer = optimizer
-            
+
             # Choose the scheduler
             if scheduler_type == 'StepLR':
                 self.scheduler = StepLR(self.optimizer, step_size=5, gamma=0.1)
@@ -1900,8 +1900,8 @@ class OptimizerWithScheduler:
             return self.optimizer.param_groups[0]['lr']  # Assuming a single learning rate for all params
    def get_last_lr(self):
             """ Get the last learning rate from the scheduler """
-            return self.scheduler.get_last_lr()[0] 
-    
+            return self.scheduler.get_last_lr()[0]
+
 
 def OptAdamax_sc(model, **kwargs):
    optimizer = optim.Adamax(model.parameters(), lr=0.001, weight_decay=1e-5)
@@ -1915,7 +1915,7 @@ use case
 P = train_new(name="exp12",
           dataset_loc="DS_01",
           model_loc="ResN50_40",
-          optimizer_loc= "Libs.optimizers.OptAdamax_sc", #costumized optimizer 
+          optimizer_loc= "Libs.optimizers.OptAdamax_sc", #costumized optimizer
           prepare=True
          )
 P.train(num_epochs=20,patience=6)
