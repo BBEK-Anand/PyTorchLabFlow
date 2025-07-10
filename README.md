@@ -10,6 +10,17 @@
 
 For end to end use case check [Military_AirCraft_Classification](https://github.com/BBEK-Anand/Military_AirCraft_Classification)
 
+# Advanced Version Coming Soon 🚀
+This repository hosts the basic version of PyTorchLabFlow, designed to help you track and organize your deep learning experiments with ease.
+
+If you’re interested in a more advanced version with enhanced features for research-first experiment tracking, I’m currently finalizing it!
+You can learn more about the vision and motivation behind PyTorchLabFlow here:
+
+📊 [![Presentation Slides]](https://docs.google.com/presentation/d/108Jq0nKttp6kJoV6ltc3LBL-F-5sqRlvkbWb17cpMak/edit?usp=sharing)
+
+✍️ [![Medium Article]: Why I Built PyTorchLabFlow](https://medium.com/@bbek-anand/why-i-built-pytorchlabflow-research-first-experiment-tracking-for-deep-learning-chaos-a50b5bc47dde)
+
+
 # Table of Contents
 - [Installation](#installation)
 - [Directory Structure](#directory-structure)
