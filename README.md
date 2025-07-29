@@ -20,6 +20,7 @@ You can learn more about the vision and motivation behind PyTorchLabFlow here:
 
 ✍️ [![Medium Article]: Why I Built PyTorchLabFlow](https://medium.com/@bbek-anand/why-i-built-pytorchlabflow-research-first-experiment-tracking-for-deep-learning-chaos-a50b5bc47dde)
 
+[![PyTorchLabFlow: A Research-First Framework for Reproducible PyTorch Experiments] https://medium.com/@bbek-anand/pytorchlabflow-a-research-first-framework-for-reproducible-pytorch-experiments-b5ec55b8dcc1).
 
 # Table of Contents
 - [Installation](#installation)
