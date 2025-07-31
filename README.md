@@ -16,11 +16,11 @@ This repository hosts the basic version of PyTorchLabFlow, designed to help you 
 If you’re interested in a more advanced version with enhanced features for research-first experiment tracking, I’m currently finalizing it!
 You can learn more about the vision and motivation behind PyTorchLabFlow here:
 
-📊 [![Presentation Slides]](https://docs.google.com/presentation/d/108Jq0nKttp6kJoV6ltc3LBL-F-5sqRlvkbWb17cpMak/edit?usp=sharing)
+📊 [Presentation Slides](https://docs.google.com/presentation/d/108Jq0nKttp6kJoV6ltc3LBL-F-5sqRlvkbWb17cpMak/edit?usp=sharing)
 
-✍️ [![Medium Article]: Why I Built PyTorchLabFlow](https://medium.com/@bbek-anand/why-i-built-pytorchlabflow-research-first-experiment-tracking-for-deep-learning-chaos-a50b5bc47dde)
+✍️ [Why I Built PyTorchLabFlow](https://medium.com/@bbek-anand/why-i-built-pytorchlabflow-research-first-experiment-tracking-for-deep-learning-chaos-a50b5bc47dde)
 
-[![PyTorchLabFlow: A Research-First Framework for Reproducible PyTorch Experiments] https://medium.com/@bbek-anand/pytorchlabflow-a-research-first-framework-for-reproducible-pytorch-experiments-b5ec55b8dcc1).
+[PyTorchLabFlow: A Research-First Framework for Reproducible PyTorch Experiments](https://medium.com/@bbek-anand/pytorchlabflow-a-research-first-framework-for-reproducible-pytorch-experiments-b5ec55b8dcc1)
 
 # Table of Contents
 - [Installation](#installation)
