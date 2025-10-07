@@ -457,8 +457,7 @@ class PipeLine:
         ) as out_file:
             json.dump(quick, out_file, indent=4)
 
-        df = pd.read_csv(os.path.join(self.settings["data_path"], "ppls.csv"))
-
+        
         self.__db.execute(
             "INSERT INTO ppls (pplid, args_hash) VALUES (?, ?)",
             (pplid, hash_args(args)),
@@ -466,15 +465,7 @@ class PipeLine:
 
         self._save_config()
         # Initialize logs.csv and exps.csv
-        data = {
-            "pplid": [pplid],
-            "hash_args": [hash_args(args)],
-            "called_at": [get_caller()],
-            "time": [datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
-        }
-        df = pd.DataFrame(data)
-        path = os.path.join(self.settings["data_path"], "ppls.csv")
-        df.to_csv(path, mode="a", header=False, index=False)
+        
         if prepare:
             self.prepare()
 
