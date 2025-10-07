@@ -102,23 +102,13 @@ def set_shared_data(data: dict, logid: str=None) -> dict:
 def get_caller() -> str:
     """
     Identify the current session or script origin.
-
-    Attempts to determine if the code is running in a Jupyter notebook session
-    using kernel metadata. Falls back to identifying as a standalone script or
-    non-Jupyter environment.
-
-    Returns
-    -------
-    str
-        A string describing the caller, e.g., 'jupyter_session:<id>',
-        'script:<filename>', or 'non-jupyter-session'.
+    Returns a string like 'jupyter_session:<id>' or 'script:<filename>'.
     """
     try:
         with open(get_connection_file(), encoding="utf-8") as c:
             caller = json.load(c)["jupyter_session"]
     except (FileNotFoundError, json.JSONDecodeError, KeyError, OSError, RuntimeError):
-        # Detect if run as a script or imported/tested
-        if __name__ == "__main__":
+        if len(sys.argv) > 0 and sys.argv[0]:  # means it's being run as a script
             caller = f"script:{os.path.basename(sys.argv[0])}"
         else:
             caller = "unknown-session"
