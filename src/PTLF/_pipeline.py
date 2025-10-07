@@ -22,7 +22,6 @@ from .utils import (
     load_component,
     hash_args,
     get_invalid_loc_queries,
-    Tracker,
     Db,
     Component,
 )
@@ -779,8 +778,8 @@ class PipeLine:
         self,
         num_epochs: int = 5,
         self_patience: Optional[int] = None,
-        verbose: Union[List[str], str] = None,
-        tracker: Optional["Tracker"] = None,
+        verbose: Union[List[str], str] = None
+        
     ) -> None:
         """
         Train the model for a specified number of epochs with optional early stopping.
@@ -793,8 +792,6 @@ class PipeLine:
             Number of epochs to wait for improvement before early stopping. If None, equals num_epochs.
         verbose : list of str or str, optional
             Metrics to display live during training. Must be from the set of defined metrics.
-        tracker : Tracker, optional
-            Tracker object for monitoring or logging custom training behavior.
 
         Notes
         -----
@@ -809,7 +806,7 @@ class PipeLine:
             )
             return
 
-        self.tracker = tracker if isinstance(tracker, Tracker) else None
+
         with open(self.get_path(of="quick"), encoding="utf-8") as q:
             quick = json.load(q)
 
@@ -877,8 +874,7 @@ class PipeLine:
         self,
         mode: str,
         epoch: int,
-        verbose: Optional[List[str]] = None,
-        tracker: Optional["Tracker"] = None,
+        verbose: Optional[List[str]] = None
     ) -> Dict[str, float]:
         """
         Perform a single epoch pass through the dataset.
@@ -891,8 +887,6 @@ class PipeLine:
             Current epoch number.
         verbose : list of str, optional
             Metrics to display live in the progress bar.
-        tracker : Tracker, optional
-            Tracker object for custom logging or visualization.
 
         Returns
         -------

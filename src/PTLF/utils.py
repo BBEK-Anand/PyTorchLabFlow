@@ -315,55 +315,53 @@ def hash_args(args: Dict[str, Any]) -> str:
     # print(hhas)
     return hhas
 
+from typing import Union, Dict, List, Any
+
 def extract_all_locs(d: Union[Dict, List]) -> List[str]:
     """
     Recursively extract all 'loc' values from nested dictionaries or lists.
+    A component is defined as a dict with a 'loc' key and optional 'args'.
     """
     locs = []
 
     if isinstance(d, dict):
-        for v in d.values():
-            if isinstance(v, dict):
-                if "loc" in v:
-                    locs.append(v["loc"])
-                    if 'args' in v:
-                        
-                        locs.extend(extract_all_locs(v['args']))
-            elif isinstance(v, list):
-                locs.extend(extract_all_locs(v))  # ✅ fix: process lists inside dicts
+        # If this is a component dict
+        if "loc" in d:
+            locs.append(d["loc"])
+            if "args" in d and isinstance(d["args"], (dict, list)):
+                locs.extend(extract_all_locs(d["args"]))
+        else:
+            # Otherwise, check all values in the dict
+            for v in d.values():
+                locs.extend(extract_all_locs(v))
+
     elif isinstance(d, list):
         for item in d:
-            locs.extend(extract_all_locs(item))  # ✅ recurse list items
+            locs.extend(extract_all_locs(item))
 
     return locs
 
+from typing import Union, Dict, List
+
+
 def get_invalid_loc_queries(d: Union[Dict, List], parent_key: str = "") -> List[str]:
-    """
-    Recursively identify keys with invalid 'loc' values (i.e., missing module path).
-    Returns the full path to each invalid 'loc'.
-    """
     queries = []
 
     if isinstance(d, dict):
+        # Check this dict itself
+        if "loc" in d:
+            loc_val = d["loc"]
+            if not isinstance(loc_val, str) or "." not in loc_val:
+                queries.append(parent_key)
+
+        # Now recurse into its values
         for k, v in d.items():
             new_key = f"{parent_key}>{k}" if parent_key else k
-
-            if isinstance(v, dict):
-                if "loc" in v:
-                    loc_val = v["loc"]
-                    if "." not in str(loc_val):
-                        queries.append(new_key)
-                # 👇 ensure traversal through *all* subkeys, not just "args"
-                queries.extend(get_invalid_loc_queries(v, new_key))
-
-            elif isinstance(v, list):
-                for idx, item in enumerate(v):
-                    item_key = f"{new_key}[{idx}]"
-                    queries.extend(get_invalid_loc_queries(item, item_key))
+            queries.extend(get_invalid_loc_queries(v, new_key))
 
     elif isinstance(d, list):
         for idx, item in enumerate(d):
-            item_key = f"{parent_key}[{idx}]"
+            item_key = f"{parent_key}[{idx}]" if parent_key else f"[{idx}]"
             queries.extend(get_invalid_loc_queries(item, item_key))
 
     return queries
