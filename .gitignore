@@ -19,6 +19,7 @@ config.json
 # Ignore virtual environments
 venv/
 env/
+site/
 
 # Ignore compiled files
 *.so
