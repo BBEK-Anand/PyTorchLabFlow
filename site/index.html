@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyTorchLabFlow | A Local-First Framework for Reproducible Deep Learning</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="container">
+            <a href="#hero" class="logo">PyTorchLabFlow</a>
+            <nav>
+                <ul>
+                    <li><a href="#the-problem">The Problem</a></li>
+                    <li><a href="#the-solution">The Solution</a></li>
+                    <li><a href="#projects">Projects</a></li>
+                    <li><a href="#get-started">Get Started</a></li>
+                    <li><a href="#team">Team</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- I. THE HOOK: HERO SECTION -->
+        <section id="hero" class="hero">
+            <div class="container hero-container">
+                <div class="hero-text">
+                    <img src="/mnt/work/GitDesk/PTLF2/resources/logos/PTLFlogo-light.jpg" alt="PyTorchLabFlow Logo" class="hero-logo">
+                    <h1 class="hero-title">From chaotic scripts to clean, reproducible experiments.</h1>
+                    <p class="hero-subtitle">PyTorchLabFlow is a lightweight, local-first framework that brings structure and sanity to deep learning research.</p>
+                </div>
+                <div class="hero-visual">
+                    <div id="visual-chaos" class="code-block active">
+<pre><code><span class="comment"># exp_v4_final_final.py</span>
+model = MyModel(layers=6, <span class="highlight-red">lr=0.002</span>)
+train_loader = build_dataset(
+    './data/normalized',
+    <span class="highlight-red">batch_size=64</span>
+)
+...
+<span class="comment">// Is this the run from last week?</span>
+<span class="comment">// Where are the weights?</span></code></pre>
+                    </div>
+                    <div id="visual-clarity" class="code-block">
+<pre><code><span class="comment"># config.yaml</span>
+model:
+  loc: my_models.MyModel
+  args: {layers: 6}
+dataset:
+  loc: my_datasets.MyDataset
+  args: {path: './data/normalized'}
+optimizer:
+  args: {lr: <span class="highlight-green">0.001</span>}
+train_batch_size: <span class="highlight-green">32</span></code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- III. THE PROBLEM DEEP DIVE -->
+        <section id="the-problem" class="content-wrapper alt-bg">
+            <div class="container section-layout fade-in">
+                <div class="section-visual">
+                    <img src="https://placehold.co/500x400/f1f1f1/111?text=The+Chaos" alt="Visual representation of research chaos">
+                </div>
+                <div class="section-content">
+                    <div class="section-header">
+                        <h2 class="section-title">The Research Workflow is Inherently Chaotic</h2>
+                        <p class="section-tagline">The path from hypothesis to publication is non-linear. Standard tools, built for production, often fail to support the exploratory process.</p>
+                    </div>
+                    <div class="problem-text-block">
+                        <h3>The Experimentation Mess</h3>
+                        <p>In early-stage research, we juggle multiple variants of models, datasets, and optimizers. This leads to an explosion of scripts and configurations before any "version 1" is even established. It’s frustrating and time-consuming to manage configs, track artifacts, and ensure results are reproducible—a challenge highlighted by the ongoing reproducibility crisis in AI.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- IV. THE SOLUTION: HOW IT MANAGES -->
+        <section id="the-solution" class="content-wrapper">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <h2 class="section-title">A Method for the Mess</h2>
+                    <p class="section-tagline">PyTorchLabFlow imposes a clean structure on top of the chaos with two core concepts.</p>
+                </div>
+
+                <div class="solution-block fade-in">
+                    <div class="solution-visual">
+                        <img src="https://placehold.co/500x300/f1f1f1/111?text=Components" alt="Visual of modular components">
+                    </div>
+                    <div class="solution-text">
+                        <h3>1. The Component: Reusable Building Blocks</h3>
+                        <p>The `Component` is the fundamental unit: a self-contained, reusable piece of code (model, dataset, etc.). Defined by its location and arguments in a config, it promotes modularity and eliminates duplicated code.</p>
+                        <p><strong>Nesting is supported:</strong> build complex, modular systems from simple, swappable parts without touching your Python scripts.</p>
+                    </div>
+                </div>
+
+                <div class="solution-block fade-in reverse">
+                     <div class="solution-visual">
+                        <img src="https://placehold.co/500x300/f1f1f1/111?text=Pipeline" alt="Visual of components forming a pipeline">
+                    </div>
+                    <div class="solution-text">
+                        <h3>2. The Pipeline: The Reproducible Experiment</h3>
+                        <p>The `PipeLine` class assembles your Components into a complete experiment via a single YAML config. Each `PipeLine` is given a unique ID, capturing the exact state of your code and parameters. This makes every run fully traceable and perfectly reproducible.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- V. THE PROOF: PROJECTS -->
+        <section id="projects" class="content-wrapper alt-bg">
+            <div class="container-fluid">
+                <div class="section-header fade-in">
+                    <h2 class="section-title">Projects Structured by LabFlow</h2>
+                    <p class="section-tagline">From academic research to complex benchmarking.</p>
+                </div>
+                <div class="projects-scroll-container fade-in">
+                    <div class="projects-wrapper">
+                        <div class="project-card">
+                            <img src="path/to/project1-plot.png" alt="Military Aircraft Classification Plot" class="project-figure">
+                            <div class="project-info">
+                                <h4>Military Aircraft Classification</h4>
+                                <p>Systematically fine-tuned and compared multiple pre-trained architectures (EfficientNet, ResNet50, VGG19).</p>
+                                <div class="project-metrics">
+                                    <div><span>12+</span>Experiments</div>
+                                    <div><span>1 Day</span>To Best Model</div>
+                                    <div><span>0</span>Lost Configs</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card">
+                            <img src="path/to/project2-plot.png" alt="Few-Shot Learning Plot" class="project-figure">
+                            <div class="project-info">
+                                <h4>Few-Shot Classification Benchmark</h4>
+                                <p>Rapidly iterated on data augmentation strategies where subtle code changes needed to be rigorously tracked against results.</p>
+                                <div class="project-metrics">
+                                    <div><span>30+</span>Experiments</div>
+                                    <div><span>95%</span>Code Reusability</div>
+                                    <div><span>100%</span>Reproducibility</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-card placeholder">
+                            <h4>Your Next Project</h4>
+                            <p>Bring structure and sanity to your research with PyTorchLabFlow.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VI. INSTALLATION & USAGE -->
+        <section id="get-started" class="content-wrapper">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <h2 class="section-title">Installation & Quickstart</h2>
+                    <p class="section-tagline">No servers. No databases. No boilerplate.</p>
+                </div>
+                <div class="quickstart-wrapper fade-in">
+                    <div class="quickstart-step">
+                        <h4>1. Install</h4>
+                        <pre><code>pip install pytorchlabflow</code></pre>
+                    </div>
+                    <div class="quickstart-step">
+                        <h4>2. Configure</h4>
+                        <pre><code># config.yaml
+model:
+  loc: my_project.models.MyCNN
+  args: { num_classes: 10 }</code></pre>
+                    </div>
+                    <div class="quickstart-step">
+                        <h4>3. Run</h4>
+                        <pre><code>from pytorchlabflow import PipeLine
+
+p = PipeLine()
+p.new("exp01", "config.yaml")
+p.run(your_train_func)</code></pre>
+                    </div>
+                </div>
+                <div class="cta-buttons-center fade-in">
+                    <a href="#" class="btn btn-primary"><i class="fas fa-book-open"></i> View Full Documentation</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- VII. COLLABORATION & CONTRIBUTION -->
+        <section id="community" class="content-wrapper alt-bg">
+            <div class="container section-layout fade-in reverse">
+                <div class="section-visual">
+                    <img src="https://placehold.co/500x500/f1f1f1/111?text=Contribute" alt="Visual for community and collaboration">
+                </div>
+                 <div class="section-content">
+                    <div class="community-grid">
+                        <div class="community-card">
+                            <i class="fas fa-users"></i>
+                            <h3>Collaborate on Research</h3>
+                            <p>Are you a researcher working on an interesting problem? We can guide you in using PyTorchLabFlow to structure your project. You decide the direction; we help with the methodology.</p>
+                            <a href="mailto:bibekanandahati75@gmail.com" class="btn btn-secondary">Propose a Collaboration</a>
+                        </div>
+                        <div class="community-card">
+                            <i class="fas fa-code-branch"></i>
+                            <h3>Improve the Framework</h3>
+                            <p>PyTorchLabFlow is open-source. We invite you to contribute to the codebase, report issues, or suggest new features. Fork the repository and help us build the ideal tool for research.</p>
+                            <a href="https://github.com/BBEK-Anand/PyTorchLabFlow" target="_blank" class="btn btn-secondary">Fork on GitHub</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- IX. TEAM -->
+        <section id="team" class="content-wrapper">
+            <div class="container">
+                 <div class="section-header fade-in">
+                    <h2 class="section-title">Team</h2>
+                </div>
+                <div class="team-grid fade-in">
+                    <div class="team-member">
+                        <img src="/mnt/work/GitDesk/PTLF2/resources/logos/PTLFlogo-light.jpg" alt="Bibekananda Hati">
+                        <h4>BBEK-Anand</h4>
+                        <p>Creator & Lead Developer</p>
+                    </div>
+                    <div class="team-member">
+                        <img src="/mnt/work/GitDesk/PTLF2/resources/logos/PTLFlogo-light.jpg" alt="Bibekananda Hati">
+                        <h4>BBEK-Anand</h4>
+                        <p>Creator & Lead Developer</p>
+                    </div>
+
+                    <div class="team-member">
+                        <img src="/mnt/work/GitDesk/PTLF2/resources/logos/PTLFlogo-light.jpg" alt="Bibekananda Hati">
+                        <h4>BBEK-Anand</h4>
+                        <p>Creator & Lead Developer</p>
+                    </div>
+                    <div class="team-member">
+                        <img src="/mnt/work/GitDesk/PTLF2/resources/logos/PTLFlogo-light.jpg" alt="Bibekananda Hati">
+                        <h4>BBEK-Anand</h4>
+                        <p>Creator & Lead Developer</p>
+                    </div>                   
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <!-- X. FOOTER -->
+    <footer id="contact" class="site-footer">
+        <div class="container fade-in">
+            <div class="social-links">
+                <a href="https://www.linkedin.com/in/bibekananda-hati-1a7453169/" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://github.com/BBEK-Anand" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://medium.com/@bbek-anand" target="_blank" title="Medium"><i class="fab fa-medium"></i></a>
+                <a href="mailto:bibekanandahati75@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+            <p class="footer-note">PyTorchLabFlow is an open-source project.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chaosBlock = document.getElementById('visual-chaos');
+            const clarityBlock = document.getElementById('visual-clarity');
+            if (chaosBlock && clarityBlock) {
+                setInterval(() => {
+                    chaosBlock.classList.toggle('active');
+                    clarityBlock.classList.toggle('active');
+                }, 3000);
+            }
+
+            const faders = document.querySelectorAll('.fade-in');
+            const options = { threshold: 0.1, rootMargin: "0px 0px -50px 0px" };
+            const appearOnScroll = new IntersectionObserver(function(entries, appearOnScroll) {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('is-visible');
+                    appearOnScroll.unobserve(entry.target);
+                });
+            }, options);
+            faders.forEach(fader => appearOnScroll.observe(fader));
+        });
+    </script>
+</body>
+</html>
+
