@@ -1,6 +1,6 @@
 import { ArrowRight, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logos/PTLFlogo-light.jpg";
 import chaosVisual from "@/assets/chaos-visual.png";
 
 const Hero = () => {
