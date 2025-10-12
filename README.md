@@ -27,7 +27,7 @@ For end to end use case check [Military_AirCraft_Classification](https://github.
 - [License](#license)
 # installation
 ```python
-pip install PyTorchLabFlow
+pip install PyTorchLabFlow 
 ```
 
 ---
