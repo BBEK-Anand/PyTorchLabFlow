@@ -469,115 +469,6 @@ class PipeLine:
         if prepare:
             self.prepare()
 
-    def use(
-        self,
-        use_exp: str,
-        pplid: str,
-        args: Dict[str, Any],
-        *,
-        trained: bool = False,
-        epoch: Union[int, str] = "best",
-    ) -> None:
-        """
-        Create a new experiment configuration based on an existing experiment,
-        optionally using pretrained weights.
-
-        Parameters
-        ----------
-        use_exp : str
-            The experiment ID to base this new experiment on.
-        pplid : str
-            The new experiment ID.
-        args : dict, optional
-            Overrides or updates to the base experiment's configuration.
-        trained : bool, optional
-            If True, use pretrained weights from the base experiment.
-        epoch : int or str, optional
-            Which epoch's weights to load when `trained=True`. Defaults to 'best'.
-
-        Raises
-        ------
-        ValueError
-            If model configs mismatch, experiment IDs exist,
-            invalid epochs, or missing metrics/settings.
-        """
-        if not self.verify(pplid=use_exp):
-            raise ValueError(f"The pplid: {pplid} is not exists")
-        with open(self.get_path(of="config", pplid=use_exp), encoding="utf-8") as cnfg:
-            args1 = json.load(cnfg)["args"]
-        if args:
-            args1.update(args)
-        self._check_args(args1)
-        model = load_component(**args1["model"]).to(self.device)
-        if trained:
-            try:
-                model.load_state_dict(
-                    torch.load(
-                        self.get_path(of="weight", pplid=use_exp, epoch=epoch),
-                        weights_only=True,
-                    ),
-                    strict=False,
-                )
-            except:
-                raise
-        if self.verify(pplid=pplid):
-            raise ValueError(f"{pplid} is already exists  try  different id")
-        t = {
-            "pplid": pplid,
-            "args": args1,
-            "used": "",
-            "best": {"epoch": 0},
-            "last": {"epoch": 0},
-        }
-        self.pplid = pplid
-        self.cnfg = t
-        t = self.settings.get("metrics")
-        if not t:
-            raise ValueError("'metrics' is missing from settings.")
-        t = [
-            *[f"train_{m}" for m in t],
-            "train_loss",
-            "train_duration",
-            *[f"val_{m}" for m in t],
-            "val_loss",
-            "val_duration",
-        ]
-
-        strategy = self.settings["strategy"]
-        l = {"epoch": 0, **{k: 0 for k in t}}
-
-        if strategy["mode"] == "min":
-            l[strategy["monitor"]] = float(1000)
-        elif strategy["mode"] == "max":
-            l[strategy["monitor"]] = -float(1000)
-        else:
-            raise ValueError("Strategy monitor mode should be 'min' or 'max'")
-
-        if trained:
-            weight_src = self.get_path(of="weight", pplid=use_exp, epoch=epoch)
-            weight_dst = self.get_path(of="weight", pplid=pplid, epoch=0)
-            shutil.copy2(src=weight_src, dst=weight_dst)
-            df = pd.read_csv(self.get_path(of="history", pplid=use_exp))
-            df = df[df["epoch"] == epoch]
-            self.cnfg["used"] = f"{use_exp}[{epoch}]"
-            self.cnfg["best"]["epoch"] = -1
-            quick = {"last": l, "best": df.to_dict(orient="records")[0]}
-        else:
-            quick = {"last": l, "best": l}
-
-        with open(
-            self.get_path(of="quick", pplid=pplid), "w", encoding="utf-8"
-        ) as out_file:
-            json.dump(quick, out_file, indent=4)
-
-        self.__db.execute(
-            "INSERT INTO exps (pplid, args_hash) VALUES (?, ?)",
-            (pplid, hash_args(args1)),
-        )
-        self._save_config()
-        record = pd.DataFrame([], columns=["epoch", *t])
-        record.to_csv(self.get_path(of="history", pplid=self.pplid), index=False)
-
     def _adjust_loader_params(self, mode: str, args: Optional[dict] = None) -> dict:
         """
         Adjusts DataLoader parameters based on system resources and dataset size.
@@ -796,7 +687,6 @@ class PipeLine:
                 "Preparation Error. Execute prepare() or set prepare=True before training."
             )
             return
-
 
         with open(self.get_path(of="quick"), encoding="utf-8") as q:
             quick = json.load(q)
