@@ -2,4 +2,5 @@ sphinx>=5.0
 sphinx-rtd-theme
 sphinx-autodoc-typehints
 nbsphinx
+ipykernel
 # -e ../
