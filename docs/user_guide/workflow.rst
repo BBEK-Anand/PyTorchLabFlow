@@ -252,7 +252,7 @@ You can  access  previously initiated  pipeline just by their pipeline_id(pplid)
 
     P = PipeLine(pplid='exp2')
 
-and then can acces  artifacts etc  `see <../api/utils.html#PTLF.experiment.PipeLine>`_
+and then can acces  artifacts etc  `see PipeLine.get_path <../api/utils.html#PTLF.experiment.PipeLine>`_
 but make  sure  you coonected  to  correct  lab configuration  at the top of the jupyter  `using lab_setup <user_guide/workflow.html#using-the-project-later>`_
 this  way  you can  organinze  all your trials, hypotheses  in  fixed number of  dedicated jupyter files.
 
