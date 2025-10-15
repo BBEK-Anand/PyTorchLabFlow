@@ -815,6 +815,14 @@ class PipeLine:
         return averaged
 
     def is_running(self):
+        """
+        Check if the current process (identified by `pplid`) is currently running.
+
+        Queries the `runnings` table for an entry with the matching `pplid`.
+
+        Returns:
+            int or bool: The `logid` of the running process if found, otherwise `False`.
+        """
         rows = self.__db.query(
             "SELECT logid FROM runnings WHERE pplid = ?", (self.pplid,)
         )
@@ -822,8 +830,18 @@ class PipeLine:
             return rows[0][0]
         return False
     
-    @property    
+    @property
     def should_running(self):
+        """
+        Determine whether the process should continue running.
+
+        This checks the `parity` value for the current `pplid` in the `runnings` table.
+        If the value is `'stop'`, the process should no longer continue.
+
+        Returns:
+            bool: `True` if the process should keep running, `False` if it should stop.
+        """
+
         rows = self.__db.query(
             "SELECT parity FROM runnings WHERE pplid = ?", (self.pplid,)
         )
@@ -832,6 +850,16 @@ class PipeLine:
         return True
 
     def stop_running(self):
+        """
+        Mark the current running process to be stopped.
+
+        If the process is currently running (i.e., has an associated `logid` in the `runnings` table),
+        this updates the `parity` field to `'stop'`, signaling it to stop after the current iteration.
+        Otherwise, it prints a message indicating that the process is not running.
+
+        Returns:
+            None
+        """
         logid = self.is_running()
         if logid:
             self.__db.execute(
