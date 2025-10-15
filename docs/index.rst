@@ -1,14 +1,17 @@
 PyTorchLabFlow documentation
 ============================
+
+
 .. image:: resources/PTLFlogo-light.jpg
    :alt: PTLFlogo
    :width: 300px
    :align: right
 
+PyTorchLabFlow is a modular deep learning framework designed for building flexible, reusable, and composable deep learning pipelines.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Conents:
 
    user_guide/index
    api/api

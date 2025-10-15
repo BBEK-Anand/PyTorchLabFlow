@@ -1,38 +1,40 @@
-Overview
+Concepts
 ========
 
-PyTorchLabFlow is a modular deep learning framework designed for building flexible, reusable, and composable deep learning pipelines.
-
-In PyTorchLabFlow, **everything is a Component**—from models and datasets to losses, optimizers, and custom blocks. This modular design enables users to configure, nest, and reuse components dynamically, simplifying the construction and maintenance of complex deep learning workflows.
+In **PyTorchLabFlow**, **everything is a Component** — from models and datasets to losses, optimizers, and custom blocks. This modular design enables users to configure, nest, and reuse components dynamically, simplifying the construction and maintenance of complex deep learning workflows.
 
 Component
 ---------
 
-- A **Component** is a reusable, self-contained code block that can represent a model, dataset, optimizer, loss function, or any processing step.
-- Each Component is identified by:
-  - ``loc``: a string specifying the Python import path of the component class.
-  - ``args``: a dictionary containing parameters to configure or initialize the component.
-- Components support **infinite nesting**, allowing other components to be passed as parameters inside ``args``.
+A **Component** is a reusable, self-contained code block that can represent any part of your ML workflow — a model, dataset, optimizer, loss function, metric, or even a custom processing step.
+
+Each Component is defined by:
+
+- ``loc``: A string specifying the Python import path of the component class.
+- ``args``: A dictionary of parameters to configure or initialize the component.
+
+The key power of Components is **infinite nesting**: any component can accept other components inside its ``args``. This enables deeply composable, declarative, and dynamically configurable systems.
 
 Key Features
 ~~~~~~~~~~~~
 
-- **Dynamic Loading**: Components are loaded at runtime using the ``loc`` string and initialized with ``args``.
-- **Argument Validation**: Each component declares required arguments which are validated during setup.
-- **Deep Nesting**: Components can include other components inside their ``args`` dictionary for flexible pipeline composition.
+- **Dynamic Loading**: Components are loaded at runtime using the ``loc`` path.
+- **Flexible Composition**: Nested components allow reusable and interchangeable blocks.
+- **Argument Validation**: Each component validates its required arguments before setup.
+- **Single Interface**: Everything behaves consistently through the same `Component` interface.
 
-Core Base Class: ``Component``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Core Behavior
+~~~~~~~~~~~~~
 
-The abstract ``Component`` class provides core setup logic:
+All components inherit from the abstract base class ``Component``, which provides core logic for:
 
-- ``check_args(args: dict)``: Checks if all required arguments are provided.
-- ``setup(args: dict)``: Validates arguments and calls the subclass's ``_setup()`` method to build the component.
+- ``check_args(args: dict)``: Validates required arguments.
+- ``setup(args: dict)``: Triggers component initialization via the subclass's ``_setup()`` method.
 
 Specialized Component Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. list-table:: Component Overview
+.. list-table:: Built-in Component Types
    :widths: 20 20 60
    :header-rows: 1
 
@@ -55,17 +57,16 @@ Specialized Component Types
      - ``Metric``
      - ``Component``, ``torch.nn.Module``
 
+.. note::
 
-- **DataSet**: feeds  data to model from files, you can fuse processing steps inside it.
-- **Model**: conventional `torch.nn.Module`  but  `PyTorchLabFlow`'s  wrapper,
-- **Metric**: your megtric functions otherthan loss
-- **Loss**: the loss function, grad calculation
-- **Optimizer**: your optimizer
+   - ``DataSet``: Loads and optionally pre-processes data.
+   - ``Model``: Wraps your PyTorch models with config-driven construction.
+   - ``Loss``: Defines the loss function used for training.
+   - ``Optimizer``: Standard PyTorch optimizers, wrapped for config-driven setup.
+   - ``Metric``: Custom metrics for evaluation.
 
-
-
-Example: Defining a Custom Model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Example: Custom Model Component
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -78,8 +79,8 @@ Example: Defining a Custom Model
             self.linear = nn.Linear(args["input_dim"], args["output_dim"])
             return self
 
-Nesting Components Example
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Example: Nesting Components
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -97,26 +98,45 @@ Nesting Components Example
         }
     }
 
+A deeper discussion on the flexibility, nesting power, and real-world use of Components is available in this Medium article:
+👉 `Introducing Component in PyTorchLabFlow <https://medium.com/@bbek-anand/introducing-component-in-pytorchlabflow-5dfcfe41498d>`_
+
+To explore all available methods and internals of the base class, visit the `Component API <../api/utils.html#PTLF.utils.Component>`_
+
 
 Pipeline
----------
+--------
 
-A Pipeline orchestrates and manages all components of a machine learning experiment. It serializes the experiment's configuration, including the model, dataset, and hyperparameters, into a unique, identifiable setup. Each pipeline instance, identified by a unique expid, ensures that experiments are reproducible and their configurations are unique.
+A **Pipeline** organizes an entire machine learning experiment as a composition of Components. It tracks and manages configuration, reproducibility, and structure.
 
-To initialize a new experiment from scratch, you can use the new() method.
+Each pipeline is uniquely identified by an experiment ID (`expid`). It keeps all hyperparameters, model setup, data loading, and training behavior in a single, reusable definition.
 
-.. code-block:: python
-  # Create a new pipeline from scratch
-  P = PipeLine()
-  P.new(pplid='my_first_experiment', args=experiment_args)
-
-
-Alternatively, if you wish to create a new experiment based on a previous one, perhaps to fine-tune a model or slightly alter hyperparameters, you can use the use() method. This inherits the configuration from an existing experiment, allowing you to apply specific changes.
+Creating a New Experiment
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
-  # Create a new pipeline based on an existing one
-  P = PipeLine()
-  P.use(use_exp='my_first_experiment', expid='fine_tuned_experiment', args=new_args)
+    # Create a new pipeline from scratch
+    P = PipeLine()
+    P.new(pplid='my_first_experiment', args=experiment_args)
+
+You define your experiment structure by passing nested Components as the ``args``.
+
+To explore the full functionality of the :class:`PTLF.experiment.PipeLine`, including experiment loading, checkpointing, and tracking, see the `PipeLine API <../api/experiment.html#PTLF.experiment.PipeLine>`_
 
 
+.. ---
+
+.. Next Steps
+.. ==========
+
+.. - 📖 **Explore the API Documentation**:
+..   - :ref:`PTLF.component <api/component>`
+..   - :ref:`PTLF.model <api/model>`
+..   - :ref:`PTLF.data <api/data>`
+..   - :ref:`PTLF.loss <api/loss>`
+..   - :ref:`PTLF.optim <api/optim>`
+..   - :ref:`PTLF.metrics <api/metrics>`
+..   - :ref:`PTLF.experiment <api/experiment>`
+
+.. - 🚀 **Jump to**: :doc:`../api/index` for full API index.
