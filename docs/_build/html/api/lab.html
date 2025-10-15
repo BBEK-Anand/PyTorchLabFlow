@@ -43,10 +43,10 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Conents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">user guide</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="api.html">📚 API Reference</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="context.html">context</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">lab</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#PTLF.lab.create_project"><code class="docutils literal notranslate"><span class="pre">create_project()</span></code></a></li>
@@ -75,7 +75,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="api.html">📚 API Reference</a></li>
+          <li class="breadcrumb-item"><a href="api.html">API Reference</a></li>
       <li class="breadcrumb-item active">lab</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/api/lab.rst.txt" rel="nofollow"> View page source</a>
@@ -107,17 +107,45 @@ Returns the absolute path to the settings JSON.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="PTLF.lab.get_logs">
 <span class="sig-name descname"><span class="pre">get_logs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PTLF/lab.html#get_logs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PTLF.lab.get_logs" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve all log entries from the logs database.</p>
+<p>This function reads configuration settings to determine the path to the
+logs database, opens a connection to the database, queries all records
+from the ‘logs’ table, and returns the results as a pandas DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A DataFrame containing all rows from the ‘logs’ table,
+with columns matching the database schema.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>KeyError</strong> – If ‘data_path’ is not present in the settings.</p></li>
+<li><p><strong>Exception</strong> – If there is an error accessing or querying the database.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="PTLF.lab.lab_setup">
 <span class="sig-name descname"><span class="pre">lab_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">settings_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PTLF/lab.html#lab_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PTLF.lab.lab_setup" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Initialize the lab environment using settings from a JSON file.</p>
+<p>Loads configuration settings, registers the component directory, and logs
+the setup event in the lab’s <cite>logs.csv</cite>.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>settings_path</strong> (<em>str</em><em> | </em><em>None</em>)</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>settings_path</strong> (<em>str</em>) – Path to the JSON settings file. Must exist and contain valid settings.</p></li>
+<li><p><strong>relative_to</strong> (<em>str</em>) – if settings have relative paths then that will be consider from  this path</p></li>
+</ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If <cite>settings_path</cite> is not provided or the file does not exist.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
 </dd></dl>

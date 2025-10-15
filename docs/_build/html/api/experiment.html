@@ -43,10 +43,10 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Conents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">user guide</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="api.html">📚 API Reference</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="context.html">context</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lab.html">lab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">utils</a></li>
@@ -99,7 +99,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="api.html">📚 API Reference</a></li>
+          <li class="breadcrumb-item"><a href="api.html">API Reference</a></li>
       <li class="breadcrumb-item active">experiment</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/api/experiment.rst.txt" rel="nofollow"> View page source</a>
@@ -137,7 +137,6 @@ directories if they do not exist.</p>
 <li><p><strong>pplid</strong> (<em>str</em><em>, </em><em>optional</em>) – Experiment ID. If not provided, uses the currently set <cite>self.pplid</cite>.</p></li>
 <li><p><strong>epoch</strong> (<em>int</em><em>, </em><em>optional</em>) – Epoch number. Required for weight and gradient file paths.
 For weights, if not specified, the best epoch from config is used.</p></li>
-<li><p><strong>batch</strong> (<em>int</em><em>, </em><em>optional</em>) – Batch index, required for gradient file paths.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -157,7 +156,17 @@ For weights, if not specified, the best epoch from config is used.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="PTLF.experiment.PipeLine.is_running">
 <span class="sig-name descname"><span class="pre">is_running</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PTLF/_pipeline.html#PipeLine.is_running"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PTLF.experiment.PipeLine.is_running" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Check if the current process (identified by <cite>pplid</cite>) is currently running.</p>
+<p>Queries the <cite>runnings</cite> table for an entry with the matching <cite>pplid</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The <cite>logid</cite> of the running process if found, otherwise <cite>False</cite>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int or bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="PTLF.experiment.PipeLine.load">
@@ -299,12 +308,32 @@ and sets the best metric value based on the stored history and strategy.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="PTLF.experiment.PipeLine.should_running">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">should_running</span></span><a class="headerlink" href="#PTLF.experiment.PipeLine.should_running" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Determine whether the process should continue running.</p>
+<p>This checks the <cite>parity</cite> value for the current <cite>pplid</cite> in the <cite>runnings</cite> table.
+If the value is <cite>‘stop’</cite>, the process should no longer continue.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><cite>True</cite> if the process should keep running, <cite>False</cite> if it should stop.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="PTLF.experiment.PipeLine.stop_running">
 <span class="sig-name descname"><span class="pre">stop_running</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PTLF/_pipeline.html#PipeLine.stop_running"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PTLF.experiment.PipeLine.stop_running" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Mark the current running process to be stopped.</p>
+<p>If the process is currently running (i.e., has an associated <cite>logid</cite> in the <cite>runnings</cite> table),
+this updates the <cite>parity</cite> field to <cite>‘stop’</cite>, signaling it to stop after the current iteration.
+Otherwise, it prints a message indicating that the process is not running.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="PTLF.experiment.PipeLine.sync">

@@ -40,10 +40,10 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Conents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../user_guide/index.html">user guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api/api.html">📚 API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../changelog/index.html">Change Logs</a></li>
 </ul>
 
@@ -229,6 +229,24 @@
 <div class="viewcode-block" id="lab_setup">
 <a class="viewcode-back" href="../../api/lab.html#PTLF.lab.lab_setup">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">lab_setup</span><span class="p">(</span><span class="n">settings_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the lab environment using settings from a JSON file.</span>
+
+<span class="sd">        Loads configuration settings, registers the component directory, and logs</span>
+<span class="sd">        the setup event in the lab&#39;s `logs.csv`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        settings_path : str</span>
+<span class="sd">            Path to the JSON settings file. Must exist and contain valid settings.</span>
+<span class="sd">        relative_to : str</span>
+<span class="sd">            if settings have relative paths then that will be consider from  this path</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `settings_path` is not provided or the file does not exist.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">settings_path</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">settings_path</span><span class="p">):</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">settings_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sp</span><span class="p">:</span>
             <span class="n">settings</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span>
@@ -259,6 +277,21 @@
 <div class="viewcode-block" id="get_logs">
 <a class="viewcode-back" href="../../api/lab.html#PTLF.lab.get_logs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_logs</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve all log entries from the logs database.</span>
+
+<span class="sd">        This function reads configuration settings to determine the path to the</span>
+<span class="sd">        logs database, opens a connection to the database, queries all records </span>
+<span class="sd">        from the &#39;logs&#39; table, and returns the results as a pandas DataFrame.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: A DataFrame containing all rows from the &#39;logs&#39; table,</span>
+<span class="sd">            with columns matching the database schema.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            KeyError: If &#39;data_path&#39; is not present in the settings.</span>
+<span class="sd">            Exception: If there is an error accessing or querying the database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">settings</span> <span class="o">=</span> <span class="n">get_shared_data</span><span class="p">()</span>
     <span class="n">log_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;data_path&quot;</span><span class="p">],</span> <span class="s2">&quot;logs.db&quot;</span><span class="p">)</span>
     <span class="n">db</span> <span class="o">=</span> <span class="n">Db</span><span class="p">(</span><span class="n">db_path</span><span class="o">=</span><span class="n">log_path</span><span class="p">)</span>

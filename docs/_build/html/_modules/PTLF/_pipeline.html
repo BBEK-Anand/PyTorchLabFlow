@@ -40,10 +40,10 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Conents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../user_guide/index.html">user guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api/api.html">📚 API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../changelog/index.html">Change Logs</a></li>
 </ul>
 
@@ -224,8 +224,6 @@
 <span class="sd">            epoch : int, optional</span>
 <span class="sd">                Epoch number. Required for weight and gradient file paths.</span>
 <span class="sd">                For weights, if not specified, the best epoch from config is used.</span>
-<span class="sd">            batch : int, optional</span>
-<span class="sd">                Batch index, required for gradient file paths.</span>
 
 <span class="sd">            Returns</span>
 <span class="sd">            -------</span>
@@ -758,7 +756,6 @@
         <span class="n">num_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
         <span class="n">self_patience</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Train the model for a specified number of epochs with optional early stopping.</span>
@@ -929,6 +926,14 @@
 <div class="viewcode-block" id="PipeLine.is_running">
 <a class="viewcode-back" href="../../api/experiment.html#PTLF.experiment.PipeLine.is_running">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the current process (identified by `pplid`) is currently running.</span>
+
+<span class="sd">        Queries the `runnings` table for an entry with the matching `pplid`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int or bool: The `logid` of the running process if found, otherwise `False`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
             <span class="s2">&quot;SELECT logid FROM runnings WHERE pplid = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pplid</span><span class="p">,)</span>
         <span class="p">)</span>
@@ -937,8 +942,18 @@
         <span class="k">return</span> <span class="kc">False</span></div>
 
     
-    <span class="nd">@property</span>    
+    <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">should_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine whether the process should continue running.</span>
+
+<span class="sd">        This checks the `parity` value for the current `pplid` in the `runnings` table.</span>
+<span class="sd">        If the value is `&#39;stop&#39;`, the process should no longer continue.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: `True` if the process should keep running, `False` if it should stop.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
             <span class="s2">&quot;SELECT parity FROM runnings WHERE pplid = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pplid</span><span class="p">,)</span>
         <span class="p">)</span>
@@ -949,6 +964,16 @@
 <div class="viewcode-block" id="PipeLine.stop_running">
 <a class="viewcode-back" href="../../api/experiment.html#PTLF.experiment.PipeLine.stop_running">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">stop_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Mark the current running process to be stopped.</span>
+
+<span class="sd">        If the process is currently running (i.e., has an associated `logid` in the `runnings` table),</span>
+<span class="sd">        this updates the `parity` field to `&#39;stop&#39;`, signaling it to stop after the current iteration.</span>
+<span class="sd">        Otherwise, it prints a message indicating that the process is not running.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">logid</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>

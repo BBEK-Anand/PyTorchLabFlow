@@ -1,11 +1,11 @@
-Workflows
-=========
+User Workflow
+=============
 
 This tutorial explains how to initialize a machine learning project using the
 ``PyTorchLabFlow`` package by providing a configuration dictionary and calling a single function.
 
 Prerequisites
-~~~~~~~~~~~~~
+-------------
 
 Make sure the ``PyTorchLabFlow`` package is installed and accessible in your Python environment:
 
@@ -34,7 +34,7 @@ Create a dctionary with same given key and respective values.
 keys  and  the  values  are  explained  below.
 
 Explanation of Settings
-~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Here’s a breakdown of the keys in the ``settings`` dictionary:
 
@@ -67,7 +67,7 @@ Use the ``create_project`` function from ``PyTorchLabFlow.lab`` to initialize th
     create_project(settings=settings)
 
 What Happens Next?
-~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
 
 Running the script performs the following:
 
@@ -76,7 +76,7 @@ Running the script performs the following:
 - Initializes a basic folder structure for your ML project.
 
 Resulting Directory Structure
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: text
 
@@ -111,7 +111,7 @@ Resulting Directory Structure
         └── optimizers.py             # Optimizers (e.g., Adam)
 
 Using the Project Later
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Once your project has been set up, you can load the full configuration and prepare the environment anytime using:
 
@@ -127,28 +127,12 @@ This sets up the internal context, links components, and restores all paths, mak
 
    In any Jupyter notebook or Python script, simply call ``lab_setup`` at the top and you're ready to start working with the full project structure.
 
-Summary
--------
-
-+------------------+----------------------------------------+
-| **Step**         | **Description**                        |
-+==================+========================================+
-| Install          | ``pip install PyTorchLabFlow``         |
-+------------------+----------------------------------------+
-| Create Config    | Define the ``settings`` dictionary     |
-+------------------+----------------------------------------+
-| Initialize       | Call ``create_project(settings)``      |
-+------------------+----------------------------------------+
-| Verify           | Ensure files and folders are created   |
-+------------------+----------------------------------------+
-| Load Later       | Use ``lab_setup(setting_path)``        |
-+------------------+----------------------------------------+
-
 You’re now ready to start building models, managing experiments, and scaling your ML workflow using the ``PyTorchLabFlow`` environment.
 
 
 Building and Running Deep Learning Pipelines
 ---------------------------------------------
+
 Step 1: Design your components
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -208,31 +192,18 @@ Create a nested dictionary specifying all pipeline components such as model, dat
         "val_batch_size": 36
     }
 
-Step 4: Initialize the Pipeline
+Step 3: Create a New Experiment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
-    P = PipeLine()
-
-Step 4: (Optional) Match Existing Experiments
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Check if this configuration has been used before:
-
-.. code-block:: python
-
-    P.match_args(expargs)
+    P = PipeLine() #Initialize the Pipeline
+    P.match_args(expargs)   #(Optional) Match Existing Experiments
     # Returns existing experiment ID or False if new
-
-Step 5: Create a New Experiment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
 
     P.new(args=expargs.copy(), expid="exp2")
 
-Step 6: Start Training
+Step 4: Start Training
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -262,7 +233,7 @@ Extra Utilities
      - Create a new experiment based on an existing one.
 
 
-Step 7: Plot Comparative Performances
+Step 5: Plot Comparative Performances
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -272,10 +243,18 @@ Step 7: Plot Comparative Performances
     Vs = plot_metrics(ppls=[...], metrics=['train_loss', "train_accuracy"])
     Vs["train_accuracy"]
 
+Additional
+~~~~~~~~~~
 
+You can  access  previously initiated  pipeline just by their pipeline_id(pplid)  
 
+.. code-block:: python
 
+    P = PipeLine(pplid='exp2')
 
+and then can acces  artifacts etc  `see <../api/utils.html#PTLF.experiment.PipeLine>`_
+but make  sure  you coonected  to  correct  lab configuration  at the top of the jupyter  `using lab_setup <user_guide/workflow.html#using-the-project-later>`_
+this  way  you can  organinze  all your trials, hypotheses  in  fixed number of  dedicated jupyter files.
 
 
 
