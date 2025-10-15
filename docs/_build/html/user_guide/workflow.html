@@ -57,9 +57,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#step-1-design-your-components">Step 1: Design your components</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#step-2-define-experiment-configuration">Step 2: Define Experiment Configuration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#step-3-create-a-new-experiment">Step 3: Create a New Experiment</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#step-3-start-training">Step 3: Start Training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-4-start-training">Step 4: Start Training</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#extra-utilities">Extra Utilities</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#step-4-plot-comparative-performances">Step 4: Plot Comparative Performances</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-5-plot-comparative-performances">Step 5: Plot Comparative Performances</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#additional">Additional</a></li>
 </ul>
 </li>
@@ -279,8 +279,8 @@ path/to/your/component/folder/
 </pre></div>
 </div>
 </section>
-<section id="step-3-start-training">
-<h3>Step 3: Start Training<a class="headerlink" href="#step-3-start-training" title="Link to this heading"></a></h3>
+<section id="step-4-start-training">
+<h3>Step 4: Start Training<a class="headerlink" href="#step-4-start-training" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">num_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -318,8 +318,8 @@ path/to/your/component/folder/
 </tbody>
 </table>
 </section>
-<section id="step-4-plot-comparative-performances">
-<h3>Step 4: Plot Comparative Performances<a class="headerlink" href="#step-4-plot-comparative-performances" title="Link to this heading"></a></h3>
+<section id="step-5-plot-comparative-performances">
+<h3>Step 5: Plot Comparative Performances<a class="headerlink" href="#step-5-plot-comparative-performances" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">PTLF.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_metrics</span>
 
 <span class="n">Vs</span> <span class="o">=</span> <span class="n">plot_metrics</span><span class="p">(</span><span class="n">ppls</span><span class="o">=</span><span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;train_loss&#39;</span><span class="p">,</span> <span class="s2">&quot;train_accuracy&quot;</span><span class="p">])</span>
@@ -333,8 +333,9 @@ path/to/your/component/folder/
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">PipeLine</span><span class="p">(</span><span class="n">pplid</span><span class="o">=</span><span class="s1">&#39;exp2&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>and then can acces  artifacts etc  <a class="reference external" href="../api/utils.html#PTLF.experiment.PipeLine">see</a>
-but make  sure  you coonected  to  correct  lab configuration  at the top of the jupyter  <a class="reference external" href="user_guide/workflow.html#using-the-project-later">using lab_setup</a></p>
+<p>and then can acces  artifacts etc  <a class="reference external" href="../api/utils.html#PTLF.experiment.PipeLine">see PipeLine.get_path</a>
+but make  sure  you coonected  to  correct  lab configuration  at the top of the jupyter  <a class="reference external" href="workflow.html#using-the-project-later">using lab_setup</a>
+this  way  you can  organinze  all your trials, hypotheses  in  fixed number of  dedicated jupyter files.</p>
 </section>
 </section>
 </section>
