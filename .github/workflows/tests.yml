@@ -1,0 +1,54 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "3.8"
+            torch-version: "1.13.1"
+            matplotlib-version: "3.7"
+            pandas-version: "1.5"
+            tqdm-version: "4.65"
+          - python-version: "3.9"
+            torch-version: "1.13.1"
+            matplotlib-version: "3.8"
+            pandas-version: "1.5"
+            tqdm-version: "4.65"
+          # - python-version: "3.10"
+          #   torch-version: "2.0.1"
+          #   matplotlib-version: "3.9"
+          #   pandas-version: "2.0"
+          #   tqdm-version: "4.65"
+          # - python-version: "3.11"
+          #   torch-version: "2.0.1"
+          #   matplotlib-version: "3.10"
+          #   pandas-version: "2.0"
+          #   tqdm-version: "4.66"
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install "torch==${{ matrix.torch-version }}" \
+                    "matplotlib==${{ matrix.matplotlib-version }}" \
+                    "pandas==${{ matrix.pandas-version }}" \
+                    "tqdm==${{ matrix.tqdm-version }}" \
+                    ipykernel
+        pip install .
+        pip install pytest
+
+    - name: Run tests
+      run: pytest
