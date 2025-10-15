@@ -11,7 +11,7 @@ PyTorchLabFlow is a modular deep learning framework designed for building flexib
 
 .. toctree::
    :maxdepth: 2
-   :caption: Conents:
+   :caption: Contents:
 
    user_guide/index
    api/api
