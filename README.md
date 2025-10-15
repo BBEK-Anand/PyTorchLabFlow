@@ -57,9 +57,9 @@ pip install PyTorchLabFlow
 
 ### 2\. Workflow
 
-Atypical Workflow where  you can  do  all  your  experiemnts/trails differ by  different Component and/or parameters is some fixed number of dedicated Jupiter files. No headech of finding trials that share  same  code-block( here it is Componet) and  analysing their performance,  just use  functions,  PipeLine manages all these  things ,  just focus  on analysis and dicision making. refer [Workflow in documentation](https://pytorchlabflow.readthedocs.io/en/latest/user_guide/workflow.html) for details.
+Atypical Workflow where  you can  do  all  your  experiemnts/trails differ by  different Component and/or parameters is some fixed number of dedicated Jupiter files. No headech of finding trials that share  same  code-block( here it is Componet) and  analysing their performance,  just use  functions,  PipeLine manages all these  things ,  just focus  on analysis and dicision making. refer [Workflow in documentation](https://pytorchlabflow.readthedocs.io/en/latest/user_guide/workflow.html) for more details.
 
-<img src="./docs/resources/ptlflow.png" alt="Workflow" width="100%" />
+<img src="./docs/resources/ptlflow.gif" alt="Workflow" width="100%" />
 
 
 ## 📚 Documentation & Resources
