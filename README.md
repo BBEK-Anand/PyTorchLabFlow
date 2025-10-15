@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="./docs/resources/PTLFlogo-dark-removebg-preview.png" alt="PyTorchLabFlow Logo" width="250px" />
+  <img src="./docs/resources/PTLFlogo-dark-removebg-preview.png" alt="PyTorchLabFlow Logo" width="50%" />
 
   <!-- <h1>PyTorchLabFlow</h1> -->
 
@@ -55,45 +55,12 @@ Get up and running in under 5 minutes.
 pip install PyTorchLabFlow
 ```
 
-### 2\. Example Workflow
+### 2\. Workflow
 
-Create a Python script or Jupyter Notebook to kick off your project.
+Atypical Workflow where  you can  do  all  your  experiemnts/trails differ by  different Component and/or parameters is some fixed number of dedicated Jupiter files. No headech of finding trials that share  same  code-block( here it is Componet) and  analysing their performance,  just use  functions,  PipeLine manages all these  things ,  just focus  on analysis and dicision making.
 
-```python
-from PyTorchLabFlow import setup_project, set_default_config, train_new, performance_plot
+<img src="./docs/resources/ptlflow.png" alt="Workflow" width="100%" />
 
-# Step 1: Create a structured project directory
-# This generates the 'Libs/', 'internal/', and 'DataSets/' folders.
-setup_project("MyFirstProject")
-
-# NOTE: After running, navigate into "MyFirstProject" and place your
-# custom model, dataset, and loss functions in the 'Libs/' folder.
-
-# Step 2: Define default components for your experiments
-set_default_config({
-    "accuracy_loc": "Libs.accuracies.testAccuracy",
-    "loss_loc": "Libs.losses.testLoss",
-    "optimizer_loc": "Libs.optimizers.AdamOpt",
-    "train_data_src": "DataSets/train",
-    "valid_data_src": "DataSets/valid",
-    "train_batch_size": 32,
-    "valid_batch_size": 32
-})
-
-# Step 3: Launch and train a new experiment pipeline
-exp = train_new(
-    name="exp01",
-    model_loc="Libs.models.testCNN",
-    dataset_loc="Libs.datasets.testDS"
-)
-
-# Start the training process
-if exp:
-    exp.train(num_epochs=10)
-
-# Step 4: Visualize the results instantly
-performance_plot(ppl="exp01")
-```
 
 ## 📚 Documentation & Resources
 
