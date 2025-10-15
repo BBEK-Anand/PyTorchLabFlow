@@ -89,7 +89,6 @@ def get_ppl_details(ppls: Optional[list] = None) -> pd.DataFrame:
     df = pd.DataFrame(data)
     return df
 
-
 def get_ppl_status(ppls: Optional[list] = None) -> pd.DataFrame:
     """
     Retrieve the best and latest status metrics for specified pipelines or all if none specified.
@@ -136,7 +135,6 @@ def get_ppl_status(ppls: Optional[list] = None) -> pd.DataFrame:
     df = pd.DataFrame(data)
     return df
 
-
 def multi_train(ppls: Dict[str, int], last_epoch: int = 10, patience: int = 5) -> None:
     """
     Train multiple pipelines up to a maximum number of epochs with optional patience.
@@ -172,8 +170,6 @@ def get_runnings():
 
     df = pd.DataFrame(rows, columns=col_names)
     return df
-
-
 
 def archive_ppl(ppls: List[str], reverse: bool = False) -> None:
     """

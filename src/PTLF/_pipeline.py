@@ -120,8 +120,7 @@ class PipeLine:
         self,
         of: str,
         pplid: Optional[str] = None,
-        epoch: Optional[int] = None,
-        batch: Optional[int] = None,
+        epoch: Optional[int] = None
     ) -> str:
         """
             Generate a standardized file path for various experiment artifacts.
@@ -358,16 +357,6 @@ class PipeLine:
         """
 
     def _check_args(self, args):
-        try:
-            from .compatibility import ExpChecker
-
-            C = ExpChecker(args)
-            t = C.check()
-            if not t:
-                print("Incompatible!")
-                return C
-        except:
-            raise
         t = get_invalid_loc_queries(args)
         if t:
             raise ValueError(

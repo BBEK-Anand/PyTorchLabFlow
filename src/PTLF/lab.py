@@ -11,7 +11,7 @@ import pandas as pd
 from .context import set_shared_data, get_caller, register_libs_path, get_shared_data
 from .utils import Db
 
-__all__ = ["lab_setup", "create_project"]
+__all__ = ["lab_setup", "create_project", "get_logs"]
  
 def export_settigns():
     settings = get_shared_data()
@@ -45,10 +45,12 @@ def create_project(settings: dict) -> str:
     # Create required directories
     for key in ["data_path", "component_dir"]:
         os.makedirs(settings[key], exist_ok=True)
-
-    os.makedirs(os.path.join(data_path, "Configs"), exist_ok=True)
+    artf_dirs = ["Configs", "Quicks", "Histories", "Weights"]
+    for i in artf_dirs:
+        os.makedirs(os.path.join(data_path, i), exist_ok=True)
     for parent in ["Archived", "Transfer"]:
-        os.makedirs(os.path.join(data_path, parent, "Configs"), exist_ok=True)
+        for i in artf_dirs:
+            os.makedirs(os.path.join(data_path, parent, i), exist_ok=True)
 
     # Remove old databases if any
     for db_file in ["logs.db", "ppls.db"]:
@@ -170,9 +172,18 @@ def lab_setup(settings_path: Optional[str]) -> None:
         (logid,  caller)
     )
 
-
+    db.close()
     set_shared_data(settings, logid)
     register_libs_path(settings["component_dir"])
    
-def transfer_lab(settings, transfer_type: str = "export"):
-    pass
+def get_logs():
+    settings = get_shared_data()
+    log_path = os.path.join(settings["data_path"], "logs.db")
+    db = Db(db_path=log_path)
+    cursor = db.query("SELECT * FROM logs")
+    rows = cursor.fetchall()
+    col_names = [desc[0] for desc in cursor.description]
+    db.close()
+    df = pd.DataFrame(rows, columns=col_names)
+    return df
+

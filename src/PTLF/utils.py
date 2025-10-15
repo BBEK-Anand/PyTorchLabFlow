@@ -286,8 +286,6 @@ class Db:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-
-
 def hash_args(args: Dict[str, Any]) -> str:
     """
         Generate a SHA-256 hash from a dictionary of arguments.
