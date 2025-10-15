@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="./docs/resources/PTLFlogo-dark-removebg-preview.png" alt="PyTorchLabFlow Logo" width="50%" />
+  <img src="./docs/resources/PTLFlogo-dark-removebg-preview.png" alt="PyTorchLabFlow Logo" width="30%" />
 
   <!-- <h1>PyTorchLabFlow</h1> -->
 
