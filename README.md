@@ -4,7 +4,7 @@
 
   <!-- <h1>PyTorchLabFlow</h1> -->
 
-  <strong>Streamline Your PyTorch Experiments. Offline-First, Secure, and Portable.</strong>
+  <strong>Streamline Your PyTorch Experiments. Offline-First, Secure, Reproducible and Portable.</strong>
 
 </div>
 
@@ -13,7 +13,7 @@
 [![Tests](https://github.com/BBEK-Anand/PyTorchLabFlow/actions/workflows/tests.yml/badge.svg)](https://github.com/BBEK-Anand/PyTorchLabFlow/actions/workflows/tests.yml) 
 [![Documentation Status](https://readthedocs.org/projects/pytorchlabflow/badge/?version=latest)](https://pytorchlabflow.readthedocs.io/en/latest/?badge=latest) 
 [![PyPI version](https://badge.fury.io/py/PyTorchLabFlow.svg?icon=si%3Apython)](https://pypi.org/project/PyTorchLabFlow/)
-[![Downloads](https://static.pepy.tech/badge/Pytorchlabflow/month)](https://pepy.tech/project/Pytorchlabflow)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/pytorchlabflow?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/pytorchlabflow)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/BBEK-Anand/PyTorchLabFlow?style=social)](https://github.com/BBEK-Anand/PyTorchLabFlow/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/BBEK-Anand/PyTorchLabFlow?style=social)](https://github.com/BBEK-Anand/PyTorchLabFlow/network/members)
@@ -119,14 +119,6 @@ Contributions are the lifeblood of open source\! We welcome bug reports, feature
 5.  Open a **Pull Request**.
 
 Please read our `CONTRIBUTING.md` guide for more details on our code of conduct and the process for submitting pull requests.
-
-<!-- ### ✨ Our Wonderful Contributors
-
-A huge thank you to all the people who have contributed to this project\!
-
-\<a href="https://www.google.com/search?q=https://github.com/BBEK-Anand/PyTorchLabFlow/graphs/contributors"\>
-\<img src="https://www.google.com/search?q=https://contrib.rocks/image%3Frepo%3DBBEK-Anand/PyTorchLabFlow" /\>
-\</a\> -->
 
 ## 📜 License
 
