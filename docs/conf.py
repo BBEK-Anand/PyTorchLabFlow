@@ -24,6 +24,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 autodoc_typehints = 'description'  # keeps type hints in descriptions, less clutter
 
 html_theme = "sphinx_rtd_theme" # if installed
-html_static_path = ['_static']
+html_static_path = [] #['_static']
 add_module_names = False
 autodoc_class_signature = "mixed"#"separated"  # or "mixed"
