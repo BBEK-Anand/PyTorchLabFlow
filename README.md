@@ -24,14 +24,18 @@
 
 **PyTorchLabFlow** is a lightweight, offline-first framework designed to bring structure and sanity to your deep learning experiments. It automates project setup, manages configurations, and tracks results, all while keeping your data completely private and secure on your local machine.
 
-## 🤔 The Problem: Experimentation Mess
+
+### 🤔 The Problem: Experiment Chaos
 
 If you've worked on any deep learning project, this probably sounds familiar:
--   📂 **Messy Directories**: A chaotic mix of notebooks, scripts, model weights, and config files with names like `model_final_v2_best.pth`.
--   ❓ **Lost Configurations**: Forgetting which hyperparameters, dataset version, or code commit produced your best results.
--   💻 **Portability Nightmare**: Moving your project from a laptop to a powerful cloud server requires tedious and error-prone reconfiguration.
--   🔒 **Privacy Concerns**: Using online experiment trackers means sending potentially sensitive code and data to third-party servers.
--   🌐 **Internet Dependency**: Many popular tools require a constant internet connection, hindering productivity in offline environments.
+
+* 📂 **Messy Directories**: A chaotic mix of notebooks, scripts, model weights, and config files with names like `model_final_v2_best.pth`.
+* ❓ **Lost Configurations**: Forgetting which hyperparameters, dataset version, or code commit produced your best results.
+* 📊 **Difficult Comparisons**: Struggling to isolate the impact of a single change (e.g., a different learning rate) when comparing dozens of similar experiment runs that share the same model or dataset.
+* 💻 **Portability Nightmare**: Moving your project from a laptop to a powerful cloud server requires tedious and error-prone reconfiguration.
+* 🔒 **Privacy Concerns**: Using online experiment trackers means sending potentially sensitive code and data to third-party servers.
+* 🌐 **Internet Dependency**: Many popular tools require a constant internet connection, hindering productivity in offline environments.
+
 
 ## ✨ The Solution: PyTorchLabFlow
 
