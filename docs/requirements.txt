@@ -1,4 +1,5 @@
 sphinx>=5.0
 sphinx-rtd-theme
 sphinx-autodoc-typehints
+nbsphinx
 # -e ../
