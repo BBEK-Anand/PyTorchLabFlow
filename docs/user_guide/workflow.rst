@@ -1,9 +1,6 @@
 Workflows
 =========
 
-Setup your Project
-------------------
-
 This tutorial explains how to initialize a machine learning project using the
 ``PyTorchLabFlow`` package by providing a configuration dictionary and calling a single function.
 

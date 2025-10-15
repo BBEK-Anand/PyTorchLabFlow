@@ -150,6 +150,24 @@ def setup_databases(settings: dict):
 
 
 def lab_setup(settings_path: Optional[str]) -> None:
+    """
+        Initialize the lab environment using settings from a JSON file.
+
+        Loads configuration settings, registers the component directory, and logs
+        the setup event in the lab's `logs.csv`.
+
+        Parameters
+        ----------
+        settings_path : str
+            Path to the JSON settings file. Must exist and contain valid settings.
+        relative_to : str
+            if settings have relative paths then that will be consider from  this path
+
+        Raises
+        ------
+        ValueError
+            If `settings_path` is not provided or the file does not exist.
+    """
     if settings_path and os.path.exists(settings_path):
         with open(settings_path, encoding="utf-8") as sp:
             settings = json.load(sp)
@@ -177,6 +195,21 @@ def lab_setup(settings_path: Optional[str]) -> None:
     register_libs_path(settings["component_dir"])
    
 def get_logs():
+    """
+        Retrieve all log entries from the logs database.
+
+        This function reads configuration settings to determine the path to the
+        logs database, opens a connection to the database, queries all records 
+        from the 'logs' table, and returns the results as a pandas DataFrame.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing all rows from the 'logs' table,
+            with columns matching the database schema.
+
+        Raises:
+            KeyError: If 'data_path' is not present in the settings.
+            Exception: If there is an error accessing or querying the database.
+    """
     settings = get_shared_data()
     log_path = os.path.join(settings["data_path"], "logs.db")
     db = Db(db_path=log_path)

@@ -143,8 +143,6 @@ class PipeLine:
             epoch : int, optional
                 Epoch number. Required for weight and gradient file paths.
                 For weights, if not specified, the best epoch from config is used.
-            batch : int, optional
-                Batch index, required for gradient file paths.
 
             Returns
             -------
@@ -650,7 +648,6 @@ class PipeLine:
         num_epochs: int = 5,
         self_patience: Optional[int] = None,
         verbose: Union[List[str], str] = None
-        
     ) -> None:
         """
         Train the model for a specified number of epochs with optional early stopping.
