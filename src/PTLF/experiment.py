@@ -436,7 +436,6 @@ def get_histories(
         ppls = exs
     elif not all(ex in exs for ex in ppls):
         raise ValueError(f"pplids should be from: {', '.join(exs)}")
-
     # Collect histories
     records = {}
     for exp in ppls:
