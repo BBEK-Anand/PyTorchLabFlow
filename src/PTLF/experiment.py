@@ -20,10 +20,8 @@ from ._pipeline import PipeLine
 __all__ = [
     "PipeLine",
     "get_ppls",
-    "get_ppl_args",
     "get_ppl_details",
     "get_ppl_status",
-    "filter_ppls",
     "multi_train",
     "archive_ppl",
     "delete_ppl",

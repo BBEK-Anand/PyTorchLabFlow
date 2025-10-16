@@ -180,7 +180,7 @@ def get_logs():
     settings = get_shared_data()
     log_path = os.path.join(settings["data_path"], "logs.db")
     db = Db(db_path=log_path)
-    cursor = db.query("SELECT * FROM logs")
+    cursor = db.execute("SELECT * FROM logs")
     rows = cursor.fetchall()
     col_names = [desc[0] for desc in cursor.description]
     db.close()
