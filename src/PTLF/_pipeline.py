@@ -771,7 +771,7 @@ class PipeLine:
                 If mode is not 'train' or 'valid'.
         """
         if mode == "train":
-            self.comps["loss"].train()
+            self.comps["model"].train()
             loader = self.trainDataLoader
         elif mode == "valid":
             self.comps["model"].eval()
@@ -798,7 +798,7 @@ class PipeLine:
                 self.comps["optimizer"].step(loss=loss.item(), epoch=epoch)
             else:
                 with torch.no_grad():
-                    logits = self.comps["model"](*inpts)
+                    logits = self.comps["model"](inpts)
                     loss = self.comps["loss"](logits, lbls)
 
             for m in self.settings["metrics"]:
