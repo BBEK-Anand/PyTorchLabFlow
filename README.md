@@ -67,7 +67,7 @@ Atypical Workflow where  you can  do  all  your  experiemnts/trails differ by  d
 Dive deeper with our comprehensive resources.
 
   * 📖 **Official Documentation (Read the Docs)**: For complete API references, tutorials, and advanced guides.
-      * ➡️ **[pytorchlabflow.readthedocs.io](https://www.google.com/search?q=https://pytorchlabflow.readthedocs.io/)**
+      * ➡️ **[pytorchlabflow.readthedocs.io](https://pytorchlabflow.readthedocs.io/)**
   <!--* 🌐 **Project Homepage**: A polished presentation of the project, its features, and key concepts.
        * ➡️ **[bbek-anand.github.io/PyTorchLabFlow/](https://www.google.com/search?q=https://bbek-anand.github.io/PyTorchLabFlow/)** -->
   * ✍️ **Medium Articles (Deep Dive)**: Understand the "why" behind the framework.
