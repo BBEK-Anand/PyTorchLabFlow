@@ -537,7 +537,7 @@ def plot_metrics(
                     if x_name=='epoch':
                         ax.plot(df[x_name].astype(int), df[col], label=k, marker=".")
                     else:
-                        ax.plot(df[x_name], df[col], label='k', marker=".")
+                        ax.plot(df[x_name], df[col], label=k, marker=".")
 
             ax.set_title(f"{col}")
             ax.set_xlabel(x_name)
