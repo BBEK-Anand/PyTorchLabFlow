@@ -11,6 +11,7 @@ from datetime import datetime
 from copy import deepcopy
 import shutil
 import psutil
+import traceback
 
 import pandas as pd
 from tqdm import tqdm
@@ -63,7 +64,6 @@ class PipeLine:
         self.cnfg = None
         self._prepared = False
         self.__db = Db(db_path=f"{self.settings['data_path']}/ppls.db")
-        self.tracker = None
         self.__best = None
         if pplid:
             self.load(pplid=pplid)
@@ -308,7 +308,7 @@ class PipeLine:
         self.cnfg = None
         self._prepared = False
         self.__db = Db(db_path=f"{self.settings['data_path']}/exps.db")
-        self.tracker = None
+
 
     def verify(self, *, pplid: str = None, args: Dict = None) -> Union[str, bool]:
         """
@@ -687,6 +687,7 @@ class PipeLine:
             self.cnfg["last"]["epoch"] - self.cnfg["best"]["epoch"]
         )
 
+        verbose = list(self.settings['metrics']) if verbose ==None else verbose
         if isinstance(verbose, str):
             verbose = [verbose]
 
@@ -713,10 +714,10 @@ class PipeLine:
                 if epochs_without_improvement >= patience:
                     print(f"Early stopping at epoch {epoch} due to no improvement.")
                     return
-                if not self.P.should_running:
+                if not self.should_running:
                     return 
                 train_metrics = self._forward(
-                    mode="train", epoch=epoch, verbose=verbose, tracker=self.tracker
+                    mode="train", epoch=epoch, verbose=verbose
                 )
                 val_metrics = self._forward(mode="valid", epoch=epoch)
 
@@ -734,9 +735,10 @@ class PipeLine:
             print("Finished Training")
         except (RuntimeError, ValueError, KeyError) as e:
             print("Error in training loop:", e)
+            traceback.print_exc()
         except BaseException as e:
             print("Unexpected error in training loop:", type(e).__name__, e)
-            raise  # Optional: re-raise after logging
+            traceback.print_exc()
         finally:
             self.__db.execute("DELETE FROM runnings WHERE pplid = ?", (self.pplid,))
 
@@ -747,26 +749,26 @@ class PipeLine:
         verbose: Optional[List[str]] = None
     ) -> Dict[str, float]:
         """
-        Perform a single epoch pass through the dataset.
+            Perform a single epoch pass through the dataset.
 
-        Parameters
-        ----------
-        mode : str
-            Either "train" or "valid" to determine which loader and mode to use.
-        epoch : int
-            Current epoch number.
-        verbose : list of str, optional
-            Metrics to display live in the progress bar.
+            Parameters
+            ----------
+            mode : str
+                Either "train" or "valid" to determine which loader and mode to use.
+            epoch : int
+                Current epoch number.
+            verbose : list of str, optional
+                Metrics to display live in the progress bar.
 
-        Returns
-        -------
-        Dict[str, float]
-            Dictionary of averaged metrics and loss for the epoch, including duration.
+            Returns
+            -------
+            Dict[str, float]
+                Dictionary of averaged metrics and loss for the epoch, including duration.
 
-        Raises
-        ------
-        ValueError
-            If mode is not 'train' or 'valid'.
+            Raises
+            ------
+            ValueError
+                If mode is not 'train' or 'valid'.
         """
         if mode == "train":
             self.comps["loss"].train()
@@ -783,14 +785,14 @@ class PipeLine:
         start_time = time.perf_counter()
 
         for batch_idx, datas in enumerate(loader_tqdm):
-            inpts = [i.to(self.device) for i in datas[0]]
-            lbls = [i.to(self.device) for i in datas[1]]
-            lbls = torch.cat([
-                        t.unsqueeze(1) if t.ndim == 1 else t
-                        for t in lbls], dim=1)
+            inpts = datas[0].to(self.device) 
+            lbls = datas[1].to(self.device) 
+            # lbls = torch.cat([
+            #             t.unsqueeze(1) if t.ndim == 1 else t
+            #             for t in lbls], dim=1)
             if mode == "train":
                 self.comps["optimizer"].zero_grad()
-                logits = self.comps["model"](*inpts)
+                logits = self.comps["model"](inpts)
                 loss = self.comps["loss"](logits, lbls)
                 loss.backward()
                 self.comps["optimizer"].step(loss=loss.item(), epoch=epoch)
@@ -803,8 +805,6 @@ class PipeLine:
                 running_metrics[m] += self.comps["metrics"][m](logits, lbls)
             running_metrics["loss"] += loss.item()
 
-            if tracker:
-                tracker.step(self, running_metrics, batch_idx, epoch)
             if verbose:
                 metrics_display = {
                     m: running_metrics[m] / (batch_idx + 1)
