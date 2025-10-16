@@ -436,10 +436,6 @@ def get_histories(
         ppls = exs
     elif not all(ex in exs for ex in ppls):
         raise ValueError(f"pplids should be from: {', '.join(exs)}")
-    
-    metrics = settings['metrics']+['loss', 'duration']
-
-    metrics = [f"train_{i}" for i in metrics]+[f"val_{i}" for i in metrics]
 
     # Collect histories
     records = {}
@@ -447,7 +443,7 @@ def get_histories(
         P = PipeLine(pplid=exp)
         df = pd.read_csv(P.get_path(of='history'))
         if not df.empty:
-            records[exp] = df[[*metrics]]
+            records[exp] = df
     return records
 
 def group_by_common_columns(
@@ -521,7 +517,7 @@ def plot_metrics(
     elif not all(ex in exs for ex in ppls):
         raise ValueError(f"pplids should be from {', '.join(exs)}")
 
-    records = get_histories(ppls)
+    records = get_histories(ppls=ppls)
     grouped = group_by_common_columns(records)
     Vs = {}
     x_name = 'epoch'
