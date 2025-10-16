@@ -157,7 +157,7 @@ def multi_train(ppls: Dict[str, int], last_epoch: int = 10, patience: int = 5) -
     for exp in ppls:
         P = PipeLine(pplid=exp)
         P.prepare()
-        P.run()
+        P.train()
 
 def get_runnings():
     db = Db(db_path=f"{PipeLine().settings['data_path']}/ppls.db")
@@ -405,7 +405,7 @@ def transfer_ppl(
         raise ValueError(f"Invalid mode: {mode}. Expected 'copy' or 'move'.")
 
 def get_histories(
-        ppls: Optional[List[str]] = None, of=None) -> Dict[str, pd.DataFrame]:
+        ppls: Optional[List[str]] = None) -> Dict[str, pd.DataFrame]:
     """
         Retrieve training and validation histories for specified pipelines.
 
@@ -437,16 +437,15 @@ def get_histories(
     elif not all(ex in exs for ex in ppls):
         raise ValueError(f"pplids should be from: {', '.join(exs)}")
     
-    if 'history' not in of:
-        raise ValueError(f"of should be a history! like {', '.join(*[i for i in settings['logging'] if 'history' in i])}")
+    metrics = settings['metrics']+['loss', 'duration']
 
-    metrics = settings['logging'][of]
+    metrics = [f"train_{i}" for i in metrics]+[f"val_{i}" for i in metrics]
 
     # Collect histories
     records = {}
     for exp in ppls:
         P = PipeLine(pplid=exp)
-        df = pd.read_csv(P.get_path(of=of))
+        df = pd.read_csv(P.get_path(of='history'))
         if not df.empty:
             records[exp] = df[[*metrics]]
     return records
@@ -487,7 +486,7 @@ def group_by_common_columns(
     return group_map
 
 def plot_metrics(
-    ppls: Optional[List[str]] = None, of = None, metrics: Optional[List[str]] = None, args:Optional[Dict]=None
+    ppls: Optional[List[str]] = None,  metrics: Optional[List[str]] = None, args:Optional[Dict]=None
     ) -> Dict[str, plt.Axes]:
     """
         Plot specified metrics for one or more pipelines over training epochs.
@@ -522,7 +521,7 @@ def plot_metrics(
     elif not all(ex in exs for ex in ppls):
         raise ValueError(f"pplids should be from {', '.join(exs)}")
 
-    records = get_histories(ppls, of=of)
+    records = get_histories(ppls)
     grouped = group_by_common_columns(records)
     Vs = {}
     x_name = 'epoch'
