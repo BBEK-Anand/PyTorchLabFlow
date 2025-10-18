@@ -101,7 +101,9 @@ If you use PyTorchLabFlow in your research, please consider citing it:
   author       = {BBEK-Anand},
   title        = {PyTorchLabFlow: A Python FrameWork for Managing Deep Learning Experiments in PyTorch},
   year         = {2024},
-  url          = {[https://github.com/BBEK-Anand/PyTorchLabFlow](https://github.com/BBEK-Anand/PyTorchLabFlow)},
-  note         = {Version 0.2.5},
+  url          = {https://github.com/BBEK-Anand/PyTorchLabFlow},
+  note         = {Version 0.4.7},
+  doi          = {10.5281/zenodo.17387930},
 }
+
 ```
