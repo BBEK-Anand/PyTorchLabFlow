@@ -132,6 +132,8 @@ def get_ppl_status(ppls: Optional[list] = None) -> pd.DataFrame:
         data["last_epoch"].append(quick["last"]["epoch"])
     df = pd.DataFrame(data)
     return df
+
+
 def filter_ppls(
     query: str, ppls: Optional[List[str]] = None, params: bool = False
 ) -> list:

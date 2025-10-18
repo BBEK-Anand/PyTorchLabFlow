@@ -5,7 +5,7 @@ This tutorial explains how to initialize a machine learning project using the
 ``PyTorchLabFlow`` package by providing a configuration dictionary and calling a single function.
 
 Prerequisites
--------------
+~~~~~~~~~~~~~
 
 Make sure the ``PyTorchLabFlow`` package is installed and accessible in your Python environment:
 
@@ -244,7 +244,7 @@ Step 5: Plot Comparative Performances
     Vs["train_accuracy"]
 
 Additional
-~~~~~~~~~~
+----------
 
 You can  access  previously initiated  pipeline just by their pipeline_id(pplid)  
 
@@ -257,5 +257,9 @@ but make  sure  you coonected  to  correct  lab configuration  at the top of the
 this  way  you can  organinze  all your trials, hypotheses  in  fixed number of  dedicated jupyter files.
 
 
+config matching
+~~~~~~~~~~~~~~~
+
+Because all the pipeline configs are nested  dictionaries,  we  can  easyli  search for ppls  that shares  components/parameters.  Using `filter_ppls <../api/utils.html#PTLF.experiment.filter_ppls>` and `get_matching_ppls  <../api/utils.html#PTLF.experiment.get_matching_ppls>`.
 
 
