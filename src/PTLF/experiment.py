@@ -13,7 +13,7 @@ from matplotlib.ticker import MaxNLocator
 import pandas as pd
 
 from .context import get_shared_data
-from .utils import Db
+from .utils import Db, filter_configs, get_matching
 from ._pipeline import PipeLine
 
 
@@ -132,6 +132,67 @@ def get_ppl_status(ppls: Optional[list] = None) -> pd.DataFrame:
         data["last_epoch"].append(quick["last"]["epoch"])
     df = pd.DataFrame(data)
     return df
+def filter_ppls(
+    query: str, ppls: Optional[List[str]] = None, params: bool = False
+) -> list:
+    """
+    Filters pipelines based on a query string applied to their configurations.
+
+    Parameters
+    ----------
+    query : str
+        A query string used to filter pipeline configurations.
+    ppls : list or None, optional
+        List of pipeline IDs to filter. If None, all pipelines are considered.
+    params : bool, optional
+        Whether to return parameters of matching pipelines along with their IDs.
+
+    Returns
+    -------
+    list
+        Filtered list of pipeline IDs or tuples of (pplid, params) if `params` is True.
+    """
+    ppls = get_ppls() if ppls is None else ppls
+
+    def loader(pplid):
+        P = PipeLine()
+        P.load(pplid=pplid)
+        return P.cnfg["args"]
+
+    return filter_configs(query, ppls, loader, params)
+
+def get_matching_ppls(
+    base_pplid: str, query: Optional[str] = None, include=False
+) -> List:
+    """
+    Retrieve pipelines matching a base pipeline ID and optional query.
+
+    Parameters
+    ----------
+    base_pplid : str
+        The base pipeline ID to compare against.
+    query : str or None, optional
+        Optional query string to filter matching pipelines.
+
+    Returns
+    -------
+    list
+        A list of pipeline IDs matching the criteria.
+    """
+
+    def loader(pplid):
+        P = PipeLine()
+        P.load(pplid=pplid)
+        return P.cnfg
+
+    return get_matching(
+        base_id=base_pplid,
+        get_ids_fn=get_ppls,
+        loader_fn=loader,
+        query=query,
+        include=include,
+    )
+
 
 def multi_train(ppls: Dict[str, int], last_epoch: int = 10, patience: int = 5) -> None:
     """
