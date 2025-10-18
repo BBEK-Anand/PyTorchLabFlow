@@ -77,3 +77,4 @@ jobs:
           elif [ "${GITHUB_REF}" = "refs/heads/dev" ]; then
             echo "🧪 Publishing to TestPyPI"
             twine upload --repository-url https://test.pypi.org/legacy/ -u __token__ -p "$TEST_PYPI_TOKEN" dist/*
+          fi
