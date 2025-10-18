@@ -13,16 +13,17 @@
 # limitations under the License. 
 
 
-from setuptools import setup, find_packages
-
 import os
 import re
+from setuptools import setup, find_packages
 
 def get_version():
-    version_file = os.path.join('src', 'pytorchlabflow', '_version.py')
+    version_file = os.path.join('src', 'PTLF', '_version.py')
     with open(version_file) as f:
         content = f.read()
     match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", content, re.M)
+    if not match:
+        raise RuntimeError("Unable to find version string in _version.py.")
     return match.group(1)
 
 setup(
@@ -39,7 +40,7 @@ setup(
     ],
     author='BBEK-Anand',
     author_email='',
-    description='PyTorchLabFlow is a lightweight framework that simplifies PyTorch experiment management, reducing setup time with reusable components for training, logging, and checkpointing. It streamlines workflows, making it ideal for fast and efficient model development.',
+    description='PyTorchLabFlow is a lightweight framework that simplifies PyTorch experiment management...',
     long_description=open('./README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/BBEK-Anand/PyTorchLabFlow',

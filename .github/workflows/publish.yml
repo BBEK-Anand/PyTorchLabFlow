@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-    name: Build package
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,21 +22,34 @@ jobs:
           python -m pip install --upgrade pip
           pip install build
 
-      - name: Set dynamic version (based on date + git hash)
+      # ✅ Bump version only for PyPI releases (main branch)
+      - name: Bump patch version for PyPI
+        if: github.ref == 'refs/heads/main'
         run: |
-          DATE=$(date +%Y%m%d)
+          python -c "
+import re
+vf = 'src/PTLF/_version.py'
+with open(vf) as f:
+    m = re.search(r'__version__ = \"(\d+)\.(\d+)\.(\d+)\"', f.read())
+    if not m:
+        raise RuntimeError('Invalid version')
+    x, y, z = map(int, m.groups())
+    new_v = f'{x}.{y}.{z + 1}'
+with open(vf, 'w') as f:
+    f.write(f'__version__ = \"{new_v}\"\n')
+print(f'✅ Bumped version to {new_v}')
+          "
+
+      # ✅ Dev branch gets dynamic dev version
+      - name: Set dev version for TestPyPI
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          BASE_VERSION=$(grep -oP "__version__ = '\K[^']+" src/PTLF/_version.py)
+          DATE=$(date +%Y%m%d%H%M%S)
           GIT_HASH=$(git rev-parse --short HEAD)
-          VERSION="0.3.0.dev${DATE}+${GIT_HASH}"
-
-          echo "Setting dynamic version: $VERSION"
-
-          # Inject into _version.py
-          echo "__version__ = '${VERSION}'" > src/pytorchlabflow/_version.py
-
-          # Recreate pyproject.toml (optional but modern)
-          echo "[build-system]" > pyproject.toml
-          echo "requires = [\"setuptools\", \"wheel\"]" >> pyproject.toml
-          echo "build-backend = \"setuptools.build_meta\"" >> pyproject.toml
+          DEV_VERSION="${BASE_VERSION}.dev${DATE}+${GIT_HASH}"
+          echo "__version__ = '${DEV_VERSION}'" > src/PTLF/_version.py
+          echo "✅ Set dev version: $DEV_VERSION"
 
       - name: Build package
         run: python -m build
@@ -49,7 +61,6 @@ jobs:
           path: dist/
 
   publish:
-    name: Publish to TestPyPI or PyPI
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -67,18 +78,15 @@ jobs:
       - name: Install Twine
         run: pip install twine
 
-      - name: Publish to appropriate index
+      - name: Publish to PyPI or TestPyPI
         env:
           TWINE_USERNAME: __token__
           PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
           TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
         run: |
           if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
-            echo "Publishing to PyPI"
+            echo "🚀 Publishing to PyPI"
             twine upload -u __token__ -p "$PYPI_TOKEN" dist/*
           elif [ "${GITHUB_REF}" = "refs/heads/dev" ]; then
-            echo "Publishing to TestPyPI"
+            echo "🧪 Publishing to TestPyPI"
             twine upload --repository-url https://test.pypi.org/legacy/ -u __token__ -p "$TEST_PYPI_TOKEN" dist/*
-          else
-            echo "Not publishing: unexpected branch."
-          fi
