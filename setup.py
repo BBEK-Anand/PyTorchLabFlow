@@ -15,9 +15,19 @@
 
 from setuptools import setup, find_packages
 
+import os
+import re
+
+def get_version():
+    version_file = os.path.join('src', 'pytorchlabflow', '_version.py')
+    with open(version_file) as f:
+        content = f.read()
+    match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", content, re.M)
+    return match.group(1)
+
 setup(
     name='PyTorchLabFlow',
-    version='0.3',
+    version=get_version(),
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
     include_package_data=True,

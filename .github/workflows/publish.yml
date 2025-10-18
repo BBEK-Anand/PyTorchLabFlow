@@ -23,6 +23,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install build
 
+      - name: Set dynamic version (based on date + git hash)
+        run: |
+          DATE=$(date +%Y%m%d)
+          GIT_HASH=$(git rev-parse --short HEAD)
+          VERSION="0.3.0.dev${DATE}+${GIT_HASH}"
+
+          echo "Setting dynamic version: $VERSION"
+
+          # Inject into _version.py
+          echo "__version__ = '${VERSION}'" > src/pytorchlabflow/_version.py
+
+          # Recreate pyproject.toml (optional but modern)
+          echo "[build-system]" > pyproject.toml
+          echo "requires = [\"setuptools\", \"wheel\"]" >> pyproject.toml
+          echo "build-backend = \"setuptools.build_meta\"" >> pyproject.toml
+
       - name: Build package
         run: python -m build
 
