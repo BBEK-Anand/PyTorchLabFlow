@@ -4,7 +4,7 @@ import re
 import os
 import sys
 
-VERSION_FILE = './../src/PTLF/_version.py'
+VERSION_FILE = './src/PTLF/_version.py'
 
 def read_version():
     with open(VERSION_FILE, 'r') as f:
