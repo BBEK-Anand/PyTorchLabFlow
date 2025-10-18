@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath('../src'))
 project = 'PyTorchLabFlow'
 copyright = '2025, BBEK-Anand'
 author = 'BBEK-Anand'
-release = '1.0'
+release = '0.4'
 
 
 extensions = [
