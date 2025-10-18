@@ -38,6 +38,10 @@ jobs:
           echo "__version__ = '${DEV_VERSION}'" > src/PTLF/_version.py
           echo "✅ Set dev version: $DEV_VERSION"
 
+      # Clean old builds before building new package
+      - name: Clean old builds
+        run: rm -rf dist
+
       - name: Build package
         run: python -m build
 
