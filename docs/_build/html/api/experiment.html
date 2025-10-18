@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>experiment &mdash; PyTorchLabFlow 1.0 documentation</title>
+  <title>experiment &mdash; PyTorchLabFlow 0.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/documentation_options.js?v=7f00635f"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -70,7 +70,9 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#PTLF.experiment.archive_ppl"><code class="docutils literal notranslate"><span class="pre">archive_ppl()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#PTLF.experiment.delete_ppl"><code class="docutils literal notranslate"><span class="pre">delete_ppl()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#PTLF.experiment.filter_ppls"><code class="docutils literal notranslate"><span class="pre">filter_ppls()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#PTLF.experiment.get_histories"><code class="docutils literal notranslate"><span class="pre">get_histories()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#PTLF.experiment.get_matching_ppls"><code class="docutils literal notranslate"><span class="pre">get_matching_ppls()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#PTLF.experiment.get_ppl_details"><code class="docutils literal notranslate"><span class="pre">get_ppl_details()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#PTLF.experiment.get_ppl_status"><code class="docutils literal notranslate"><span class="pre">get_ppl_status()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#PTLF.experiment.get_ppls"><code class="docutils literal notranslate"><span class="pre">get_ppls()</span></code></a></li>
@@ -478,8 +480,29 @@ logging files, and database records.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="PTLF.experiment.filter_ppls">
+<span class="sig-name descname"><span class="pre">filter_ppls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PTLF/experiment.html#filter_ppls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PTLF.experiment.filter_ppls" title="Link to this definition"></a></dt>
+<dd><p>Filters pipelines based on a query string applied to their configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – A query string used to filter pipeline configurations.</p></li>
+<li><p><strong>ppls</strong> (<em>list</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – List of pipeline IDs to filter. If None, all pipelines are considered.</p></li>
+<li><p><strong>params</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return parameters of matching pipelines along with their IDs.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Filtered list of pipeline IDs or tuples of (pplid, params) if <cite>params</cite> is True.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="PTLF.experiment.get_histories">
-<span class="sig-name descname"><span class="pre">get_histories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ppls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">of</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PTLF/experiment.html#get_histories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PTLF.experiment.get_histories" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_histories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ppls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PTLF/experiment.html#get_histories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PTLF.experiment.get_histories" title="Link to this definition"></a></dt>
 <dd><p>Retrieve training and validation histories for specified pipelines.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -499,6 +522,26 @@ logging files, and database records.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dictionary mapping pipeline IDs to DataFrames containing</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PTLF.experiment.get_matching_ppls">
+<span class="sig-name descname"><span class="pre">get_matching_ppls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_pplid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PTLF/experiment.html#get_matching_ppls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PTLF.experiment.get_matching_ppls" title="Link to this definition"></a></dt>
+<dd><p>Retrieve pipelines matching a base pipeline ID and optional query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_pplid</strong> (<em>str</em>) – The base pipeline ID to compare against.</p></li>
+<li><p><strong>query</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Optional query string to filter matching pipelines.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of pipeline IDs matching the criteria.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -610,7 +653,7 @@ losses, and last epoch.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="PTLF.experiment.plot_metrics">
-<span class="sig-name descname"><span class="pre">plot_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ppls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">of</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PTLF/experiment.html#plot_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PTLF.experiment.plot_metrics" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ppls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PTLF/experiment.html#plot_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PTLF.experiment.plot_metrics" title="Link to this definition"></a></dt>
 <dd><p>Plot specified metrics for one or more pipelines over training epochs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

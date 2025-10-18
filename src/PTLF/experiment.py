@@ -28,7 +28,7 @@ __all__ = [
     "transfer_ppl",
     "get_histories",
     "group_by_common_columns",
-    "plot_metrics",
+    "plot_metrics", 'filter_ppls', 'get_matching_ppls'
 ]
 
 

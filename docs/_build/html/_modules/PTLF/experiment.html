@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PTLF.experiment &mdash; PyTorchLabFlow 1.0 documentation</title>
+  <title>PTLF.experiment &mdash; PyTorchLabFlow 0.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/documentation_options.js?v=7f00635f"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -87,24 +87,22 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.context</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_shared_data</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Db</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Db</span><span class="p">,</span> <span class="n">filter_configs</span><span class="p">,</span> <span class="n">get_matching</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipeLine</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;PipeLine&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_ppls&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_ppl_args&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_ppl_details&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_ppl_status&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;filter_ppls&quot;</span><span class="p">,</span>
     <span class="s2">&quot;multi_train&quot;</span><span class="p">,</span>
     <span class="s2">&quot;archive_ppl&quot;</span><span class="p">,</span>
     <span class="s2">&quot;delete_ppl&quot;</span><span class="p">,</span>
     <span class="s2">&quot;transfer_ppl&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_histories&quot;</span><span class="p">,</span>
     <span class="s2">&quot;group_by_common_columns&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;plot_metrics&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_metrics&quot;</span><span class="p">,</span> <span class="s1">&#39;filter_ppls&#39;</span><span class="p">,</span> <span class="s1">&#39;get_matching_ppls&#39;</span>
 <span class="p">]</span>
 
 
@@ -218,6 +216,75 @@
     <span class="k">return</span> <span class="n">df</span></div>
 
 
+
+<div class="viewcode-block" id="filter_ppls">
+<a class="viewcode-back" href="../../api/experiment.html#PTLF.experiment.filter_ppls">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">filter_ppls</span><span class="p">(</span>
+    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ppls</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Filters pipelines based on a query string applied to their configurations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    query : str</span>
+<span class="sd">        A query string used to filter pipeline configurations.</span>
+<span class="sd">    ppls : list or None, optional</span>
+<span class="sd">        List of pipeline IDs to filter. If None, all pipelines are considered.</span>
+<span class="sd">    params : bool, optional</span>
+<span class="sd">        Whether to return parameters of matching pipelines along with their IDs.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        Filtered list of pipeline IDs or tuples of (pplid, params) if `params` is True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ppls</span> <span class="o">=</span> <span class="n">get_ppls</span><span class="p">()</span> <span class="k">if</span> <span class="n">ppls</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ppls</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">loader</span><span class="p">(</span><span class="n">pplid</span><span class="p">):</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="n">PipeLine</span><span class="p">()</span>
+        <span class="n">P</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pplid</span><span class="o">=</span><span class="n">pplid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">P</span><span class="o">.</span><span class="n">cnfg</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">filter_configs</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">ppls</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_matching_ppls">
+<a class="viewcode-back" href="../../api/experiment.html#PTLF.experiment.get_matching_ppls">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_matching_ppls</span><span class="p">(</span>
+    <span class="n">base_pplid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve pipelines matching a base pipeline ID and optional query.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    base_pplid : str</span>
+<span class="sd">        The base pipeline ID to compare against.</span>
+<span class="sd">    query : str or None, optional</span>
+<span class="sd">        Optional query string to filter matching pipelines.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        A list of pipeline IDs matching the criteria.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">loader</span><span class="p">(</span><span class="n">pplid</span><span class="p">):</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="n">PipeLine</span><span class="p">()</span>
+        <span class="n">P</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pplid</span><span class="o">=</span><span class="n">pplid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">P</span><span class="o">.</span><span class="n">cnfg</span>
+
+    <span class="k">return</span> <span class="n">get_matching</span><span class="p">(</span>
+        <span class="n">base_id</span><span class="o">=</span><span class="n">base_pplid</span><span class="p">,</span>
+        <span class="n">get_ids_fn</span><span class="o">=</span><span class="n">get_ppls</span><span class="p">,</span>
+        <span class="n">loader_fn</span><span class="o">=</span><span class="n">loader</span><span class="p">,</span>
+        <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span>
+        <span class="n">include</span><span class="o">=</span><span class="n">include</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="multi_train">
 <a class="viewcode-back" href="../../api/experiment.html#PTLF.experiment.multi_train">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">multi_train</span><span class="p">(</span><span class="n">ppls</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">last_epoch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">patience</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -244,7 +311,7 @@
     <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">ppls</span><span class="p">:</span>
         <span class="n">P</span> <span class="o">=</span> <span class="n">PipeLine</span><span class="p">(</span><span class="n">pplid</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span>
         <span class="n">P</span><span class="o">.</span><span class="n">prepare</span><span class="p">()</span>
-        <span class="n">P</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
+        <span class="n">P</span><span class="o">.</span><span class="n">train</span><span class="p">()</span></div>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_runnings</span><span class="p">():</span>
@@ -504,7 +571,7 @@
 <div class="viewcode-block" id="get_histories">
 <a class="viewcode-back" href="../../api/experiment.html#PTLF.experiment.get_histories">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_histories</span><span class="p">(</span>
-        <span class="n">ppls</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">of</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+        <span class="n">ppls</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieve training and validation histories for specified pipelines.</span>
 
@@ -535,19 +602,13 @@
         <span class="n">ppls</span> <span class="o">=</span> <span class="n">exs</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">ex</span> <span class="ow">in</span> <span class="n">exs</span> <span class="k">for</span> <span class="n">ex</span> <span class="ow">in</span> <span class="n">ppls</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pplids should be from: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">exs</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    
-    <span class="k">if</span> <span class="s1">&#39;history&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">of</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;of should be a history! like </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;logging&#39;</span><span class="p">]</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="s1">&#39;history&#39;</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">i</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="n">metrics</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;logging&#39;</span><span class="p">][</span><span class="n">of</span><span class="p">]</span>
-
     <span class="c1"># Collect histories</span>
     <span class="n">records</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">ppls</span><span class="p">:</span>
         <span class="n">P</span> <span class="o">=</span> <span class="n">PipeLine</span><span class="p">(</span><span class="n">pplid</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="n">of</span><span class="p">))</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;history&#39;</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-            <span class="n">records</span><span class="p">[</span><span class="n">exp</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="o">*</span><span class="n">metrics</span><span class="p">]]</span>
+            <span class="n">records</span><span class="p">[</span><span class="n">exp</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span>
     <span class="k">return</span> <span class="n">records</span></div>
 
 
@@ -592,7 +653,7 @@
 <div class="viewcode-block" id="plot_metrics">
 <a class="viewcode-back" href="../../api/experiment.html#PTLF.experiment.plot_metrics">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_metrics</span><span class="p">(</span>
-    <span class="n">ppls</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">of</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">ppls</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="n">metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot specified metrics for one or more pipelines over training epochs.</span>
@@ -627,7 +688,7 @@
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">ex</span> <span class="ow">in</span> <span class="n">exs</span> <span class="k">for</span> <span class="n">ex</span> <span class="ow">in</span> <span class="n">ppls</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pplids should be from </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">exs</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="n">records</span> <span class="o">=</span> <span class="n">get_histories</span><span class="p">(</span><span class="n">ppls</span><span class="p">,</span> <span class="n">of</span><span class="o">=</span><span class="n">of</span><span class="p">)</span>
+    <span class="n">records</span> <span class="o">=</span> <span class="n">get_histories</span><span class="p">(</span><span class="n">ppls</span><span class="o">=</span><span class="n">ppls</span><span class="p">)</span>
     <span class="n">grouped</span> <span class="o">=</span> <span class="n">group_by_common_columns</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
     <span class="n">Vs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">x_name</span> <span class="o">=</span> <span class="s1">&#39;epoch&#39;</span>
@@ -643,7 +704,7 @@
                     <span class="k">if</span> <span class="n">x_name</span><span class="o">==</span><span class="s1">&#39;epoch&#39;</span><span class="p">:</span>
                         <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">x_name</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">x_name</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+                        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">x_name</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
 
             <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x_name</span><span class="p">)</span>

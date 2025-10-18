@@ -260,6 +260,16 @@ this  way  you can  organinze  all your trials, hypotheses  in  fixed number of 
 config matching
 ~~~~~~~~~~~~~~~
 
-Because all the pipeline configs are nested  dictionaries,  we  can  easyli  search for ppls  that shares  components/parameters.  Using `filter_ppls <../api/utils.html#PTLF.experiment.filter_ppls>`_ and `get_matching_ppls  <../api/utils.html#PTLF.experiment.get_matching_ppls>`_.
+Because all the pipeline configs are nested  dictionaries,  we  can  easyli  search for ppls  that shares  components/parameters.  Using `filter_ppls <../api/experiment.html#PTLF.experiment.filter_ppls>`_ and `get_matching_ppls  <../api/experiment.html#PTLF.experiment.get_matching_ppls>`_.
 
+query: is a string format that helps to find configs that shaes a component(dictionary format)
 
+because all ppl-config have args  key  and that args  have different compenents
+
+.. code-block:: python
+
+    query='args>model=my_project.models.TransformerClassifier>backbone=my_project.models.TransformerEncoder'  
+
+filter all the ppl-configs that have `Example: Nesting Components <concepts.html#example-nesting-components>`_
+
+where `>`  means  nesting

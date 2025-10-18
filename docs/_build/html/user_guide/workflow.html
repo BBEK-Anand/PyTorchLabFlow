@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>User Workflow &mdash; PyTorchLabFlow 1.0 documentation</title>
+  <title>User Workflow &mdash; PyTorchLabFlow 0.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/documentation_options.js?v=7f00635f"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -48,21 +48,24 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">user guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="concepts.html">Concepts</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">User Workflow</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#step-1-define-your-project-configuration">Step 1: Define Your Project Configuration</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#step-2-run-the-project-creation-function">Step 2: Run the Project Creation Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-1-define-your-project-configuration">Step 1: Define Your Project Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#explanation-of-settings">Explanation of Settings</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#building-and-running-deep-learning-pipelines">Building and Running Deep Learning Pipelines</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#step-1-design-your-components">Step 1: Design your components</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#step-2-define-experiment-configuration">Step 2: Define Experiment Configuration</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#step-3-create-a-new-experiment">Step 3: Create a New Experiment</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#step-4-start-training">Step 4: Start Training</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#extra-utilities">Extra Utilities</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#step-5-plot-comparative-performances">Step 5: Plot Comparative Performances</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#additional">Additional</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-2-run-the-project-creation-function">Step 2: Run the Project Creation Function</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#what-happens-next">What Happens Next?</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#resulting-directory-structure">Resulting Directory Structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#using-the-project-later">Using the Project Later</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#step-1-design-your-components">Step 1: Design your components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-2-define-experiment-configuration">Step 2: Define Experiment Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-3-create-a-new-experiment">Step 3: Create a New Experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-4-start-training">Step 4: Start Training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#extra-utilities">Extra Utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-5-plot-comparative-performances">Step 5: Plot Comparative Performances</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#config-matching">config matching</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="templates.html">Templates</a></li>
@@ -107,8 +110,9 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>PyTorchLabFlow<span class="w">  </span><span class="c1"># Or use your own installation method</span>
 </pre></div>
 </div>
+</section>
 <section id="step-1-define-your-project-configuration">
-<h3>Step 1: Define Your Project Configuration<a class="headerlink" href="#step-1-define-your-project-configuration" title="Link to this heading"></a></h3>
+<h2>Step 1: Define Your Project Configuration<a class="headerlink" href="#step-1-define-your-project-configuration" title="Link to this heading"></a></h2>
 <p>Create a dctionary with same given key and respective values.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">settings</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;project_name&quot;</span><span class="p">:</span> <span class="s2">&quot;AdultIncomePrediction&quot;</span><span class="p">,</span>
@@ -122,7 +126,7 @@
 </div>
 <p>keys  and  the  values  are  explained  below.</p>
 <section id="explanation-of-settings">
-<h4>Explanation of Settings<a class="headerlink" href="#explanation-of-settings" title="Link to this heading"></a></h4>
+<h3>Explanation of Settings<a class="headerlink" href="#explanation-of-settings" title="Link to this heading"></a></h3>
 <p>Here’s a breakdown of the keys in the <code class="docutils literal notranslate"><span class="pre">settings</span></code> dictionary:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">project_name</span></code>: A name for your project; used for display/logging purposes.</p></li>
@@ -146,7 +150,7 @@
 </section>
 </section>
 <section id="step-2-run-the-project-creation-function">
-<h3>Step 2: Run the Project Creation Function<a class="headerlink" href="#step-2-run-the-project-creation-function" title="Link to this heading"></a></h3>
+<h2>Step 2: Run the Project Creation Function<a class="headerlink" href="#step-2-run-the-project-creation-function" title="Link to this heading"></a></h2>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">create_project</span></code> function from <code class="docutils literal notranslate"><span class="pre">PyTorchLabFlow.lab</span></code> to initialize the project:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">PTLF.lab</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_project</span>
 
@@ -154,7 +158,7 @@
 </pre></div>
 </div>
 <section id="what-happens-next">
-<h4>What Happens Next?<a class="headerlink" href="#what-happens-next" title="Link to this heading"></a></h4>
+<h3>What Happens Next?<a class="headerlink" href="#what-happens-next" title="Link to this heading"></a></h3>
 <p>Running the script performs the following:</p>
 <ul class="simple">
 <li><p>Creates the specified <code class="docutils literal notranslate"><span class="pre">data_path</span></code> and <code class="docutils literal notranslate"><span class="pre">component_dir</span></code> folders if they don’t exist.</p></li>
@@ -163,7 +167,7 @@
 </ul>
 </section>
 <section id="resulting-directory-structure">
-<h4>Resulting Directory Structure<a class="headerlink" href="#resulting-directory-structure" title="Link to this heading"></a></h4>
+<h3>Resulting Directory Structure<a class="headerlink" href="#resulting-directory-structure" title="Link to this heading"></a></h3>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>path/to/your/data/folder/
 │
 ├── Configs/               # Stores experiment configuration files
@@ -197,7 +201,7 @@ path/to/your/component/folder/
 </div>
 </section>
 <section id="using-the-project-later">
-<h4>Using the Project Later<a class="headerlink" href="#using-the-project-later" title="Link to this heading"></a></h4>
+<h3>Using the Project Later<a class="headerlink" href="#using-the-project-later" title="Link to this heading"></a></h3>
 <p>Once your project has been set up, you can load the full configuration and prepare the environment anytime using:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">PTLF.lab</span><span class="w"> </span><span class="kn">import</span> <span class="n">lab_setup</span>
 
@@ -210,13 +214,13 @@ path/to/your/component/folder/
 <p>In any Jupyter notebook or Python script, simply call <code class="docutils literal notranslate"><span class="pre">lab_setup</span></code> at the top and you’re ready to start working with the full project structure.</p>
 </div>
 <p>You’re now ready to start building models, managing experiments, and scaling your ML workflow using the <code class="docutils literal notranslate"><span class="pre">PyTorchLabFlow</span></code> environment.</p>
-</section>
-</section>
-</section>
 <section id="building-and-running-deep-learning-pipelines">
-<h2>Building and Running Deep Learning Pipelines<a class="headerlink" href="#building-and-running-deep-learning-pipelines" title="Link to this heading"></a></h2>
+<h4>Building and Running Deep Learning Pipelines<a class="headerlink" href="#building-and-running-deep-learning-pipelines" title="Link to this heading"></a></h4>
+</section>
+</section>
+</section>
 <section id="step-1-design-your-components">
-<h3>Step 1: Design your components<a class="headerlink" href="#step-1-design-your-components" title="Link to this heading"></a></h3>
+<h2>Step 1: Design your components<a class="headerlink" href="#step-1-design-your-components" title="Link to this heading"></a></h2>
 <ol class="arabic simple">
 <li><p>Design your <cite>Dataset</cite> class inheriting <cite>PTLF.utils.DataSet</cite></p></li>
 <li><p>Design your <cite>model</cite> inheriting <cite>PTLF.utils.Model</cite></p></li>
@@ -228,7 +232,7 @@ path/to/your/component/folder/
 </div>
 </section>
 <section id="step-2-define-experiment-configuration">
-<h3>Step 2: Define Experiment Configuration<a class="headerlink" href="#step-2-define-experiment-configuration" title="Link to this heading"></a></h3>
+<h2>Step 2: Define Experiment Configuration<a class="headerlink" href="#step-2-define-experiment-configuration" title="Link to this heading"></a></h2>
 <p>Create a nested dictionary specifying all pipeline components such as model, dataset, optimizer, loss, metrics, and data sources.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">expargs</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;dataset&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -270,7 +274,7 @@ path/to/your/component/folder/
 </div>
 </section>
 <section id="step-3-create-a-new-experiment">
-<h3>Step 3: Create a New Experiment<a class="headerlink" href="#step-3-create-a-new-experiment" title="Link to this heading"></a></h3>
+<h2>Step 3: Create a New Experiment<a class="headerlink" href="#step-3-create-a-new-experiment" title="Link to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">PipeLine</span><span class="p">()</span> <span class="c1">#Initialize the Pipeline</span>
 <span class="n">P</span><span class="o">.</span><span class="n">match_args</span><span class="p">(</span><span class="n">expargs</span><span class="p">)</span>   <span class="c1">#(Optional) Match Existing Experiments</span>
 <span class="c1"># Returns existing experiment ID or False if new</span>
@@ -280,14 +284,14 @@ path/to/your/component/folder/
 </div>
 </section>
 <section id="step-4-start-training">
-<h3>Step 4: Start Training<a class="headerlink" href="#step-4-start-training" title="Link to this heading"></a></h3>
+<h2>Step 4: Start Training<a class="headerlink" href="#step-4-start-training" title="Link to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">num_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Supports features like early stopping, verbose logging, and hooks.</p>
 </section>
 <section id="extra-utilities">
-<h3>Extra Utilities<a class="headerlink" href="#extra-utilities" title="Link to this heading"></a></h3>
+<h2>Extra Utilities<a class="headerlink" href="#extra-utilities" title="Link to this heading"></a></h2>
 <table class="docutils align-default" id="id1">
 <caption><span class="caption-text">Pipeline Utilities</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
 <colgroup>
@@ -319,16 +323,13 @@ path/to/your/component/folder/
 </table>
 </section>
 <section id="step-5-plot-comparative-performances">
-<h3>Step 5: Plot Comparative Performances<a class="headerlink" href="#step-5-plot-comparative-performances" title="Link to this heading"></a></h3>
+<h2>Step 5: Plot Comparative Performances<a class="headerlink" href="#step-5-plot-comparative-performances" title="Link to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">PTLF.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_metrics</span>
 
 <span class="n">Vs</span> <span class="o">=</span> <span class="n">plot_metrics</span><span class="p">(</span><span class="n">ppls</span><span class="o">=</span><span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;train_loss&#39;</span><span class="p">,</span> <span class="s2">&quot;train_accuracy&quot;</span><span class="p">])</span>
 <span class="n">Vs</span><span class="p">[</span><span class="s2">&quot;train_accuracy&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
-</section>
-<section id="additional">
-<h3>Additional<a class="headerlink" href="#additional" title="Link to this heading"></a></h3>
 <p>You can  access  previously initiated  pipeline just by their pipeline_id(pplid)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">PipeLine</span><span class="p">(</span><span class="n">pplid</span><span class="o">=</span><span class="s1">&#39;exp2&#39;</span><span class="p">)</span>
 </pre></div>
@@ -337,6 +338,16 @@ path/to/your/component/folder/
 but make  sure  you coonected  to  correct  lab configuration  at the top of the jupyter  <a class="reference external" href="workflow.html#using-the-project-later">using lab_setup</a>
 this  way  you can  organinze  all your trials, hypotheses  in  fixed number of  dedicated jupyter files.</p>
 </section>
+<section id="config-matching">
+<h2>config matching<a class="headerlink" href="#config-matching" title="Link to this heading"></a></h2>
+<p>Because all the pipeline configs are nested  dictionaries,  we  can  easyli  search for ppls  that shares  components/parameters.  Using <a class="reference external" href="../api/experiment.html#PTLF.experiment.filter_ppls">filter_ppls</a> and <a class="reference external" href="../api/experiment.html#PTLF.experiment.get_matching_ppls">get_matching_ppls</a>.</p>
+<p>query: is a string format that helps to find configs that shaes a component(dictionary format)</p>
+<p>because all ppl-config have args  key  and that args  have different compenents</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">query</span><span class="o">=</span><span class="s1">&#39;args&gt;model=my_project.models.TransformerClassifier&gt;backbone=my_project.models.TransformerEncoder&#39;</span>
+</pre></div>
+</div>
+<p>filter all the ppl-configs that have <a class="reference external" href="concepts.html#example-nesting-components">Example: Nesting Components</a></p>
+<p>where <cite>&gt;</cite>  means  nesting</p>
 </section>
 </section>
 

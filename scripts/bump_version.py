@@ -23,3 +23,4 @@ def bump_patch_version():
 
 if __name__ == "__main__":
     bump_patch_version()
+

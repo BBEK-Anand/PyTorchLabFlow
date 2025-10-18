@@ -31,6 +31,7 @@ __all__ = [
     "Db",
     "extract_all_locs",
     "get_invalid_loc_queries",
+    'filter_configs', 'get_matching'
 ]
 
 
