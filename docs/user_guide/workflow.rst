@@ -260,6 +260,6 @@ this  way  you can  organinze  all your trials, hypotheses  in  fixed number of 
 config matching
 ~~~~~~~~~~~~~~~
 
-Because all the pipeline configs are nested  dictionaries,  we  can  easyli  search for ppls  that shares  components/parameters.  Using `filter_ppls <../api/utils.html#PTLF.experiment.filter_ppls>` and `get_matching_ppls  <../api/utils.html#PTLF.experiment.get_matching_ppls>`.
+Because all the pipeline configs are nested  dictionaries,  we  can  easyli  search for ppls  that shares  components/parameters.  Using `filter_ppls <../api/utils.html#PTLF.experiment.filter_ppls>`_ and `get_matching_ppls  <../api/utils.html#PTLF.experiment.get_matching_ppls>`_.
 
 
