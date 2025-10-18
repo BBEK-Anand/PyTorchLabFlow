@@ -22,25 +22,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install build
 
-      # ✅ Bump version only for PyPI releases (main branch)
+      # ✅ Bump version for main (PyPI) by incrementing patch version
       - name: Bump patch version for PyPI
         if: github.ref == 'refs/heads/main'
         run: |
-          python -c "
+          python -c '
 import re
-vf = 'src/PTLF/_version.py'
+vf = "src/PTLF/_version.py"
 with open(vf) as f:
-    m = re.search(r'__version__ = \"(\d+)\.(\d+)\.(\d+)\"', f.read())
-    if not m:
-        raise RuntimeError('Invalid version')
-    x, y, z = map(int, m.groups())
-    new_v = f'{x}.{y}.{z + 1}'
-with open(vf, 'w') as f:
-    f.write(f'__version__ = \"{new_v}\"\n')
-print(f'✅ Bumped version to {new_v}')
-          "
+    content = f.read()
+match = re.search(r"__version__ = [\"'](\d+)\.(\d+)\.(\d+)[\"']", content)
+if not match:
+    raise RuntimeError("Version string not found")
+x, y, z = map(int, match.groups())
+new_version = f"{x}.{y}.{z + 1}"
+with open(vf, "w") as f:
+    f.write(f"__version__ = \'{new_version}\'\n")
+print(f"✅ Bumped version to {new_version}")
+          '
 
-      # ✅ Dev branch gets dynamic dev version
+      # ✅ Add dynamic dev version for TestPyPI
       - name: Set dev version for TestPyPI
         if: github.ref == 'refs/heads/dev'
         run: |
