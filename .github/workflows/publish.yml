@@ -34,7 +34,7 @@ jobs:
           BASE_VERSION=$(grep -oP "__version__ = '\K[^']+" src/PTLF/_version.py)
           DATE=$(date +%Y%m%d%H%M%S%N)
           GIT_HASH=$(git rev-parse --short HEAD)
-          DEV_VERSION="${BASE_VERSION}.dev${DATE}-${GIT_HASH}"
+          DEV_VERSION="${BASE_VERSION}.dev${DATE}"
           echo "__version__ = '${DEV_VERSION}'" > src/PTLF/_version.py
           echo "✅ Set dev version: $DEV_VERSION"
 
