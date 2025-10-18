@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="./docs/resources/PTLFlogo-dark-removebg-preview.png" alt="PyTorchLabFlow Logo" width="30%" />
+<img src="https://raw.githubusercontent.com/BBEK-Anand/PyTorchLabFlow/main/docs/resources/PTLFlogo-dark-removebg-preview.png" alt="PyTorchLabFlow Logo" width="30%" />
 
   <!-- <h1>PyTorchLabFlow</h1> -->
 
@@ -59,7 +59,8 @@ pip install PyTorchLabFlow
 
 Atypical Workflow where  you can  do  all  your  experiemnts/trails differ by  different Component and/or parameters is some fixed number of dedicated Jupiter files. No headech of finding trials that share  same  code-block( here it is Componet) and  analysing their performance,  just use  functions,  PipeLine manages all these  things ,  just focus  on analysis and dicision making. refer [Workflow in documentation](https://pytorchlabflow.readthedocs.io/en/latest/user_guide/workflow.html) for more details.
 
-<img src="./docs/resources/ptlflow.gif" alt="Workflow" width="100%" />
+<img src="https://raw.githubusercontent.com/BBEK-Anand/PyTorchLabFlow/main/docs/resources/ptlflow.gif" alt="Workflow" width="100%" />
+
 
 
 ## 📚 Documentation & Resources
