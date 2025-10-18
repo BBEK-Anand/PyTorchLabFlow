@@ -25,21 +25,7 @@ jobs:
       # ✅ Bump version for main (PyPI) by incrementing patch version
       - name: Bump patch version for PyPI
         if: github.ref == 'refs/heads/main'
-        run: |
-          python -c '
-import re
-vf = "src/PTLF/_version.py"
-with open(vf) as f:
-    content = f.read()
-match = re.search(r"__version__ = [\"'](\d+)\.(\d+)\.(\d+)[\"']", content)
-if not match:
-    raise RuntimeError("Version string not found")
-x, y, z = map(int, match.groups())
-new_version = f"{x}.{y}.{z + 1}"
-with open(vf, "w") as f:
-    f.write(f"__version__ = \'{new_version}\'\n")
-print(f"✅ Bumped version to {new_version}")
-          '
+        run: python scripts/bump_version.py
 
       # ✅ Add dynamic dev version for TestPyPI
       - name: Set dev version for TestPyPI
