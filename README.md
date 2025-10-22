@@ -74,7 +74,7 @@ Dive deeper with our comprehensive resources.
   * ✍️ **Medium Articles (Deep Dive)**: Understand the "why" behind the framework.
       * ➡️ **[Why I Built PyTorchLabFlow](https://medium.com/@bbek-anand/why-i-built-pytorchlabflow-research-first-experiment-tracking-for-deep-learning-chaos-a50b5bc47dde)**
   * ✈️ **End-to-End Example Project**: See a complete, real-world application.
-      * ➡️ **[Military Aircraft Classification Project](https://www.google.com/search?q=https://github.com/BBEK-Anand/Military_Air_Craft_Classification)**
+      * ➡️ **[Military Aircraft Classification Project](https://github.com/BBEK-Anand/Military_AirCraft_Classification)**
 
 ## 🤝 Contributing
 
