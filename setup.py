@@ -14,17 +14,20 @@
 
 
 import os
-import re
 from setuptools import setup, find_packages
 
 def get_version():
     version_file = os.path.join('src', 'PTLF', '_version.py')
     with open(version_file) as f:
-        content = f.read()
-    match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", content, re.M)
-    if not match:
-        raise RuntimeError("Unable to find version string in _version.py.")
-    return match.group(1)
+        for line in f:
+            if line.strip().startswith('__version__'):
+                # Extract the version string between quotes
+                parts = line.split('=', 1)
+                if len(parts) == 2:
+                    version_str = parts[1].strip().strip('"\'')
+                    return version_str
+                break
+    raise RuntimeError("Unable to find version string in _version.py.")
 
 setup(
     name='PyTorchLabFlow',
