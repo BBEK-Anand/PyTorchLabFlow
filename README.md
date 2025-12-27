@@ -26,8 +26,7 @@
 
 > ⚠️ **Notice**
 >  
-> A more advanced, domain-independent version is available at:  
-> 👉 **[ExperQuick/PyLabFlow](https://github.com/ExperQuick/PyLabFlow)**
+> A more advanced, domain-independent version is available at:  **[ExperQuick/PyLabFlow](https://github.com/ExperQuick/PyLabFlow)**
 
 ### 🤔 The Problem: Experiment Chaos
 
