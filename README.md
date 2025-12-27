@@ -24,6 +24,10 @@
 
 **PyTorchLabFlow** is a lightweight, offline-first framework designed to bring structure and sanity to your deep learning experiments. It automates project setup, manages configurations, and tracks results, all while keeping your data completely private and secure on your local machine.
 
+> ⚠️ **Notice**
+>  
+> A more advanced, domain-independent version is available at:  
+> 👉 **[ExperQuick/PyLabFlow](https://github.com/ExperQuick/PyLabFlow)**
 
 ### 🤔 The Problem: Experiment Chaos
 
