@@ -100,13 +100,17 @@ This project is licensed under the Apache License 2.0. See the [LICENSE](https:/
 If you use PyTorchLabFlow in your research, please consider citing it:
 
 ```bibtex
-@misc{PyTorchLabFlow,
-  author       = {BBEK-Anand},
-  title        = {PyTorchLabFlow: A Python FrameWork for Managing Deep Learning Experiments in PyTorch},
-  year         = {2024},
-  url          = {https://github.com/BBEK-Anand/PyTorchLabFlow},
-  note         = {Version 0.4.7},
-  doi          = {10.5281/zenodo.17387930},
+@article{Hati2025PyTorchLabFlow,
+  title={PyTorchLabFlow: A Local-First Framework for Reproducible Deep Learning Experiments},
+  author={Hati, Bibekananda and Dadwhal, Yogeshwar Singh},
+  journal={Journal of Applied Bioanalysis},
+  volume={11},
+  number={S6},
+  pages={538--546},
+  year={2025},
+  doi={10.53555/jab.v11si6.1940},
+  url={https://doi.org/10.53555/jab.v11si6.1940}
 }
+
 
 ```
