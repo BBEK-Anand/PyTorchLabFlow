@@ -102,7 +102,7 @@ If you use PyTorchLabFlow in your research, please consider citing it:
 ```bibtex
 @article{Hati2025PyTorchLabFlow,
   title={PyTorchLabFlow: A Local-First Framework for Reproducible Deep Learning Experiments},
-  author={Hati, Bibekananda and Dadwhal, Yogeshwar Singh},
+  author={Bibekananda Hati and Yogeshwar Singh Dadwhal},
   journal={Journal of Applied Bioanalysis},
   volume={11},
   number={S6},
